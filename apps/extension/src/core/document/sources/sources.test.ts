@@ -51,18 +51,26 @@ describe('classifyFile', () => {
     expect(classifyFile('a.md', '')).toBe('txt');
   });
 
-  it('reports epub/docx as unsupported with a label', () => {
-    expect(classifyFile('b.epub', '')).toEqual({
-      unsupported: true,
-      label: 'EPUB',
-    });
-    expect(classifyFile('b.docx', '')).toEqual({
-      unsupported: true,
-      label: 'DOCX',
-    });
+  it('routes EPUB by MIME and extension', () => {
+    expect(classifyFile('b.epub', 'application/epub+zip')).toBe('epub');
+    expect(classifyFile('b.epub', '')).toBe('epub');
   });
 
-  it('reports unknown extensions as unsupported', () => {
+  it('routes DOCX by MIME and extension', () => {
+    expect(
+      classifyFile(
+        'b.docx',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ),
+    ).toBe('docx');
+    expect(classifyFile('b.docx', '')).toBe('docx');
+  });
+
+  it('reports unknown extensions as unsupported with a label', () => {
+    expect(classifyFile('b.rtf', '')).toEqual({
+      unsupported: true,
+      label: 'RTF',
+    });
     expect(classifyFile('b.xyz', '')).toMatchObject({ unsupported: true });
   });
 });

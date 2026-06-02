@@ -1,17 +1,20 @@
 /**
  * File-source factory. Routes an uploaded file's bytes to the right
- * DocumentSource using the pure {@link classifyFile} decision. EPUB and DOCX
- * are recognised but not yet implemented (fast-follows) and raise a clear,
- * user-facing error.
+ * DocumentSource using the pure {@link classifyFile} decision. Unknown types
+ * raise a clear, user-facing error.
  */
 
 import type { DocumentSource } from '@/core/document/types';
-import { classifyFile } from './classify';
+import { classifyFile, type SupportedKind } from './classify';
 import { PdfSource } from './pdf';
 import { TxtSource } from './txt';
+import { EpubSource } from './epub';
+import { DocxSource } from './docx';
 
 export { PdfSource } from './pdf';
 export { TxtSource } from './txt';
+export { EpubSource } from './epub';
+export { DocxSource } from './docx';
 export { PageSource } from './page';
 export { classifyFile } from './classify';
 
@@ -22,6 +25,16 @@ export class UnsupportedFileError extends Error {
   }
 }
 
+const factories: Record<
+  SupportedKind,
+  (buffer: ArrayBuffer, name: string) => DocumentSource
+> = {
+  pdf: (b, n) => new PdfSource(b, n),
+  txt: (b, n) => new TxtSource(b, n),
+  epub: (b, n) => new EpubSource(b, n),
+  docx: (b, n) => new DocxSource(b, n),
+};
+
 /** Build the DocumentSource for an uploaded file, or throw for unsupported types. */
 export function createFileSource(
   name: string,
@@ -30,7 +43,5 @@ export function createFileSource(
 ): DocumentSource {
   const kind = classifyFile(name, mime);
   if (typeof kind === 'object') throw new UnsupportedFileError(kind.label);
-  return kind === 'pdf'
-    ? new PdfSource(buffer, name)
-    : new TxtSource(buffer, name);
+  return factories[kind](buffer, name);
 }
