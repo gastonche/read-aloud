@@ -30,11 +30,14 @@ voices. That story is told in [Dual-engine highlighting](#dual-engine-highlighti
   playback surface.
 - **Synced word + sentence highlighting** on **both** engines, rendered only in
   the side panel — the source page DOM is never touched.
-- **Two TTS engines, one contract:** System (free `speechSynthesis`) and Neural
-  (ElevenLabs via a Cloudflare Worker). Toggle live; neural failures auto-fall
-  back to system so playback never dies.
-- **Transport:** play/pause, skip ± sentence, click-to-seek, speed 0.5×–3×,
-  voice picker, Space-to-play/pause, sentence progress, auto-scroll.
+- **Two voice modes, one contract:** **Built-in** (free, on-device
+  `speechSynthesis`) and **Studio** (premium neural, ElevenLabs via a Cloudflare
+  Worker). Switch live; Studio failures auto-fall back to Built-in so playback
+  never dies.
+- **A player deck that feels like a product:** a voice rail of avatar chips
+  with personality ("Warm & natural"), a play button with a progress ring, a
+  vertical speed dial (0.5×–3×), skip ± sentence, click-to-seek, Space-to-play,
+  and auto-scroll. Built-in voices are curated to a clean shortlist.
 - **Sentence-chunked playback** so long documents start instantly.
 - **TL;DR** via Cloudflare Workers AI — and the summary reads aloud through the
   same player + highlighting.
@@ -204,8 +207,9 @@ No secrets are committed; `.dev.vars` is gitignored (see `.dev.vars.example`).
 
 ## Cost notes
 
-- **System voices: $0.** `speechSynthesis` runs on-device — no API, no network.
-  This is why System is the **default** and Neural is strictly **opt-in**.
+- **Built-in voices: $0.** `speechSynthesis` runs on-device — no API, no
+  network. This is why Built-in is the **default** and Studio is strictly
+  **opt-in**.
 - **Neural (ElevenLabs):** billed per **~1k characters** synthesized. A typical
   article (~5k chars) is a few cents; the cost scales with reading length, which
   is exactly why it's behind a toggle and chunked per sentence (you only pay for
@@ -215,8 +219,8 @@ No secrets are committed; `.dev.vars` is gitignored (see `.dev.vars.example`).
   chars, output to 512 tokens). The AI Gateway can cache identical requests to
   cut repeat cost.
 
-The deliberate product decision: **default to free, opt into neural.** Most
-reading is fine on system voices; the premium engine is there when the voice
+The deliberate product decision: **default to free, opt into Studio.** Most
+reading is fine on Built-in voices; the premium engine is there when voice
 quality matters, and it degrades back to free automatically if the Worker is
 unreachable.
 

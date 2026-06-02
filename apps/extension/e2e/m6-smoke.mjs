@@ -55,11 +55,15 @@ const run = async () => {
     if (req.url().endsWith('/tts')) ttsRequests++;
   });
 
-  // Switch to the Neural engine.
-  await panel.locator('button:has-text("Neural")').click();
-  await panel.waitForTimeout(200);
-  const voiceText = await panel.locator('select[aria-label="Voice"]').innerText();
-  check('voice list switches to neural voices', voiceText.includes('Rachel'), voiceText.replace(/\n/g, ' '));
+  // Switch to the Studio (neural) engine.
+  await panel.locator('button:has-text("Studio")').click();
+  await panel.waitForSelector('button[aria-label="Voice: Rachel"]', {
+    timeout: 5_000,
+  });
+  check(
+    'voice rail switches to Studio voices',
+    (await panel.locator('button[aria-label="Voice: Rachel"]').count()) >= 1,
+  );
 
   // Play → fetch /tts (mock) → fake audio advances → word highlight.
   await panel.locator('button[aria-label="Play"]').click();
@@ -69,14 +73,14 @@ const run = async () => {
 
   await panel.screenshot({ path: resolve(SHOTS, 'm6-neural.png'), fullPage: true });
 
-  // Switch back to System.
-  await panel.locator('button:has-text("System")').click();
-  await panel.waitForTimeout(150);
+  // Switch back to Built-in.
+  await panel.locator('button:has-text("Built-in")').click();
+  await panel.waitForSelector('button[aria-label="Voice: Fake Voice"]', {
+    timeout: 5_000,
+  });
   check(
-    'voice list switches back to system voices',
-    (await panel.locator('select[aria-label="Voice"]').innerText()).includes(
-      'Fake Voice',
-    ),
+    'voice rail switches back to Built-in voices',
+    (await panel.locator('button[aria-label="Voice: Fake Voice"]').count()) >= 1,
   );
 
   await context.close();

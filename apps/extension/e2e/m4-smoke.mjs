@@ -47,10 +47,9 @@ const run = async () => {
     await panel.waitForSelector('article.reader', { timeout: 15_000 });
 
     check(
-      'transport shows the (fake) system voice',
-      (await panel.locator('select[aria-label="Voice"]').innerText()).includes(
-        'Fake Voice',
-      ),
+      'voice rail shows the (fake) system voice',
+      (await panel.locator('button[aria-label="Voice: Fake Voice"]').count()) ===
+        1,
     );
     check(
       'play button present',

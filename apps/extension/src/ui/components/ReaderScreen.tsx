@@ -4,7 +4,7 @@ import { normalize } from '@/core/document/normalize';
 import { docToText, summarize } from '@/core/summary/client';
 import { usePlayer } from '@/ui/hooks/usePlayer';
 import { ReaderView } from './ReaderView';
-import { Transport } from './Transport';
+import { PlayerDeck } from './PlayerDeck';
 
 type SummaryState =
   | { status: 'idle' }
@@ -94,7 +94,7 @@ export function ReaderScreen({ doc }: { doc: NormalizedDoc }) {
           onSeek={player.seek}
         />
       </div>
-      <Transport player={player} progress={progress} />
+      <PlayerDeck player={player} progress={progress} />
     </div>
   );
 }

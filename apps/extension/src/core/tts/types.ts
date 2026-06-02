@@ -28,6 +28,8 @@ export interface TtsVoice {
   label: string;
   lang: string;
   isDefault: boolean;
+  /** Short human descriptor shown in the voice picker (e.g. "Warm & natural"). */
+  description?: string;
 }
 
 export interface PlaybackOptions {

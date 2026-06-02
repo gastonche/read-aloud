@@ -16,30 +16,35 @@ const NEURAL_VOICES: TtsVoice[] = [
     label: 'Rachel',
     lang: 'en-US',
     isDefault: true,
+    description: 'Warm & natural',
   },
   {
     id: 'AZnzlk1XvdvUeBnXmlld',
     label: 'Domi',
     lang: 'en-US',
     isDefault: false,
+    description: 'Bold & confident',
   },
   {
     id: 'EXAVITQu4vr4xnSDxMaL',
     label: 'Bella',
     lang: 'en-US',
     isDefault: false,
+    description: 'Soft & gentle',
   },
   {
     id: 'ErXwobaYiN019PkySvjV',
     label: 'Antoni',
     lang: 'en-US',
     isDefault: false,
+    description: 'Crisp & clear',
   },
   {
     id: 'TxGEqnHWrfWFTfGW9XjX',
     label: 'Josh',
     lang: 'en-US',
     isDefault: false,
+    description: 'Deep & steady',
   },
 ];
 
