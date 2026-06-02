@@ -1,0 +1,25 @@
+@import 'tailwindcss';
+
+/* ReadAloud design tokens — a calm, focused reading surface. */
+@theme {
+  --color-ink: #0f172a;
+  --color-ink-soft: #475569;
+  --color-paper: #ffffff;
+  --color-accent: #4f46e5;
+  --color-accent-soft: #eef2ff;
+  --font-reader: ui-serif, Georgia, 'Times New Roman', serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
