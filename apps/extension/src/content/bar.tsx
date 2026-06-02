@@ -1,57 +1,68 @@
 /**
- * Floating page-reader bar (content script, v0.2.0 M2 — minimal).
+ * Floating page-reader bar (content script, v0.2.0 M3).
  *
- * Mounts a React app inside a Shadow DOM host (style isolation) and drives
- * playback with the shared usePlayer hook — engines run in the page world, and
- * the on-page highlighter (page-reader singleton) is driven from the highlight
- * stream. M3 adds drag-to-snap and the rich voice/speed/language controls.
+ * A vertical, draggable control deck mounted in a Shadow DOM host (style
+ * isolation). Drag-to-snap across 8 anchors (4 corners + 4 edge midpoints,
+ * persisted). Reuses usePlayer (engines run in the page); Studio /tts is fetched
+ * through the SW (ViaSwTtsClient) so the page's CSP/origin is never touched.
+ * Highlighting is painted on the page via the page-reader singleton.
  */
 
-import { StrictMode, useEffect } from 'react';
+import { StrictMode, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { NormalizedDoc } from '@/core/document/types';
-import { usePlayer } from '@/ui/hooks/usePlayer';
-import { clearPaint, paint } from './page-reader';
+import type { TtsVoice } from '@/core/tts/types';
+import { usePlayer, type EngineId } from '@/ui/hooks/usePlayer';
+import { hasVoiceForLang, languageName, primaryLang } from '@/core/i18n/lang';
+import { voiceAvatar } from '@/ui/voice-avatar';
+import { ViaSwTtsClient } from './via-sw-tts';
+import { buildPageDoc, clearPaint, paint } from './page-reader';
+import { BAR_CSS } from './bar-css';
 
-const HOST_ID = 'readaloud-bar-host';
+type Anchor =
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'middle-left'
+  | 'middle-right'
+  | 'bottom-left'
+  | 'bottom-center'
+  | 'bottom-right';
 
-const BAR_CSS = `
-:host { all: initial; }
-.bar {
-  position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
-  z-index: 2147483647;
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
-  padding: 12px 8px; border-radius: 9999px;
-  background: #ffffff; box-shadow: 0 8px 30px rgba(15,23,42,.18);
-  border: 1px solid #e2e8f0;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-}
-.play {
-  width: 44px; height: 44px; border-radius: 9999px; border: none; cursor: pointer;
-  background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  transition: transform .1s ease;
-}
-.play:active { transform: scale(.94); }
-.play svg { width: 22px; height: 22px; fill: currentColor; }
-.progress { font-size: 10px; color: #64748b; font-variant-numeric: tabular-nums; writing-mode: vertical-rl; }
-.icon-btn {
-  width: 28px; height: 28px; border-radius: 9999px; border: none; cursor: pointer;
-  background: transparent; color: #64748b; display: flex; align-items: center; justify-content: center;
-}
-.icon-btn:hover { background: #f1f5f9; color: #0f172a; }
-.icon-btn svg { width: 16px; height: 16px; fill: currentColor; }
-`;
+const ANCHOR_STYLE: Record<Anchor, React.CSSProperties> = {
+  'top-left': { top: 12, left: 12 },
+  'top-center': { top: 12, left: '50%', transform: 'translateX(-50%)' },
+  'top-right': { top: 12, right: 12 },
+  'middle-left': { top: '50%', left: 12, transform: 'translateY(-50%)' },
+  'middle-right': { top: '50%', right: 12, transform: 'translateY(-50%)' },
+  'bottom-left': { bottom: 12, left: 12 },
+  'bottom-center': { bottom: 12, left: '50%', transform: 'translateX(-50%)' },
+  'bottom-right': { bottom: 12, right: 12 },
+};
+const ANCHOR_KEY = 'readaloud:barAnchor';
+const COMMON_LANGS = [
+  'en',
+  'es',
+  'fr',
+  'de',
+  'it',
+  'pt',
+  'ru',
+  'ar',
+  'he',
+  'hi',
+  'ja',
+  'ko',
+  'zh',
+];
 
 let host: HTMLElement | null = null;
 let root: Root | null = null;
 
 export function mountBar(doc: NormalizedDoc): void {
-  if (host) {
-    unmountBar();
-  }
+  if (host) unmountBar();
   host = document.createElement('div');
-  host.id = HOST_ID;
+  host.id = 'readaloud-bar-host';
   const shadow = host.attachShadow({ mode: 'open' });
   const style = document.createElement('style');
   style.textContent = BAR_CSS;
@@ -59,11 +70,10 @@ export function mountBar(doc: NormalizedDoc): void {
   const mount = document.createElement('div');
   shadow.appendChild(mount);
   document.documentElement.appendChild(host);
-
   root = createRoot(mount);
   root.render(
     <StrictMode>
-      <Bar doc={doc} onClose={unmountBar} />
+      <Bar initialDoc={doc} onClose={unmountBar} />
     </StrictMode>,
   );
 }
@@ -76,27 +86,218 @@ export function unmountBar(): void {
   host = null;
 }
 
-function Bar({ doc, onClose }: { doc: NormalizedDoc; onClose: () => void }) {
-  const player = usePlayer(doc);
+function nearestAnchor(cx: number, cy: number, w: number, h: number): Anchor {
+  const col = cx < w / 3 ? 'left' : cx > (2 * w) / 3 ? 'right' : 'center';
+  const row = cy < h / 3 ? 'top' : cy > (2 * h) / 3 ? 'bottom' : 'middle';
+  if (row === 'middle') {
+    const side = col === 'center' ? (cx < w / 2 ? 'left' : 'right') : col;
+    return `middle-${side}` as Anchor;
+  }
+  return `${row}-${col}` as Anchor;
+}
 
-  // Drive the on-page highlighter from the playback highlight stream.
+function Bar({
+  initialDoc,
+  onClose,
+}: {
+  initialDoc: NormalizedDoc;
+  onClose: () => void;
+}) {
+  const [doc, setDoc] = useState(initialDoc);
+  const ttsClient = useRef(new ViaSwTtsClient()).current;
+  const player = usePlayer(doc, { ttsClient });
+
+  const [anchor, setAnchor] = useState<Anchor>('middle-right');
+  const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
+  const [pop, setPop] = useState<'voice' | 'speed' | 'lang' | null>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+
+  // Load persisted anchor.
+  useEffect(() => {
+    chrome.storage?.local?.get(ANCHOR_KEY).then((r) => {
+      const a = r[ANCHOR_KEY] as Anchor | undefined;
+      if (a && a in ANCHOR_STYLE) setAnchor(a);
+    });
+  }, []);
+
+  // Paint on-page highlight from the playback stream.
   useEffect(() => {
     paint(player.highlight.sentenceId, player.highlight.wordIndex, true);
   }, [player.highlight]);
 
+  const popSide: 'left' | 'right' = anchor.includes('left') ? 'right' : 'left';
+
+  const onGripDown = (e: React.PointerEvent) => {
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    setPop(null);
+    const rect = barRef.current!.getBoundingClientRect();
+    const offX = e.clientX - rect.left;
+    const offY = e.clientY - rect.top;
+    const move = (ev: PointerEvent) =>
+      setDrag({ x: ev.clientX - offX, y: ev.clientY - offY });
+    const up = (ev: PointerEvent) => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      const r = barRef.current!.getBoundingClientRect();
+      const a = nearestAnchor(
+        ev.clientX - offX + r.width / 2,
+        ev.clientY - offY + r.height / 2,
+        window.innerWidth,
+        window.innerHeight,
+      );
+      setDrag(null);
+      setAnchor(a);
+      chrome.storage?.local?.set({ [ANCHOR_KEY]: a });
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  const onPickLanguage = (lang: string) => {
+    setPop(null);
+    void buildPageDoc(lang).then((live) => setDoc(live.doc));
+  };
+
   const playing = player.status === 'playing';
-  const current = Math.min(
-    Math.max(player.highlight.sentenceId + 1, 0),
-    doc.blocks.length,
-  );
+  const total = doc.blocks.length;
+  const current = Math.min(Math.max(player.highlight.sentenceId + 1, 0), total);
+  const frac = total > 0 ? current / total : 0;
+
+  const barStyle: React.CSSProperties = drag
+    ? { left: drag.x, top: drag.y, transform: 'none' }
+    : ANCHOR_STYLE[anchor];
 
   return (
-    <div className="bar" role="toolbar" aria-label="ReadAloud">
+    <div
+      className="bar"
+      ref={barRef}
+      style={barStyle}
+      role="toolbar"
+      aria-label="ReadAloud"
+    >
+      <button className="grip" aria-label="Move bar" onPointerDown={onGripDown}>
+        <svg viewBox="0 0 24 24">
+          <path d="M9 5h2v2H9zm0 6h2v2H9zm0 6h2v2H9zM13 5h2v2h-2zm0 6h2v2h-2zm0 6h2v2h-2z" />
+        </svg>
+      </button>
+
       <button
-        type="button"
+        className="chip"
+        aria-label={`Language: ${languageName(doc.lang, 'en')}`}
+        onClick={() => setPop(pop === 'lang' ? null : 'lang')}
+      >
+        {primaryLang(doc.lang).toUpperCase() || '–'}
+      </button>
+
+      <PlayButton playing={playing} frac={frac} onClick={player.toggle} />
+
+      <button
+        className="icon"
+        aria-label="Previous sentence"
+        onClick={player.prev}
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M7 6h2v12H7V6zm3.5 6 8.5 6V6l-8.5 6z" />
+        </svg>
+      </button>
+      <button className="icon" aria-label="Next sentence" onClick={player.next}>
+        <svg viewBox="0 0 24 24">
+          <path d="M15 6h2v12h-2V6zM5 6v12l8.5-6L5 6z" />
+        </svg>
+      </button>
+
+      <button
+        className="pill"
+        aria-label="Reading speed"
+        onClick={() => setPop(pop === 'speed' ? null : 'speed')}
+      >
+        {player.rate}×
+      </button>
+
+      <button
+        className="voicebtn"
+        aria-label="Choose voice"
+        onClick={() => setPop(pop === 'voice' ? null : 'voice')}
+      >
+        <Avatar voice={player.voices.find((v) => v.id === player.voiceId)} />
+      </button>
+
+      <span className="count">
+        {current}/{total}
+      </span>
+
+      <button
+        className="icon close"
+        aria-label="Close ReadAloud"
+        onClick={onClose}
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3z" />
+        </svg>
+      </button>
+
+      {pop === 'speed' && (
+        <SpeedPopover
+          side={popSide}
+          rate={player.rate}
+          onChange={player.changeRate}
+        />
+      )}
+      {pop === 'voice' && (
+        <VoicePopover
+          side={popSide}
+          player={player}
+          onClose={() => setPop(null)}
+        />
+      )}
+      {pop === 'lang' && (
+        <LangPopover side={popSide} lang={doc.lang} onPick={onPickLanguage} />
+      )}
+    </div>
+  );
+}
+
+function Avatar({ voice }: { voice: TtsVoice | undefined }) {
+  if (!voice) return <span className="avatar-empty" />;
+  return (
+    <img
+      className="avatar"
+      src={voiceAvatar(voice.id)}
+      alt=""
+      width={28}
+      height={28}
+    />
+  );
+}
+
+function PlayButton({
+  playing,
+  frac,
+  onClick,
+}: {
+  playing: boolean;
+  frac: number;
+  onClick: () => void;
+}) {
+  const R = 20;
+  const C = 2 * Math.PI * R;
+  return (
+    <div className="playwrap">
+      <svg className="ring" viewBox="0 0 46 46">
+        <circle cx="23" cy="23" r={R} className="ring-bg" />
+        <circle
+          cx="23"
+          cy="23"
+          r={R}
+          className="ring-fg"
+          strokeDasharray={C}
+          strokeDashoffset={C * (1 - frac)}
+        />
+      </svg>
+      <button
         className="play"
         aria-label={playing ? 'Pause' : 'Play'}
-        onClick={player.toggle}
+        onClick={onClick}
       >
         <svg viewBox="0 0 24 24">
           {playing ? (
@@ -106,29 +307,158 @@ function Bar({ doc, onClose }: { doc: NormalizedDoc; onClose: () => void }) {
           )}
         </svg>
       </button>
-      <button
-        type="button"
-        className="icon-btn"
-        aria-label="Next sentence"
-        onClick={player.next}
+    </div>
+  );
+}
+
+function SpeedPopover({
+  side,
+  rate,
+  onChange,
+}: {
+  side: 'left' | 'right';
+  rate: number;
+  onChange: (r: number) => void;
+}) {
+  const MIN = 0.5,
+    MAX = 3,
+    STEP = 0.25;
+  const trackRef = useRef<HTMLDivElement>(null);
+  const pct = (rate - MIN) / (MAX - MIN);
+  const setFromY = (clientY: number) => {
+    const el = trackRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const p = 1 - (clientY - r.top) / r.height;
+    const v = Math.round((MIN + p * (MAX - MIN)) / STEP) * STEP;
+    onChange(Math.min(MAX, Math.max(MIN, v)));
+  };
+  return (
+    <div className={`pop pop-${side}`}>
+      <div className="pop-val">{rate}×</div>
+      <div
+        ref={trackRef}
+        className="slider"
+        role="slider"
+        aria-label="Reading speed"
+        aria-valuemin={MIN}
+        aria-valuemax={MAX}
+        aria-valuenow={rate}
+        onPointerDown={(e) => {
+          (e.target as HTMLElement).setPointerCapture(e.pointerId);
+          setFromY(e.clientY);
+        }}
+        onPointerMove={(e) => {
+          if (e.buttons) setFromY(e.clientY);
+        }}
       >
-        <svg viewBox="0 0 24 24">
-          <path d="M15 6h2v12h-2V6zM5 6v12l8.5-6L5 6z" />
-        </svg>
-      </button>
-      <span className="progress">
-        {current}/{doc.blocks.length}
-      </span>
-      <button
-        type="button"
-        className="icon-btn"
-        aria-label="Close ReadAloud"
-        onClick={onClose}
-      >
-        <svg viewBox="0 0 24 24">
-          <path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3z" />
-        </svg>
-      </button>
+        <div className="fill" style={{ height: `${pct * 100}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function VoicePopover({
+  side,
+  player,
+  onClose,
+}: {
+  side: 'left' | 'right';
+  player: ReturnType<typeof usePlayer>;
+  onClose: () => void;
+}) {
+  const studio = player.engineId === 'elevenlabs';
+  const target = primaryLang(player.language);
+  const voices = useMemo(() => {
+    if (studio) return player.voices;
+    // Built-in: content language first, then the rest.
+    return [...player.voices].sort(
+      (a, b) =>
+        Number(primaryLang(b.lang) === target) -
+        Number(primaryLang(a.lang) === target),
+    );
+  }, [player.voices, studio, target]);
+  const noMatch =
+    !studio &&
+    player.language !== '' &&
+    !hasVoiceForLang(player.voices, player.language);
+
+  const tab = (id: EngineId, label: string) => (
+    <button
+      className={`seg-btn ${(id === 'elevenlabs') === studio ? 'on' : ''}`}
+      onClick={() => player.setEngine(id)}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <div className={`pop pop-${side} pop-voice`}>
+      <div className="seg">
+        {tab('web-speech', 'Built-in')}
+        {tab('elevenlabs', '✦ Studio')}
+      </div>
+      {noMatch && (
+        <button
+          className="nudge"
+          onClick={() => player.setEngine('elevenlabs')}
+        >
+          No {languageName(player.language, 'en')} voice here — try Studio
+        </button>
+      )}
+      <div className="voice-list">
+        {voices.map((v) => (
+          <button
+            key={v.id}
+            className={`voice-row ${v.id === player.voiceId ? 'on' : ''}`}
+            aria-label={`Select ${v.label}`}
+            onClick={() => {
+              player.changeVoice(v.id);
+              onClose();
+            }}
+          >
+            <img
+              className="avatar"
+              src={voiceAvatar(v.id)}
+              alt=""
+              width={32}
+              height={32}
+            />
+            <span className="voice-meta">
+              <span className="voice-name">{v.label}</span>
+              <span className="voice-desc">{v.description ?? v.lang}</span>
+            </span>
+            {v.id === player.voiceId && <span className="tick">✓</span>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LangPopover({
+  side,
+  lang,
+  onPick,
+}: {
+  side: 'left' | 'right';
+  lang: string;
+  onPick: (l: string) => void;
+}) {
+  const current = primaryLang(lang);
+  const langs = [...new Set([current, ...COMMON_LANGS])].filter(Boolean);
+  return (
+    <div className={`pop pop-${side} pop-lang`}>
+      {langs.map((l) => (
+        <button
+          key={l}
+          className={`lang-item ${l === current ? 'on' : ''}`}
+          onClick={() => onPick(l)}
+        >
+          {languageName(l, 'en')}
+          {l === current && <span className="tick">✓</span>}
+        </button>
+      ))}
     </div>
   );
 }

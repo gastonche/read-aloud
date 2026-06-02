@@ -1,9 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { createAvatar } from '@dicebear/core';
-import { personas } from '@dicebear/collection';
 import type { EngineId, PlayerApi } from '@/ui/hooks/usePlayer';
 import type { TtsVoice } from '@/core/tts/types';
 import { hasVoiceForLang, languageName, primaryLang } from '@/core/i18n/lang';
+import { voiceAvatar } from '@/ui/voice-avatar';
 
 const SPEED_MIN = 0.5;
 const SPEED_MAX = 3;
@@ -56,24 +55,6 @@ function Notices({ player }: { player: PlayerApi }) {
     );
   }
   return null;
-}
-
-// ─────────────────────── illustration avatars ───────────────────────
-// Generated locally with DiceBear (offline, deterministic per voice).
-
-const avatarCache = new Map<string, string>();
-function voiceAvatar(seed: string): string {
-  let uri = avatarCache.get(seed);
-  if (!uri) {
-    const svg = createAvatar(personas, {
-      seed,
-      radius: 50,
-      backgroundColor: ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf'],
-    }).toString();
-    uri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-    avatarCache.set(seed, uri);
-  }
-  return uri;
 }
 
 function VoiceImage({ voice, size }: { voice: TtsVoice; size: number }) {

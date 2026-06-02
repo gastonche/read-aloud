@@ -15,7 +15,9 @@ import type {
   RuntimeMessage,
   Result,
   ExtractPageResponse,
+  WorkerFetchResponse,
 } from '@/messaging/contract';
+import { WORKER_BASE_URL } from '@/config';
 
 /** The built content-script path, read from the manifest (CRXJS hashes it). */
 function contentScriptFiles(): string[] {
@@ -69,8 +71,41 @@ async function startPageReader(tabId: number): Promise<Result> {
   }
 }
 
+/** Proxy a POST to the Worker from the SW (off the page's CSP/origin). */
+async function workerFetch(
+  path: string,
+  body: unknown,
+): Promise<WorkerFetchResponse> {
+  try {
+    const res = await fetch(`${WORKER_BASE_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err = (await res.json().catch(() => null)) as {
+        error?: string;
+      } | null;
+      return {
+        ok: false,
+        error: err?.error ?? `Worker error (${res.status}).`,
+      };
+    }
+    return { ok: true, data: await res.json() };
+  } catch {
+    return {
+      ok: false,
+      error: `Couldn't reach the ReadAloud server at ${WORKER_BASE_URL}.`,
+    };
+  }
+}
+
 async function handleMessage(message: RuntimeMessage): Promise<Result> {
   switch (message.type) {
+    case 'WORKER_FETCH': {
+      return workerFetch(message.path, message.body);
+    }
+
     case 'OPEN_SIDE_PANEL': {
       // Open synchronously-first to stay within the user gesture.
       await chrome.sidePanel.open({ tabId: message.tabId });

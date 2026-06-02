@@ -60,10 +60,22 @@ export interface StartPageReaderMessage {
   tabId: number;
 }
 
+/**
+ * content script → SW: proxy a POST to the Worker. Content-script fetches are
+ * subject to the page's CSP; routing through the SW avoids that and keeps the
+ * Worker origin off the page entirely. [v0.2.0]
+ */
+export interface WorkerFetchMessage {
+  type: 'WORKER_FETCH';
+  path: '/tts' | '/summarize';
+  body: unknown;
+}
+
 export type RuntimeMessage =
   | OpenSidePanelMessage
   | ExtractPageMessage
-  | StartPageReaderMessage;
+  | StartPageReaderMessage
+  | WorkerFetchMessage;
 
 /** SW → content script: extract readable content from the current document. [M2] */
 export interface ReadabilityExtractMessage {
@@ -138,8 +150,12 @@ export type ExtractPageResponse = Result<ExtractionPayload>;
  * Map each runtime message `type` to its response shape, so the typed bus can
  * infer the right return type per request with no casting.
  */
+/** WORKER_FETCH returns the parsed JSON payload (engine/summary response). */
+export type WorkerFetchResponse<T = unknown> = Result<{ data: T }>;
+
 export interface RuntimeResponseMap {
   OPEN_SIDE_PANEL: OpenSidePanelResponse;
   EXTRACT_PAGE: ExtractPageResponse;
   START_PAGE_READER: Result;
+  WORKER_FETCH: WorkerFetchResponse;
 }

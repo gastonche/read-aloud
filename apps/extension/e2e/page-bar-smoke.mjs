@@ -84,7 +84,42 @@ const run = async () => {
   const s2 = await activeSentenceText(article);
   check('Next advances the highlight to a new sentence', !!s2 && s2 !== s1, s2?.slice(0, 40));
 
+  // Voice popover → switch to Studio → neural voices listed.
+  await article.locator('button[aria-label="Choose voice"]').click();
+  await article.locator('button:has-text("Studio")').click();
+  await article.waitForSelector('button[aria-label="Select Rachel"]', { timeout: 5_000 });
+  check(
+    'voice popover lists Studio voices',
+    (await article.locator('button[aria-label="Select Rachel"]').count()) >= 1,
+  );
+  await article.locator('button[aria-label="Select Rachel"]').click(); // selects + closes
+
+  // Speed popover opens.
+  await article.locator('button[aria-label="Reading speed"]').click();
+  check(
+    'speed popover shows the vertical slider',
+    (await article.locator('[role="slider"][aria-label="Reading speed"]').count()) === 1,
+  );
+  await article.locator('button[aria-label="Reading speed"]').click(); // close
+
   await article.screenshot({ path: resolve(SHOTS, 'page-bar.png') });
+
+  // Drag the bar to the top-left corner; the anchor snaps and persists.
+  const grip = await article.locator('button[aria-label="Move bar"]').boundingBox();
+  await article.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);
+  await article.mouse.down();
+  await article.mouse.move(90, 90, { steps: 10 });
+  await article.mouse.up();
+  await article.waitForTimeout(200);
+  const stored = await helper.evaluate(() =>
+    chrome.storage.local.get('readaloud:barAnchor'),
+  );
+  check(
+    'drag snaps to a corner and persists the anchor',
+    stored['readaloud:barAnchor'] === 'top-left',
+    JSON.stringify(stored),
+  );
+  await article.screenshot({ path: resolve(SHOTS, 'page-bar-dragged.png') });
 
   const articleAfter = await article.evaluate(
     () => document.querySelector('article').innerHTML.length,

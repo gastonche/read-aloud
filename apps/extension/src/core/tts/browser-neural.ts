@@ -10,7 +10,7 @@ import type { AudioController, Ticker, TtsClient } from './elevenlabs';
 import type { TtsVoice } from './types';
 
 /** A curated set of ElevenLabs voices (the Worker resolves the id). */
-const NEURAL_VOICES: TtsVoice[] = [
+export const NEURAL_VOICES: TtsVoice[] = [
   {
     id: '21m00Tcm4TlvDq8ikWAM',
     label: 'Rachel',

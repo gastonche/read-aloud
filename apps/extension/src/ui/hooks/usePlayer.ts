@@ -43,10 +43,17 @@ export interface PlayerApi {
   changeVoice: (voiceId: string) => void;
 }
 
-function createEngine(id: EngineId): TtsEngine {
+import type { TtsClient } from '@/core/tts/elevenlabs';
+
+export interface PlayerOptions {
+  /** Override the Studio TTS client (e.g. the SW-proxied client on a page). */
+  ttsClient?: TtsClient;
+}
+
+function createEngine(id: EngineId, ttsClient?: TtsClient): TtsEngine {
   return id === 'elevenlabs'
     ? new ElevenLabsEngine(
-        new HttpTtsClient(),
+        ttsClient ?? new HttpTtsClient(),
         new HtmlAudioController(),
         new RafTicker(),
       )
@@ -59,8 +66,13 @@ function createEngine(id: EngineId): TtsEngine {
  * document. A neural-engine error auto-falls-back to Web Speech so playback
  * keeps working even if the Worker/ElevenLabs is down.
  */
-export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
+export function usePlayer(
+  doc: NormalizedDoc | null,
+  options?: PlayerOptions,
+): PlayerApi {
   const engineRef = useRef<TtsEngine | null>(null);
+  const ttsClientRef = useRef(options?.ttsClient);
+  ttsClientRef.current = options?.ttsClient;
   const [engineId, setEngineId] = useState<EngineId>('web-speech');
   const [status, setStatus] = useState<PlaybackStatus>('idle');
   const [highlight, setHighlight] = useState<HighlightState>(NO_HIGHLIGHT);
@@ -103,7 +115,7 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
   // message visible. Errors are cleared on a new doc, a manual engine switch,
   // or a successful play.
   useEffect(() => {
-    const engine = createEngine(engineId);
+    const engine = createEngine(engineId, ttsClientRef.current);
     engineRef.current = engine;
     engine.setListener({
       onStatus: (s) => {
