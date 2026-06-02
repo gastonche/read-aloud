@@ -370,64 +370,68 @@ function SpeedControl({
   );
 
   return (
-    <div
-      className="relative flex flex-col items-center"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
-      {/* Vertical slider grows in above the value. */}
-      <div
-        className={`absolute bottom-full mb-1 origin-bottom transition-all duration-200 ${
-          open
-            ? 'scale-y-100 opacity-100'
-            : 'pointer-events-none scale-y-0 opacity-0'
-        }`}
-      >
-        <div
-          ref={trackRef}
-          role="slider"
-          tabIndex={0}
-          aria-label="Reading speed"
-          aria-valuemin={SPEED_MIN}
-          aria-valuemax={SPEED_MAX}
-          aria-valuenow={rate}
-          aria-valuetext={`${formatRate(rate)} speed`}
-          onPointerDown={(e) => {
-            e.currentTarget.setPointerCapture(e.pointerId);
-            setFromClientY(e.clientY);
-          }}
-          onPointerMove={(e) => {
-            if (e.buttons !== 0) setFromClientY(e.clientY);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowUp') {
-              e.preventDefault();
-              onChange(Math.min(SPEED_MAX, rate + SPEED_STEP));
-            } else if (e.key === 'ArrowDown') {
-              e.preventDefault();
-              onChange(Math.max(SPEED_MIN, rate - SPEED_STEP));
-            }
-          }}
-          className="relative h-24 w-6 cursor-pointer touch-none rounded-full bg-slate-200 shadow-inner"
-        >
-          <div
-            className="absolute inset-x-0 bottom-0 rounded-full bg-gradient-to-t from-indigo-500 to-violet-400"
-            style={{ height: `${pct * 100}%` }}
-          />
-          <div
-            className="absolute inset-x-0 flex justify-center"
-            style={{ bottom: `calc(${pct * 100}% - 6px)` }}
-          >
-            <span className="h-3 w-3 rounded-full border-2 border-white bg-accent shadow" />
+    <div className="relative flex flex-col items-center">
+      {open && (
+        <>
+          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
+          {/* Click-opened vertical slider popover above the value. */}
+          <div className="absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-xs font-bold tabular-nums text-accent">
+                {formatRate(rate)}
+              </span>
+              <div
+                ref={trackRef}
+                role="slider"
+                tabIndex={0}
+                aria-label="Reading speed"
+                aria-valuemin={SPEED_MIN}
+                aria-valuemax={SPEED_MAX}
+                aria-valuenow={rate}
+                aria-valuetext={`${formatRate(rate)} speed`}
+                onPointerDown={(e) => {
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                  setFromClientY(e.clientY);
+                }}
+                onPointerMove={(e) => {
+                  if (e.buttons !== 0) setFromClientY(e.clientY);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    onChange(Math.min(SPEED_MAX, rate + SPEED_STEP));
+                  } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    onChange(Math.max(SPEED_MIN, rate - SPEED_STEP));
+                  }
+                }}
+                className="relative h-28 w-7 cursor-pointer touch-none rounded-full bg-slate-200 shadow-inner"
+              >
+                <div
+                  className="absolute inset-x-0 bottom-0 rounded-full bg-gradient-to-t from-indigo-500 to-violet-400"
+                  style={{ height: `${pct * 100}%` }}
+                />
+                <div
+                  className="absolute inset-x-0 flex justify-center"
+                  style={{ bottom: `calc(${pct * 100}% - 7px)` }}
+                >
+                  <span className="h-3.5 w-3.5 rounded-full border-2 border-white bg-accent shadow" />
+                </div>
+              </div>
+              <span className="text-[10px] text-ink-soft">Speed</span>
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
 
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label="Reading speed"
-        className="flex h-8 min-w-[42px] items-center justify-center gap-0.5 rounded-full border border-slate-200 bg-white px-2 text-xs font-bold tabular-nums text-accent transition hover:border-slate-300"
+        aria-expanded={open}
+        className={`flex h-8 min-w-[42px] items-center justify-center gap-0.5 rounded-full border bg-white px-2 text-xs font-bold tabular-nums text-accent transition ${
+          open ? 'border-accent' : 'border-slate-200 hover:border-slate-300'
+        }`}
       >
         {formatRate(rate)}
       </button>

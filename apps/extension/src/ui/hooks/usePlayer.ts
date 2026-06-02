@@ -74,21 +74,34 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
   const docRef = useRef(doc);
   docRef.current = doc;
 
-  // (Re)create the engine when the selected engine changes.
+  const engineIdRef = useRef(engineId);
+  engineIdRef.current = engineId;
+
+  // (Re)create the engine when the selected engine changes. NOTE: we do NOT
+  // clear `error` here — an auto-fallback switches the engine and must keep its
+  // message visible. Errors are cleared on a new doc, a manual engine switch,
+  // or a successful play.
   useEffect(() => {
     const engine = createEngine(engineId);
     engineRef.current = engine;
-    setSentenceLevelOnly(false);
-    setError(null);
     engine.setListener({
-      onStatus: setStatus,
+      onStatus: (s) => {
+        setStatus(s);
+        if (s === 'playing') setError(null); // playback recovered
+      },
       onHighlight: setHighlight,
       onWordTimingUnavailable: () => setSentenceLevelOnly(true),
       onError: (e) => {
-        setError(e.message);
-        // Automatic fallback: if the neural engine fails, drop to Web Speech
-        // so the user can still listen.
-        setEngineId((cur) => (cur === 'elevenlabs' ? 'web-speech' : cur));
+        // Automatic fallback: if Studio fails, drop to Built-in so the user can
+        // still listen — and tell them why (this message survives the switch).
+        if (engineIdRef.current === 'elevenlabs') {
+          setError(
+            'Studio voices need the ReadAloud server running. Switched to Built-in.',
+          );
+          setEngineId('web-speech');
+        } else {
+          setError(e.message);
+        }
       },
     });
     void engine.listVoices().then((vs) => {
@@ -141,7 +154,12 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
     setVoiceId(id);
     engineRef.current?.setVoice(id);
   }, []);
-  const setEngine = useCallback((id: EngineId) => setEngineId(id), []);
+  const setEngine = useCallback((id: EngineId) => {
+    // Manual switch is a fresh start — clear any prior fallback notice.
+    setError(null);
+    setSentenceLevelOnly(false);
+    setEngineId(id);
+  }, []);
 
   return {
     engineId,

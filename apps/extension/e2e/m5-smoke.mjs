@@ -53,9 +53,9 @@ const run = async () => {
   const panel = await openPage(PANEL);
   await panel.waitForSelector('article.reader', { timeout: 15_000 });
 
-  // TL;DR → summary card.
-  await panel.locator('button:has-text("TL;DR this")').click();
-  await panel.waitForSelector('text=TL;DR', { timeout: 15_000 });
+  // TL;DR (in the top bar) → summary card in the body.
+  await panel.locator('button:has-text("TL;DR")').click();
+  await panel.waitForSelector('text=mock summary', { timeout: 15_000 });
   const card = await panel.locator('text=mock summary').count();
   check('summary returned from the Worker and rendered', card >= 1);
   await panel.screenshot({ path: resolve(SHOTS, 'm5-summary.png'), fullPage: true });

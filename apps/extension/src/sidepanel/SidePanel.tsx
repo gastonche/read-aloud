@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FilePendingSource, PendingSource } from '@/messaging/contract';
 import { base64ToArrayBuffer, readAndClearPendingSource } from '@/core/handoff';
-import { normalize, wordCount } from '@/core/document/normalize';
+import { normalize } from '@/core/document/normalize';
 import { PageSource } from '@/core/document/sources/page';
 import { createFileSource } from '@/core/document/sources';
 import type { DocumentSource, NormalizedDoc } from '@/core/document/types';
 import { ReaderScreen } from '@/ui/components/ReaderScreen';
+import { TopBar } from '@/ui/components/TopBar';
 
 type BootState =
   | { phase: 'loading' }
@@ -100,44 +101,28 @@ export function SidePanel() {
     };
   }, [loadPage, loadFile]);
 
+  // Reader phase owns its own top bar (with the TL;DR action); other phases
+  // get the plain app top bar.
+  if (state.phase === 'reader') {
+    return (
+      <div className="flex h-full flex-col bg-paper text-ink">
+        <ReaderScreen doc={state.doc} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col bg-paper text-ink">
-      <PanelHeader
-        subtitle={
-          state.phase === 'reader' ? `${wordCount(state.doc)} words` : undefined
-        }
-      />
-      {state.phase === 'reader' ? (
-        <ReaderScreen doc={state.doc} />
-      ) : (
-        <div className="flex-1 overflow-auto px-4 py-4">
-          {state.phase === 'loading' && <Spinner label="Booting…" />}
-          {state.phase === 'working' && <Spinner label={state.label} />}
-          {state.phase === 'empty' && <EmptyState />}
-          {state.phase === 'error' && (
-            <ErrorState message={state.message} retry={state.retry} />
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function PanelHeader({ subtitle }: { subtitle?: string | undefined }) {
-  return (
-    <header className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
-      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-paper">
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-          <path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12z" />
-        </svg>
-      </div>
-      <div className="min-w-0">
-        <h1 className="text-sm font-semibold leading-none">ReadAloud</h1>
-        {subtitle && (
-          <p className="mt-0.5 text-[11px] text-ink-soft">{subtitle}</p>
+      <TopBar />
+      <div className="flex-1 overflow-auto px-4 py-4">
+        {state.phase === 'loading' && <Spinner label="Booting…" />}
+        {state.phase === 'working' && <Spinner label={state.label} />}
+        {state.phase === 'empty' && <EmptyState />}
+        {state.phase === 'error' && (
+          <ErrorState message={state.message} retry={state.retry} />
         )}
       </div>
-    </header>
+    </div>
   );
 }
 
