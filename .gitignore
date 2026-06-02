@@ -2,12 +2,12 @@
 node_modules/
 
 # Build output
-extension/dist/
-worker/dist/
+dist/
+.turbo/
 .wrangler/
 
 # Secrets — NEVER commit
-worker/.dev.vars
+apps/worker/.dev.vars
 *.env
 .env*
 
