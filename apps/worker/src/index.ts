@@ -32,7 +32,10 @@ app.use('*', (c, next) =>
     origin: (origin) => {
       if (!origin) return origin; // same-origin / non-CORS
       if (origin.startsWith('chrome-extension://')) return origin;
-      if (c.env.ENVIRONMENT === 'development' && origin.startsWith('http://localhost'))
+      if (
+        c.env.ENVIRONMENT === 'development' &&
+        origin.startsWith('http://localhost')
+      )
         return origin;
       const allowed = (c.env.ALLOWED_ORIGINS ?? '')
         .split(',')
@@ -97,7 +100,10 @@ app.post('/summarize', rateLimit, async (c) => {
   } catch (err) {
     console.error('summarize failed:', err);
     return c.json<ApiError>(
-      { error: 'The summarizer is unavailable right now.', code: 'upstream_error' },
+      {
+        error: 'The summarizer is unavailable right now.',
+        code: 'upstream_error',
+      },
       502,
     );
   }
@@ -140,7 +146,10 @@ app.post('/tts', rateLimit, async (c) => {
   } catch (err) {
     console.error('tts failed:', err);
     return c.json<ApiError>(
-      { error: 'Neural voice is unavailable right now.', code: 'upstream_error' },
+      {
+        error: 'Neural voice is unavailable right now.',
+        code: 'upstream_error',
+      },
       502,
     );
   }

@@ -11,11 +11,17 @@ import {
  */
 function alignmentOf(text: string, step = 0.1): CharacterAlignment {
   const characters = [...text];
-  const character_start_times_seconds = characters.map((_, i) => +(i * step).toFixed(4));
-  const character_end_times_seconds = characters.map((_, i) =>
-    +((i + 1) * step).toFixed(4),
+  const character_start_times_seconds = characters.map(
+    (_, i) => +(i * step).toFixed(4),
   );
-  return { characters, character_start_times_seconds, character_end_times_seconds };
+  const character_end_times_seconds = characters.map(
+    (_, i) => +((i + 1) * step).toFixed(4),
+  );
+  return {
+    characters,
+    character_start_times_seconds,
+    character_end_times_seconds,
+  };
 }
 
 describe('collapseAlignmentToWords', () => {
@@ -62,7 +68,9 @@ describe('wordIndexAtTime', () => {
 
   it('returns -1 before the first word starts', () => {
     expect(wordIndexAtTime(spans, 0)).toBe(0); // first word starts at 0
-    expect(wordIndexAtTime([{ word: 'x', startSec: 0.5, endSec: 1, index: 0 }], 0.2)).toBe(-1);
+    expect(
+      wordIndexAtTime([{ word: 'x', startSec: 0.5, endSec: 1, index: 0 }], 0.2),
+    ).toBe(-1);
   });
 
   it('returns the active word for a time inside it', () => {

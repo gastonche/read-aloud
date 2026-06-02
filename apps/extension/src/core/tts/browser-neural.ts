@@ -11,11 +11,36 @@ import type { TtsVoice } from './types';
 
 /** A curated set of ElevenLabs voices (the Worker resolves the id). */
 const NEURAL_VOICES: TtsVoice[] = [
-  { id: '21m00Tcm4TlvDq8ikWAM', label: 'Rachel', lang: 'en-US', isDefault: true },
-  { id: 'AZnzlk1XvdvUeBnXmlld', label: 'Domi', lang: 'en-US', isDefault: false },
-  { id: 'EXAVITQu4vr4xnSDxMaL', label: 'Bella', lang: 'en-US', isDefault: false },
-  { id: 'ErXwobaYiN019PkySvjV', label: 'Antoni', lang: 'en-US', isDefault: false },
-  { id: 'TxGEqnHWrfWFTfGW9XjX', label: 'Josh', lang: 'en-US', isDefault: false },
+  {
+    id: '21m00Tcm4TlvDq8ikWAM',
+    label: 'Rachel',
+    lang: 'en-US',
+    isDefault: true,
+  },
+  {
+    id: 'AZnzlk1XvdvUeBnXmlld',
+    label: 'Domi',
+    lang: 'en-US',
+    isDefault: false,
+  },
+  {
+    id: 'EXAVITQu4vr4xnSDxMaL',
+    label: 'Bella',
+    lang: 'en-US',
+    isDefault: false,
+  },
+  {
+    id: 'ErXwobaYiN019PkySvjV',
+    label: 'Antoni',
+    lang: 'en-US',
+    isDefault: false,
+  },
+  {
+    id: 'TxGEqnHWrfWFTfGW9XjX',
+    label: 'Josh',
+    lang: 'en-US',
+    isDefault: false,
+  },
 ];
 
 export class HttpTtsClient implements TtsClient {

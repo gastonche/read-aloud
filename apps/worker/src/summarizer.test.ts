@@ -21,7 +21,11 @@ function fakeAi(response: string) {
       inputs: { messages: { role: string; content: string }[] },
       options?: { gateway?: { id: string } },
     ) {
-      calls.push({ model, messages: inputs.messages, ...(options ? { options } : {}) });
+      calls.push({
+        model,
+        messages: inputs.messages,
+        ...(options ? { options } : {}),
+      });
       return Promise.resolve({ response });
     },
   };
@@ -54,7 +58,9 @@ describe('WorkersAiSummarizer', () => {
 
   it('routes through the AI Gateway when an id is provided', async () => {
     const { ai, calls } = fakeAi('ok');
-    await new WorkersAiSummarizer(ai, 'm', 'my-gateway').summarize({ text: 'x' });
+    await new WorkersAiSummarizer(ai, 'm', 'my-gateway').summarize({
+      text: 'x',
+    });
     expect(calls[0]!.options?.gateway).toEqual({ id: 'my-gateway' });
   });
 
@@ -91,7 +97,11 @@ describe('getSummarizer', () => {
   });
 
   it('uses the mock when SUMMARY_BACKEND is mock', () => {
-    const env: Env = { ...base, SUMMARY_BACKEND: 'mock', AI: {} as unknown as Ai };
+    const env: Env = {
+      ...base,
+      SUMMARY_BACKEND: 'mock',
+      AI: {} as unknown as Ai,
+    };
     expect(getSummarizer(env)).toBeInstanceOf(MockSummarizer);
   });
 });

@@ -156,9 +156,7 @@ function ChooseView({
         onClick={onUpload}
         title="Upload a file"
         subtitle="PDF or TXT — EPUB & DOCX soon"
-        icon={
-          <path d="M12 3 7 8h3v6h4V8h3l-5-5zM5 18h14v2H5v-2z" />
-        }
+        icon={<path d="M12 3 7 8h3v6h4V8h3l-5-5zM5 18h14v2H5v-2z" />}
       />
     </div>
   );

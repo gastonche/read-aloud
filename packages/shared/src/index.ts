@@ -85,8 +85,11 @@ export interface WordSpan {
 export function collapseAlignmentToWords(
   alignment: CharacterAlignment,
 ): WordSpan[] {
-  const { characters, character_start_times_seconds, character_end_times_seconds } =
-    alignment;
+  const {
+    characters,
+    character_start_times_seconds,
+    character_end_times_seconds,
+  } = alignment;
 
   const spans: WordSpan[] = [];
   let buf = '';
@@ -96,7 +99,12 @@ export function collapseAlignmentToWords(
 
   const flush = () => {
     if (!active) return;
-    spans.push({ word: buf, startSec: start, endSec: end, index: spans.length });
+    spans.push({
+      word: buf,
+      startSec: start,
+      endSec: end,
+      index: spans.length,
+    });
     buf = '';
     active = false;
   };

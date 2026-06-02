@@ -18,7 +18,10 @@ function extension(name: string): string {
 }
 
 /** Decide how to handle a file from its name + MIME, or report it unsupported. */
-export function classifyFile(name: string, mime: string): SupportedKind | Unsupported {
+export function classifyFile(
+  name: string,
+  mime: string,
+): SupportedKind | Unsupported {
   const ext = extension(name);
   if (mime === 'application/pdf' || ext === 'pdf') return 'pdf';
   if (mime.startsWith('text/') || ext === 'txt' || ext === 'md') return 'txt';

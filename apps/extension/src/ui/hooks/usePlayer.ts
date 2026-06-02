@@ -128,7 +128,10 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
   );
   const current = highlight.sentenceId < 0 ? 0 : highlight.sentenceId;
   const next = useCallback(() => seek(current + 1), [seek, current]);
-  const prev = useCallback(() => seek(Math.max(0, current - 1)), [seek, current]);
+  const prev = useCallback(
+    () => seek(Math.max(0, current - 1)),
+    [seek, current],
+  );
 
   const changeRate = useCallback((r: number) => {
     setRate(r);

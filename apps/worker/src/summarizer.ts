@@ -60,7 +60,7 @@ export class WorkersAiSummarizer implements Summarizer {
               'Summarize the substance of the text itself: state its key ' +
               'points, facts, and conclusions directly, as if conveying the ' +
               'information to the reader. Do NOT describe or refer to the ' +
-              "text — never write things like \"This article is about\", " +
+              'text — never write things like "This article is about", ' +
               '"The text discusses", "This content covers", "The author ' +
               'explains", or "In summary". Just deliver the content in 3–5 ' +
               'sentences of plain prose. No preamble, no bullet points, no ' +

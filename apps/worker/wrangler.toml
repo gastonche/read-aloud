@@ -27,7 +27,7 @@ workers_dev = true
 ENVIRONMENT = "development"
 SUMMARY_BACKEND = "workers-ai"
 SUMMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct"
-AI_GATEWAY_ID = "readaloud"          # routes Workers AI through AI Gateway
+AI_GATEWAY_ID = "open-ai"          # routes Workers AI through AI Gateway
 ALLOWED_ORIGINS = ""
 RATE_LIMIT_PER_MIN = "0"             # disabled locally for easy iteration
 
@@ -46,7 +46,7 @@ workers_dev = true
 ENVIRONMENT = "staging"
 SUMMARY_BACKEND = "workers-ai"
 SUMMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct"
-AI_GATEWAY_ID = "readaloud"
+AI_GATEWAY_ID = "open-ai"
 ALLOWED_ORIGINS = "chrome-extension://REPLACE_WITH_EXTENSION_ID"
 RATE_LIMIT_PER_MIN = "30"
 
@@ -66,7 +66,7 @@ workers_dev = false
 ENVIRONMENT = "production"
 SUMMARY_BACKEND = "workers-ai"
 SUMMARY_MODEL = "@cf/meta/llama-3.3-70b-instruct"
-AI_GATEWAY_ID = "readaloud"
+AI_GATEWAY_ID = "open-ai"
 ALLOWED_ORIGINS = "chrome-extension://REPLACE_WITH_EXTENSION_ID"
 RATE_LIMIT_PER_MIN = "20"
 

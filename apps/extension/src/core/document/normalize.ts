@@ -10,12 +10,7 @@
  * "Dr. Smith" splits after "Dr." (documented in the README).
  */
 
-import type {
-  NormalizedDoc,
-  RawDocument,
-  Sentence,
-  WordToken,
-} from './types';
+import type { NormalizedDoc, RawDocument, Sentence, WordToken } from './types';
 
 const hasSegmenter = typeof Intl !== 'undefined' && 'Segmenter' in Intl;
 
@@ -51,9 +46,7 @@ function tokenizeWords(text: string): WordToken[] {
 function splitSentences(block: string): string[] {
   if (hasSegmenter) {
     const seg = new Intl.Segmenter(undefined, { granularity: 'sentence' });
-    return [...seg.segment(block)]
-      .map((s) => s.segment.trim())
-      .filter(Boolean);
+    return [...seg.segment(block)].map((s) => s.segment.trim()).filter(Boolean);
   }
   return block
     .split(/(?<=[.!?])\s+/)

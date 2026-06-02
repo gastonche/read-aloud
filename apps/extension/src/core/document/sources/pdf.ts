@@ -70,7 +70,12 @@ function pageToBlocks(items: TextItem[]): string[] {
   }
   const paragraphs = text
     .split(/\n{2,}/)
-    .map((p) => p.replace(/\s*\n\s*/g, ' ').replace(/[ \t]+/g, ' ').trim())
+    .map((p) =>
+      p
+        .replace(/\s*\n\s*/g, ' ')
+        .replace(/[ \t]+/g, ' ')
+        .trim(),
+    )
     .filter((p) => p.length > 0);
   if (paragraphs.length > 0) return paragraphs;
   const whole = text.replace(/\s+/g, ' ').trim();

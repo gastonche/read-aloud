@@ -6,11 +6,7 @@
  * Only touches window inside methods, so importing this module is safe anywhere.
  */
 
-import type {
-  SpeechBackend,
-  TtsVoice,
-  UtteranceHandle,
-} from './types';
+import type { SpeechBackend, TtsVoice, UtteranceHandle } from './types';
 
 export class BrowserSpeechBackend implements SpeechBackend {
   private get synth(): SpeechSynthesis {

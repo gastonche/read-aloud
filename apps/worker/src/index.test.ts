@@ -33,7 +33,10 @@ const post = (body: unknown, origin?: string) =>
 
 describe('GET /health', () => {
   it('reports environment and backend', async () => {
-    const res = await app.fetch(new Request('http://worker.local/health'), devEnv());
+    const res = await app.fetch(
+      new Request('http://worker.local/health'),
+      devEnv(),
+    );
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({
       ok: true,
@@ -45,7 +48,10 @@ describe('GET /health', () => {
 
 describe('POST /summarize', () => {
   it('returns a (mock) summary for valid text', async () => {
-    const res = await app.fetch(post({ text: 'Hello world. '.repeat(20) }), devEnv());
+    const res = await app.fetch(
+      post({ text: 'Hello world. '.repeat(20) }),
+      devEnv(),
+    );
     expect(res.status).toBe(200);
     const json = (await res.json()) as { summary: string };
     expect(json.summary).toContain('mock summary');
@@ -117,7 +123,10 @@ describe('CORS', () => {
   });
 
   it('rejects unknown web origins', async () => {
-    const res = await app.fetch(post({ text: 'hi there.' }, 'https://evil.example'), devEnv());
+    const res = await app.fetch(
+      post({ text: 'hi there.' }, 'https://evil.example'),
+      devEnv(),
+    );
     expect(res.headers.get('access-control-allow-origin')).toBeNull();
   });
 });
@@ -132,6 +141,8 @@ describe('rate limiting', () => {
     expect(first.status).toBe(200);
     const second = await app.fetch(post({ text: 'two.' }), env);
     expect(second.status).toBe(429);
-    expect((await second.json()) as object).toMatchObject({ code: 'rate_limited' });
+    expect((await second.json()) as object).toMatchObject({
+      code: 'rate_limited',
+    });
   });
 });

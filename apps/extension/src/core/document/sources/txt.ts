@@ -17,7 +17,12 @@ export class TxtSource implements DocumentSource {
     const text = new TextDecoder('utf-8').decode(this.buffer);
     const blocks = text
       .split(/\n{2,}/)
-      .map((b) => b.replace(/[ \t]+/g, ' ').replace(/\s*\n\s*/g, ' ').trim())
+      .map((b) =>
+        b
+          .replace(/[ \t]+/g, ' ')
+          .replace(/\s*\n\s*/g, ' ')
+          .trim(),
+      )
       .filter((b) => b.length > 0);
     return { title: stripExtension(this.filename), blocks };
   }

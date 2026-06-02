@@ -257,7 +257,8 @@ export class ElevenLabsEngine implements TtsEngine {
     this.ticker.start(() => this.tick());
 
     // Prefetch the next sentence so it starts instantly on advance.
-    if (i + 1 < this.doc.blocks.length) void this.request(i + 1).catch(() => {});
+    if (i + 1 < this.doc.blocks.length)
+      void this.request(i + 1).catch(() => {});
   }
 
   private tick(): void {

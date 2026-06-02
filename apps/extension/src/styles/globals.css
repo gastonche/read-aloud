@@ -19,7 +19,12 @@ body,
 
 body {
   font-family:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
 }

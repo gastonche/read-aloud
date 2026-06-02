@@ -1,6 +1,16 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ElevenLabsEngine, type AudioController, type Ticker, type TtsClient } from './elevenlabs';
-import type { EngineListener, HighlightState, PlaybackStatus, TtsVoice } from './types';
+import {
+  ElevenLabsEngine,
+  type AudioController,
+  type Ticker,
+  type TtsClient,
+} from './elevenlabs';
+import type {
+  EngineListener,
+  HighlightState,
+  PlaybackStatus,
+  TtsVoice,
+} from './types';
 import type { TtsResponse } from '@readaloud/shared';
 import { normalize } from '@/core/document/normalize';
 
@@ -13,8 +23,12 @@ function alignmentOf(text: string): TtsResponse {
     audioBase64: 'AAAA',
     alignment: {
       characters,
-      character_start_times_seconds: characters.map((_, i) => +(i * 0.1).toFixed(4)),
-      character_end_times_seconds: characters.map((_, i) => +((i + 1) * 0.1).toFixed(4)),
+      character_start_times_seconds: characters.map(
+        (_, i) => +(i * 0.1).toFixed(4),
+      ),
+      character_end_times_seconds: characters.map(
+        (_, i) => +((i + 1) * 0.1).toFixed(4),
+      ),
     },
   };
 }
@@ -82,7 +96,10 @@ class FakeTicker implements Ticker {
   }
 }
 
-const doc = normalize({ title: 'T', blocks: ['Hello world. Second one here.'] });
+const doc = normalize({
+  title: 'T',
+  blocks: ['Hello world. Second one here.'],
+});
 
 let client: FakeClient;
 let audio: FakeAudio;

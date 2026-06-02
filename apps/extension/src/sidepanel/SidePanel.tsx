@@ -104,9 +104,7 @@ export function SidePanel() {
     <div className="flex h-full flex-col bg-paper text-ink">
       <PanelHeader
         subtitle={
-          state.phase === 'reader'
-            ? `${wordCount(state.doc)} words`
-            : undefined
+          state.phase === 'reader' ? `${wordCount(state.doc)} words` : undefined
         }
       />
       {state.phase === 'reader' ? (
@@ -190,4 +188,3 @@ function ErrorState({
     </div>
   );
 }
-
