@@ -6,7 +6,13 @@ const RATES = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3];
  * Playback transport: engine selector (System / Neural), play/pause + skip,
  * voice picker, and speed. Engine-agnostic — it only talks to {@link PlayerApi}.
  */
-export function Transport({ player }: { player: PlayerApi }) {
+export function Transport({
+  player,
+  progress,
+}: {
+  player: PlayerApi;
+  progress?: { current: number; total: number } | undefined;
+}) {
   const playing = player.status === 'playing';
 
   return (
@@ -23,10 +29,7 @@ export function Transport({ player }: { player: PlayerApi }) {
         </p>
       )}
 
-      <EngineToggle
-        engineId={player.engineId}
-        onChange={player.setEngine}
-      />
+      <EngineToggle engineId={player.engineId} onChange={player.setEngine} />
 
       <div className="mb-3 mt-3 flex items-center justify-center gap-5">
         <IconButton label="Previous sentence" onClick={player.prev}>
@@ -50,6 +53,14 @@ export function Transport({ player }: { player: PlayerApi }) {
           <path d="M16 5h2v14h-2V5zM6 6v12l8.5-6L6 6z" />
         </IconButton>
       </div>
+
+      {progress && progress.total > 0 && (
+        <p className="mb-2 text-center text-[11px] text-ink-soft">
+          Sentence {Math.min(progress.current, progress.total)} /{' '}
+          {progress.total}
+          <span className="ml-1 opacity-60">· Space to play/pause</span>
+        </p>
+      )}
 
       <div className="flex items-center gap-2">
         <select

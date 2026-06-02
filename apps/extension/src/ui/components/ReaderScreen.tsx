@@ -43,6 +43,24 @@ export function ReaderScreen({ doc }: { doc: NormalizedDoc }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, activeDoc]);
 
+  // Space toggles play/pause (unless the user is in a form control).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Space') return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      e.preventDefault();
+      player.toggle();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [player]);
+
+  const progress = {
+    current: player.highlight.sentenceId + 1,
+    total: activeDoc.blocks.length,
+  };
+
   const onTldr = useCallback(async () => {
     setSummary({ status: 'loading' });
     try {
@@ -76,7 +94,7 @@ export function ReaderScreen({ doc }: { doc: NormalizedDoc }) {
           onSeek={player.seek}
         />
       </div>
-      <Transport player={player} />
+      <Transport player={player} progress={progress} />
     </div>
   );
 }
