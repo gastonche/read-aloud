@@ -15,6 +15,7 @@ import {
   type TtsEngine,
   type TtsVoice,
 } from '@/core/tts/types';
+import { pickVoiceForLang } from '@/core/i18n/lang';
 
 export type EngineId = 'web-speech' | 'elevenlabs';
 
@@ -25,6 +26,8 @@ export interface PlayerApi {
   rate: number;
   voices: TtsVoice[];
   voiceId: string | undefined;
+  /** The active document's language tag (drives voice grouping/recommendation). */
+  language: string;
   /** True when the active voice can't highlight individual words. */
   sentenceLevelOnly: boolean;
   error: string | null;
@@ -73,9 +76,27 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
   rateRef.current = rate;
   const docRef = useRef(doc);
   docRef.current = doc;
+  const voicesRef = useRef<TtsVoice[]>(voices);
+  voicesRef.current = voices;
 
   const engineIdRef = useRef(engineId);
   engineIdRef.current = engineId;
+
+  // Remembered voice per language (lang → voiceId), persisted across sessions.
+  const VOICE_PREF_KEY = 'readaloud:voicePref';
+  const voicePrefs = useRef<Record<string, string>>({});
+  useEffect(() => {
+    chrome.storage?.local?.get(VOICE_PREF_KEY).then((r) => {
+      const stored = r[VOICE_PREF_KEY] as Record<string, string> | undefined;
+      if (stored) voicePrefs.current = stored;
+    });
+  }, []);
+
+  /** Best voice id for the current document's language (saved pref → match). */
+  const voiceForCurrentDoc = (vs: TtsVoice[]): string | undefined => {
+    const lang = docRef.current?.lang ?? '';
+    return pickVoiceForLang(vs, lang, voicePrefs.current[lang]);
+  };
 
   // (Re)create the engine when the selected engine changes. NOTE: we do NOT
   // clear `error` here — an auto-fallback switches the engine and must keep its
@@ -104,24 +125,34 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
         }
       },
     });
+    let cancelled = false;
     void engine.listVoices().then((vs) => {
+      if (cancelled) return;
       setVoices(vs);
-      const def = vs.find((v) => v.isDefault) ?? vs[0];
-      setVoiceId(def?.id);
+      voicesRef.current = vs;
+      const id = voiceForCurrentDoc(vs);
+      setVoiceId(id);
+      if (docRef.current) {
+        engine.load(docRef.current, { rate: rateRef.current, voiceId: id });
+      }
     });
-    if (docRef.current) {
-      engine.load(docRef.current, { rate: rateRef.current });
-    }
-    return () => engine.dispose();
+    return () => {
+      cancelled = true;
+      engine.dispose();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engineId]);
 
-  // Load the document whenever it changes (rate/voice apply live via setters).
+  // Load the document whenever it changes — and re-pick the voice for its
+  // language (so a French doc switches to a French voice automatically).
   useEffect(() => {
     const engine = engineRef.current;
     if (!engine || !doc) return;
     setSentenceLevelOnly(false);
     setError(null);
-    engine.load(doc, { rate: rateRef.current, voiceId });
+    const id = voiceForCurrentDoc(voicesRef.current) ?? voiceId;
+    if (id !== voiceId) setVoiceId(id);
+    engine.load(doc, { rate: rateRef.current, voiceId: id });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doc]);
 
@@ -153,6 +184,12 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
   const changeVoice = useCallback((id: string) => {
     setVoiceId(id);
     engineRef.current?.setVoice(id);
+    // Remember this choice for the current language.
+    const lang = docRef.current?.lang ?? '';
+    if (lang) {
+      voicePrefs.current = { ...voicePrefs.current, [lang]: id };
+      chrome.storage?.local?.set({ [VOICE_PREF_KEY]: voicePrefs.current });
+    }
   }, []);
   const setEngine = useCallback((id: EngineId) => {
     // Manual switch is a fresh start — clear any prior fallback notice.
@@ -168,6 +205,7 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
     rate,
     voices,
     voiceId,
+    language: doc?.lang ?? '',
     sentenceLevelOnly,
     error,
     setEngine,

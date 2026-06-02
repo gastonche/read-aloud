@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { NormalizedDoc, Sentence } from '@/core/document/types';
+import { isRtl } from '@/core/i18n/lang';
 
 export interface ReaderViewProps {
   doc: NormalizedDoc;
@@ -39,8 +40,14 @@ export function ReaderView({
     el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }, [activeSentence]);
 
+  const rtl = isRtl(doc.lang);
+
   return (
-    <article ref={rootRef} className="reader mx-auto max-w-prose">
+    <article
+      ref={rootRef}
+      dir={rtl ? 'rtl' : 'ltr'}
+      className={`reader mx-auto max-w-prose ${rtl ? 'text-right' : ''}`}
+    >
       <h1 className="mb-4 font-reader text-2xl font-semibold leading-tight">
         {doc.title}
       </h1>

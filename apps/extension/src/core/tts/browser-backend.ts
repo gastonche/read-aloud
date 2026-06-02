@@ -7,6 +7,7 @@
  */
 
 import type { SpeechBackend, TtsVoice, UtteranceHandle } from './types';
+import { primaryLang } from '@/core/i18n/lang';
 
 export class BrowserSpeechBackend implements SpeechBackend {
   private get synth(): SpeechSynthesis {
@@ -55,14 +56,13 @@ export class BrowserSpeechBackend implements SpeechBackend {
   }
 
   /**
-   * The raw system voice list is huge and noisy. Curate it down to a clean,
-   * product-grade shortlist: prefer the user's language, prefer on-device
-   * (local) voices, dedupe by name, default first, cap to a handful.
+   * The raw system voice list is huge and noisy. Curate it to a clean,
+   * MULTILINGUAL shortlist (the UI groups it by language): prefer on-device
+   * voices, dedupe by name, and cap each language to a handful. We deliberately
+   * keep ALL languages so non-English content has a matching voice.
    */
   getVoices(): TtsVoice[] {
     const raw = this.synth.getVoices();
-    const uiLang = (navigator.language || 'en').slice(0, 2).toLowerCase();
-
     const mapped = raw.map((v) => ({
       id: v.voiceURI,
       label: cleanName(v.name),
@@ -71,25 +71,28 @@ export class BrowserSpeechBackend implements SpeechBackend {
       local: v.localService,
       description: friendlyLang(v.lang),
     }));
+    // Local first so dedupe keeps the on-device variant of a name.
+    mapped.sort((a, b) => Number(b.local) - Number(a.local));
 
-    let pool = mapped.filter((v) => v.lang.toLowerCase().startsWith(uiLang));
-    if (pool.length === 0) pool = mapped;
-    const local = pool.filter((v) => v.local);
-    if (local.length > 0) pool = local;
-
-    const seen = new Set<string>();
-    pool = pool.filter((v) => (seen.has(v.label) ? false : seen.add(v.label)));
-    pool.sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
-
-    return pool
-      .slice(0, 6)
-      .map(({ id, label, lang, isDefault, description }) => ({
-        id,
-        label,
-        lang,
-        isDefault,
-        description,
-      }));
+    const seenLabel = new Set<string>();
+    const perLang = new Map<string, number>();
+    const out: TtsVoice[] = [];
+    for (const v of mapped) {
+      if (seenLabel.has(v.label)) continue;
+      const family = primaryLang(v.lang);
+      const count = perLang.get(family) ?? 0;
+      if (count >= 5) continue;
+      seenLabel.add(v.label);
+      perLang.set(family, count + 1);
+      out.push({
+        id: v.id,
+        label: v.label,
+        lang: v.lang,
+        isDefault: v.isDefault,
+        description: v.description,
+      });
+    }
+    return out;
   }
 
   whenVoicesReady(): Promise<void> {

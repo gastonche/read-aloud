@@ -38,6 +38,7 @@ voices. That story is told in [Dual-engine highlighting](#dual-engine-highlighti
   with personality ("Warm & natural"), a play button with a progress ring, a
   vertical speed dial (0.5×–3×), skip ± sentence, click-to-seek, Space-to-play,
   and auto-scroll. Built-in voices are curated to a clean shortlist.
+- **Speaks many languages.** Detects the content's language (`chrome.i18n.detectLanguage`), auto-selects a matching system voice (or routes to multilingual Studio), groups voices by language in the picker, renders right-to-left scripts correctly, and lets you correct the detected language from the top bar.
 - **Sentence-chunked playback** so long documents start instantly.
 - **TL;DR** via Cloudflare Workers AI — and the summary reads aloud through the
   same player + highlighting.
@@ -283,8 +284,9 @@ injects a fake `speechSynthesis` / `Audio` to drive the engines deterministicall
 - **Neural word ↔ display word alignment** assumes ElevenLabs' whitespace-split
   words line up 1:1 with the reader's tokens; heavy hyphenation or text
   normalization (e.g. numbers → words) can drift a word.
-- **Sentence segmentation** uses ICU (`Intl.Segmenter`), which has no
-  abbreviation dictionary — "Dr. Smith" splits after "Dr.".
+- **Sentence segmentation** uses ICU (`Intl.Segmenter`) with the detected
+  content language, so CJK/Thai word breaking works — but ICU has no
+  abbreviation dictionary, so "Dr. Smith" still splits after "Dr.".
 - **PDF** extraction is text-only (no OCR for scanned PDFs) and reconstructs
   paragraphs heuristically from text-item EOL flags.
 - **EPUB / DOCX** extraction is text-only (no images, footnotes, or complex

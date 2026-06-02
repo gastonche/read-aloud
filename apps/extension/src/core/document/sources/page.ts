@@ -25,6 +25,6 @@ export class PageSource implements DocumentSource {
     });
     if (!res.ok) throw new Error(res.error);
     if (res.textBlocks.length === 0) throw new EmptyPageError();
-    return { title: res.title, blocks: res.textBlocks };
+    return { title: res.title, blocks: res.textBlocks, lang: res.lang };
   }
 }

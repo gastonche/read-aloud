@@ -62,7 +62,8 @@ export class WorkersAiSummarizer implements Summarizer {
               'information to the reader. Do NOT describe or refer to the ' +
               'text — never write things like "This article is about", ' +
               '"The text discusses", "This content covers", "The author ' +
-              'explains", or "In summary". Just deliver the content in 3–5 ' +
+              'explains", or "In summary". Write the summary in the SAME ' +
+              'language as the text. Just deliver the content in 3–5 ' +
               'sentences of plain prose. No preamble, no bullet points, no ' +
               'markdown.',
           },

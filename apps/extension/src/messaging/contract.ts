@@ -74,6 +74,8 @@ export interface ExtractionPayload {
   title: string;
   /** Readable text already split into paragraph-ish blocks. */
   textBlocks: string[];
+  /** Declared page language (<html lang> / Readability), if any. */
+  lang?: string;
 }
 
 // Concrete response aliases keep call sites self-documenting.

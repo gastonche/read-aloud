@@ -3,6 +3,7 @@ import { createAvatar } from '@dicebear/core';
 import { personas } from '@dicebear/collection';
 import type { EngineId, PlayerApi } from '@/ui/hooks/usePlayer';
 import type { TtsVoice } from '@/core/tts/types';
+import { hasVoiceForLang, languageName, primaryLang } from '@/core/i18n/lang';
 
 const SPEED_MIN = 0.5;
 const SPEED_MAX = 3;
@@ -139,48 +140,123 @@ function VoiceSheet({
   player: PlayerApi;
   onClose: () => void;
 }) {
+  const ui = typeof navigator !== 'undefined' ? navigator.language : 'en';
+  const studio = player.engineId === 'elevenlabs';
+  const target = primaryLang(player.language);
+
+  const renderVoice = (v: TtsVoice) => {
+    const active = v.id === player.voiceId;
+    return (
+      <button
+        key={v.id}
+        type="button"
+        aria-label={`Select ${v.label}`}
+        onClick={() => {
+          player.changeVoice(v.id);
+          onClose();
+        }}
+        className={`flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left transition ${
+          active ? 'bg-accent-soft' : 'hover:bg-slate-50'
+        }`}
+      >
+        <VoiceImage voice={v} size={36} />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-semibold text-ink">
+            {v.label}
+          </span>
+          <span className="block truncate text-[11px] text-ink-soft">
+            {v.description ?? v.lang}
+          </span>
+        </span>
+        {active && <Check />}
+      </button>
+    );
+  };
+
+  // Studio is multilingual (one voice reads any language) → show a flat list.
+  // Built-in voices are grouped by language, content language first.
+  const groups = studio
+    ? [{ key: 'studio', label: 'Studio · any language', voices: player.voices }]
+    : groupByLanguage(player.voices, target, ui);
+
+  const noMatch =
+    !studio &&
+    player.language !== '' &&
+    !hasVoiceForLang(player.voices, player.language);
+
   return (
     <div className="absolute bottom-full left-0 z-30 mb-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
       <div className="p-2">
         <ModeSwitch engineId={player.engineId} onChange={player.setEngine} />
       </div>
       <div className="max-h-64 overflow-y-auto px-2 pb-2">
+        {noMatch && (
+          <button
+            type="button"
+            onClick={() => player.setEngine('elevenlabs')}
+            className="mb-1 flex w-full items-center gap-2 rounded-xl bg-accent-soft px-2.5 py-2 text-left text-[11px] text-accent"
+          >
+            <span>✦</span>
+            <span>
+              No {languageName(player.language, ui)} voice on this device —{' '}
+              <span className="font-semibold underline">try Studio</span>
+            </span>
+          </button>
+        )}
         {player.voices.length === 0 && (
           <p className="px-2 py-3 text-center text-[11px] text-ink-soft">
             No voices available.
           </p>
         )}
-        {player.voices.map((v) => {
-          const active = v.id === player.voiceId;
-          return (
-            <button
-              key={v.id}
-              type="button"
-              aria-label={`Select ${v.label}`}
-              onClick={() => {
-                player.changeVoice(v.id);
-                onClose();
-              }}
-              className={`flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left transition ${
-                active ? 'bg-accent-soft' : 'hover:bg-slate-50'
-              }`}
-            >
-              <VoiceImage voice={v} size={36} />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold text-ink">
-                  {v.label}
-                </span>
-                <span className="block truncate text-[11px] text-ink-soft">
-                  {v.description ?? v.lang}
-                </span>
-              </span>
-              {active && <Check />}
-            </button>
-          );
-        })}
+        {groups.map((g) => (
+          <div key={g.key} className="mb-1">
+            <p className="px-2 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-ink-soft">
+              {g.label}
+            </p>
+            {g.voices.map(renderVoice)}
+          </div>
+        ))}
       </div>
     </div>
   );
+}
+
+interface VoiceGroup {
+  key: string;
+  label: string;
+  voices: TtsVoice[];
+}
+
+/** Group voices by language, with the content language first ("Recommended"). */
+function groupByLanguage(
+  voices: TtsVoice[],
+  target: string,
+  ui: string,
+): VoiceGroup[] {
+  const byLang = new Map<string, TtsVoice[]>();
+  for (const v of voices) {
+    const fam = primaryLang(v.lang);
+    const list = byLang.get(fam) ?? [];
+    list.push(v);
+    byLang.set(fam, list);
+  }
+  return [...byLang.entries()]
+    .map(([fam, vs]) => ({
+      key: fam,
+      name: languageName(fam, ui),
+      recommended: fam === target,
+      voices: vs,
+    }))
+    .sort(
+      (a, b) =>
+        Number(b.recommended) - Number(a.recommended) ||
+        a.name.localeCompare(b.name),
+    )
+    .map((g) => ({
+      key: g.key,
+      label: g.recommended ? `Recommended · ${g.name}` : g.name,
+      voices: g.voices,
+    }));
 }
 
 /** Built-in (free, on-device) vs Studio (premium neural). */

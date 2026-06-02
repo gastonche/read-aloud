@@ -15,9 +15,9 @@ import type { NormalizedDoc, RawDocument, Sentence, WordToken } from './types';
 const hasSegmenter = typeof Intl !== 'undefined' && 'Segmenter' in Intl;
 
 /** Tokenize a sentence into word tokens with offsets into `text`. */
-function tokenizeWords(text: string): WordToken[] {
+function tokenizeWords(text: string, lang?: string): WordToken[] {
   if (hasSegmenter) {
-    const seg = new Intl.Segmenter(undefined, { granularity: 'word' });
+    const seg = new Intl.Segmenter(lang || undefined, { granularity: 'word' });
     const tokens: WordToken[] = [];
     for (const part of seg.segment(text)) {
       if (!part.isWordLike) continue;
@@ -43,9 +43,11 @@ function tokenizeWords(text: string): WordToken[] {
 }
 
 /** Split a block of prose into trimmed sentence strings. */
-function splitSentences(block: string): string[] {
+function splitSentences(block: string, lang?: string): string[] {
   if (hasSegmenter) {
-    const seg = new Intl.Segmenter(undefined, { granularity: 'sentence' });
+    const seg = new Intl.Segmenter(lang || undefined, {
+      granularity: 'sentence',
+    });
     return [...seg.segment(block)].map((s) => s.segment.trim()).filter(Boolean);
   }
   return block
@@ -58,17 +60,22 @@ function splitSentences(block: string): string[] {
  * Normalize raw text into the shared sentence/word document shape. Sentences
  * with no word-like tokens (pure punctuation/whitespace) are dropped so the
  * reader and TTS never get empty units.
+ *
+ * `lang` (a BCP-47 tag) drives locale-aware sentence/word segmentation — it
+ * matters for space-less scripts (CJK, Thai) and is stored on the result to
+ * drive voice selection and text direction.
  */
-export function normalize(raw: RawDocument): NormalizedDoc {
+export function normalize(raw: RawDocument, lang?: string): NormalizedDoc {
+  const resolved = lang || raw.lang || '';
   const blocks: Sentence[] = [];
   raw.blocks.forEach((block, paragraph) => {
-    for (const text of splitSentences(block)) {
-      const words = tokenizeWords(text);
+    for (const text of splitSentences(block, resolved)) {
+      const words = tokenizeWords(text, resolved);
       if (words.length === 0) continue;
       blocks.push({ id: blocks.length, text, words, paragraph });
     }
   });
-  return { title: raw.title.trim() || 'Untitled', blocks };
+  return { title: raw.title.trim() || 'Untitled', blocks, lang: resolved };
 }
 
 /** Total word count — handy for time estimates and the reader header. */

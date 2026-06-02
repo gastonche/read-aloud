@@ -4,7 +4,12 @@ import { base64ToArrayBuffer, readAndClearPendingSource } from '@/core/handoff';
 import { normalize } from '@/core/document/normalize';
 import { PageSource } from '@/core/document/sources/page';
 import { createFileSource } from '@/core/document/sources';
-import type { DocumentSource, NormalizedDoc } from '@/core/document/types';
+import type {
+  DocumentSource,
+  NormalizedDoc,
+  RawDocument,
+} from '@/core/document/types';
+import { resolveDocLanguage } from '@/core/i18n/detect';
 import { ReaderScreen } from '@/ui/components/ReaderScreen';
 import { TopBar } from '@/ui/components/TopBar';
 
@@ -13,15 +18,23 @@ type BootState =
   | { phase: 'empty' }
   | { phase: 'working'; label: string }
   | { phase: 'error'; message: string; retry?: () => void }
-  | { phase: 'reader'; doc: NormalizedDoc };
+  | { phase: 'reader'; doc: NormalizedDoc; raw: RawDocument };
 
 export function SidePanel() {
   const [state, setState] = useState<BootState>({ phase: 'loading' });
   // The pending source is read-and-cleared once; keep it for retry.
   const sourceRef = useRef<PendingSource | null>(null);
 
-  // Run any DocumentSource through the shared pipeline: load → normalize →
-  // render, with a labelled spinner, empty-result guard, and retry-on-error.
+  // Re-segment + re-render the current document in a different language (the
+  // top-bar language chip). Re-normalizes from the kept raw text — no re-fetch.
+  const setLanguage = useCallback((lang: string) => {
+    setState((s) =>
+      s.phase === 'reader' ? { ...s, doc: normalize(s.raw, lang) } : s,
+    );
+  }, []);
+
+  // Run any DocumentSource through the shared pipeline: load → detect language →
+  // normalize → render, with a labelled spinner, empty-result guard, and retry.
   const runSource = useCallback(
     async (
       source: DocumentSource,
@@ -31,12 +44,14 @@ export function SidePanel() {
     ) => {
       setState({ phase: 'working', label });
       try {
-        const doc = normalize(await source.load());
+        const raw = await source.load();
+        const lang = await resolveDocLanguage(raw);
+        const doc = normalize(raw, lang);
         if (doc.blocks.length === 0) {
           setState({ phase: 'error', message: emptyMessage, retry });
           return;
         }
-        setState({ phase: 'reader', doc });
+        setState({ phase: 'reader', doc, raw });
       } catch (e) {
         setState({
           phase: 'error',
@@ -106,7 +121,7 @@ export function SidePanel() {
   if (state.phase === 'reader') {
     return (
       <div className="flex h-full flex-col bg-paper text-ink">
-        <ReaderScreen doc={state.doc} />
+        <ReaderScreen doc={state.doc} onSetLanguage={setLanguage} />
       </div>
     );
   }

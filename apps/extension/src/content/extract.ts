@@ -50,6 +50,7 @@ function fallbackBlocks(): string[] {
 function extract(): ExtractionPayload {
   let title = document.title || '';
   let blocks: string[] = [];
+  let lang = document.documentElement.getAttribute('lang') ?? '';
 
   try {
     // Readability mutates the document it's given — always pass a clone.
@@ -58,13 +59,14 @@ function extract(): ExtractionPayload {
     if (article) {
       if (article.title) title = article.title;
       if (article.content) blocks = blocksFromHtml(article.content);
+      if (article.lang) lang = article.lang;
     }
   } catch {
     // Swallow — we fall through to the body-text fallback below.
   }
 
   if (blocks.length === 0) blocks = fallbackBlocks();
-  return { title: title.trim(), textBlocks: blocks };
+  return { title: title.trim(), textBlocks: blocks, lang: lang.trim() };
 }
 
 chrome.runtime.onMessage.addListener(

@@ -22,6 +22,8 @@
 export interface RawDocument {
   title: string;
   blocks: string[];
+  /** Declared language tag if the source knows it (e.g. <html lang>). */
+  lang?: string | undefined;
 }
 
 /** A single word within a sentence, with offsets INTO that sentence's text. */
@@ -54,6 +56,8 @@ export interface Sentence {
 export interface NormalizedDoc {
   title: string;
   blocks: Sentence[];
+  /** Primary language tag, driving segmentation, voice, and text direction. */
+  lang: string;
 }
 
 /**
