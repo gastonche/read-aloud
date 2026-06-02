@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { collapseAlignmentToWords, type CharacterAlignment } from './index';
+import {
+  collapseAlignmentToWords,
+  wordIndexAtTime,
+  type CharacterAlignment,
+} from './index';
 
 /**
  * Build a CharacterAlignment from a string where each character lasts 0.1s.
@@ -49,5 +53,29 @@ describe('collapseAlignmentToWords', () => {
   it('produces contiguous indices usable as highlight keys', () => {
     const words = collapseAlignmentToWords(alignmentOf('one two three four'));
     expect(words.map((w) => w.index)).toEqual([0, 1, 2, 3]);
+  });
+});
+
+describe('wordIndexAtTime', () => {
+  // "hi bye": hi[0.0,0.2) bye[0.3,0.6)
+  const spans = collapseAlignmentToWords(alignmentOf('hi bye'));
+
+  it('returns -1 before the first word starts', () => {
+    expect(wordIndexAtTime(spans, 0)).toBe(0); // first word starts at 0
+    expect(wordIndexAtTime([{ word: 'x', startSec: 0.5, endSec: 1, index: 0 }], 0.2)).toBe(-1);
+  });
+
+  it('returns the active word for a time inside it', () => {
+    expect(wordIndexAtTime(spans, 0.1)).toBe(0);
+    expect(wordIndexAtTime(spans, 0.4)).toBe(1);
+  });
+
+  it('holds the last started word during gaps and past the end', () => {
+    expect(wordIndexAtTime(spans, 0.25)).toBe(0); // gap between words
+    expect(wordIndexAtTime(spans, 99)).toBe(1); // past the end
+  });
+
+  it('returns -1 for an empty span list', () => {
+    expect(wordIndexAtTime([], 1)).toBe(-1);
   });
 });

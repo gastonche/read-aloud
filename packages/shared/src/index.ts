@@ -119,3 +119,27 @@ export function collapseAlignmentToWords(
 
   return spans;
 }
+
+/**
+ * Map an audio playback time (seconds) to the index of the active word span,
+ * for timestamp-driven highlighting. Returns the last span that has started by
+ * time `t`; -1 before the first word starts (so the UI can show a sentence-level
+ * highlight during any lead-in). Binary-searched, so it's cheap to call every
+ * animation frame.
+ */
+export function wordIndexAtTime(spans: WordSpan[], t: number): number {
+  if (spans.length === 0 || t < spans[0]!.startSec) return -1;
+  let lo = 0;
+  let hi = spans.length - 1;
+  let best = 0;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (spans[mid]!.startSec <= t) {
+      best = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  return best;
+}
