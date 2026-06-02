@@ -1,0 +1,23 @@
+# Local ReadAloud Worker in Docker.
+#
+#   docker compose up --build
+#
+# Serves the dev worker at http://localhost:8787 (mock summarizer, local KV —
+# no Cloudflare account needed). Source is bind-mounted for live reload.
+services:
+  worker:
+    build: .
+    ports:
+      - '8787:8787'
+    volumes:
+      - ./src:/app/src
+      - ./wrangler.toml:/app/wrangler.toml
+      # Persist Miniflare local state (KV) across restarts.
+      - worker_state:/app/.wrangler
+    environment:
+      # Skip wrangler's first-run telemetry prompt in a non-interactive container.
+      WRANGLER_SEND_METRICS: 'false'
+      CI: 'true'
+
+volumes:
+  worker_state:
