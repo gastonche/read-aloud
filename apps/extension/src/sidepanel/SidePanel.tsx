@@ -1,59 +1,90 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PendingSource } from '@/messaging/contract';
-import { base64ToArrayBuffer, readAndClearPendingSource } from '@/core/handoff';
+import { readAndClearPendingSource } from '@/core/handoff';
+import { normalize, wordCount } from '@/core/document/normalize';
+import { PageSource } from '@/core/document/sources/page';
+import type { NormalizedDoc } from '@/core/document/types';
+import { ReaderView } from '@/ui/components/ReaderView';
 
 type BootState =
   | { phase: 'loading' }
   | { phase: 'empty' }
-  | { phase: 'ready'; source: PendingSource; decodedBytes: number | null };
+  | { phase: 'working'; label: string }
+  | { phase: 'error'; message: string; retry?: () => void }
+  | { phase: 'reader'; doc: NormalizedDoc }
+  | { phase: 'file-pending'; source: Extract<PendingSource, { kind: 'file' }> };
 
 export function SidePanel() {
   const [state, setState] = useState<BootState>({ phase: 'loading' });
+  // The pending source is read-and-cleared once; keep it for retry.
+  const sourceRef = useRef<PendingSource | null>(null);
 
-  // On boot, PULL the pending source the popup staged. This is the consumer
-  // half of the handoff — no SW→panel push, so there's no readiness race.
+  const loadPage = useCallback(async (tabId: number) => {
+    setState({ phase: 'working', label: 'Extracting page…' });
+    try {
+      const raw = await new PageSource(tabId).load();
+      const doc = normalize(raw);
+      if (doc.blocks.length === 0) {
+        setState({
+          phase: 'error',
+          message: 'No readable text found on this page.',
+          retry: () => void loadPage(tabId),
+        });
+        return;
+      }
+      setState({ phase: 'reader', doc });
+    } catch (e) {
+      setState({
+        phase: 'error',
+        message: e instanceof Error ? e.message : 'Failed to read the page.',
+        retry: () => void loadPage(tabId),
+      });
+    }
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     readAndClearPendingSource()
       .then((source) => {
         if (cancelled) return;
-        if (!source) {
-          setState({ phase: 'empty' });
-          return;
-        }
-        // For files, decode the base64 to verify the bytes round-tripped.
-        let decodedBytes: number | null = null;
-        if (source.kind === 'file') {
-          decodedBytes = base64ToArrayBuffer(source.dataBase64).byteLength;
-        }
-        setState({ phase: 'ready', source, decodedBytes });
+        sourceRef.current = source;
+        if (!source) return setState({ phase: 'empty' });
+        if (source.kind === 'page') return void loadPage(source.tabId);
+        // File parsing arrives in milestone 3; acknowledge the handoff for now.
+        setState({ phase: 'file-pending', source });
       })
-      .catch(() => {
-        if (!cancelled) setState({ phase: 'empty' });
-      });
+      .catch(() => !cancelled && setState({ phase: 'empty' }));
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadPage]);
 
   return (
     <div className="flex h-full flex-col bg-paper text-ink">
-      <PanelHeader />
-      <div className="flex-1 overflow-auto p-4">
-        {state.phase === 'loading' && <Loading />}
+      <PanelHeader
+        subtitle={
+          state.phase === 'reader'
+            ? `${wordCount(state.doc)} words`
+            : undefined
+        }
+      />
+      <div className="flex-1 overflow-auto px-4 py-4">
+        {state.phase === 'loading' && <Spinner label="Booting…" />}
+        {state.phase === 'working' && <Spinner label={state.label} />}
         {state.phase === 'empty' && <EmptyState />}
-        {state.phase === 'ready' && (
-          <HandoffReceipt source={state.source} decodedBytes={state.decodedBytes} />
+        {state.phase === 'error' && (
+          <ErrorState message={state.message} retry={state.retry} />
+        )}
+        {state.phase === 'reader' && <ReaderView doc={state.doc} />}
+        {state.phase === 'file-pending' && (
+          <FilePending name={state.source.name} size={state.source.size} />
         )}
       </div>
-      <footer className="border-t border-slate-100 px-4 py-2 text-center text-[11px] text-ink-soft">
-        Milestone 1 · plumbing verified
-      </footer>
     </div>
   );
 }
 
-function PanelHeader() {
+function PanelHeader({ subtitle }: { subtitle?: string | undefined }) {
   return (
     <header className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
       <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-paper">
@@ -61,13 +92,23 @@ function PanelHeader() {
           <path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12z" />
         </svg>
       </div>
-      <h1 className="text-sm font-semibold">ReadAloud</h1>
+      <div className="min-w-0">
+        <h1 className="text-sm font-semibold leading-none">ReadAloud</h1>
+        {subtitle && (
+          <p className="mt-0.5 text-[11px] text-ink-soft">{subtitle}</p>
+        )}
+      </div>
     </header>
   );
 }
 
-function Loading() {
-  return <p className="text-sm text-ink-soft">Booting…</p>;
+function Spinner({ label }: { label: string }) {
+  return (
+    <div className="mt-10 flex flex-col items-center gap-3 text-ink-soft">
+      <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-accent" />
+      <p className="text-sm">{label}</p>
+    </div>
+  );
 }
 
 function EmptyState() {
@@ -81,66 +122,41 @@ function EmptyState() {
   );
 }
 
-/**
- * Milestone-1 proof surface: shows exactly what crossed the handoff so we can
- * confirm both flows end-to-end before building extraction / parsing / TTS.
- */
-function HandoffReceipt({
-  source,
-  decodedBytes,
+function ErrorState({
+  message,
+  retry,
 }: {
-  source: PendingSource;
-  decodedBytes: number | null;
+  message: string;
+  retry?: (() => void) | undefined;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">
-        <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-        Handoff received
+    <div className="mt-10 text-center">
+      <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-500">
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+          <path d="M12 2 1 21h22L12 2zm0 6 7 12H5l7-12zm-1 3v4h2v-4h-2zm0 6v2h2v-2h-2z" />
+        </svg>
       </div>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
-        <Row label="Source">{source.kind === 'page' ? 'Web page' : 'File'}</Row>
-        {source.kind === 'page' && (
-          <>
-            <Row label="Tab ID">{source.tabId}</Row>
-            <Row label="Title">{source.title ?? '—'}</Row>
-          </>
-        )}
-        {source.kind === 'file' && (
-          <>
-            <Row label="Name">{source.name}</Row>
-            <Row label="MIME">{source.mime || '—'}</Row>
-            <Row label="Size">{formatBytes(source.size)}</Row>
-            <Row label="Decoded">
-              {decodedBytes != null ? formatBytes(decodedBytes) : '—'}
-              {decodedBytes === source.size && (
-                <span className="ml-1.5 text-xs text-green-600">
-                  ✓ bytes match
-                </span>
-              )}
-            </Row>
-          </>
-        )}
-      </dl>
-      <p className="mt-3 text-xs text-ink-soft">
-        Next milestone wires this source into extraction / parsing and renders
-        the reader view.
-      </p>
+      <p className="text-sm font-medium">{message}</p>
+      {retry && (
+        <button
+          type="button"
+          onClick={retry}
+          className="mt-3 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-paper transition hover:opacity-90"
+        >
+          Try again
+        </button>
+      )}
     </div>
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function FilePending({ name, size }: { name: string; size: number }) {
   return (
-    <>
-      <dt className="font-medium text-ink-soft">{label}</dt>
-      <dd className="min-w-0 truncate">{children}</dd>
-    </>
+    <div className="mt-10 text-center">
+      <p className="text-sm font-medium">Received “{name}”</p>
+      <p className="mt-1 text-xs text-ink-soft">
+        {(size / 1024).toFixed(1)} KB · file parsing lands in milestone 3.
+      </p>
+    </div>
   );
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
