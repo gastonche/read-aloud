@@ -6,6 +6,9 @@ dist/
 .turbo/
 .wrangler/
 
+# E2E artifacts (regenerated on each run)
+apps/extension/e2e/screenshots/
+
 # Secrets — NEVER commit
 apps/worker/.dev.vars
 *.env
