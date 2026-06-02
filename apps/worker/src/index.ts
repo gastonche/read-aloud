@@ -15,9 +15,11 @@ import type {
   ApiError,
   SummarizeRequest,
   SummarizeResponse,
+  TtsRequest,
 } from '@readaloud/shared';
 import type { Env } from './env';
 import { getSummarizer } from './summarizer';
+import { getTtsProvider } from './tts';
 import { rateLimit } from './ratelimit';
 
 const MAX_SUMMARY_CHARS = 12_000;
@@ -101,13 +103,48 @@ app.post('/summarize', rateLimit, async (c) => {
   }
 });
 
-// ── POST /tts (milestone 6) ──────────────────────────────────────────
-app.post('/tts', rateLimit, (c) =>
-  c.json<ApiError>(
-    { error: 'TTS proxy arrives in milestone 6.', code: 'internal' },
-    501,
-  ),
-);
+// ── POST /tts ────────────────────────────────────────────────────────
+app.post('/tts', rateLimit, async (c) => {
+  let body: TtsRequest;
+  try {
+    body = await c.req.json<TtsRequest>();
+  } catch {
+    return c.json<ApiError>(
+      { error: 'Request body must be valid JSON.', code: 'bad_request' },
+      400,
+    );
+  }
+
+  const text = (body.text ?? '').trim();
+  if (!text) {
+    return c.json<ApiError>(
+      { error: '`text` is required.', code: 'bad_request' },
+      400,
+    );
+  }
+
+  try {
+    const result = await getTtsProvider(c.env).synthesize({
+      text,
+      voiceId: body.voiceId,
+    });
+    console.log(
+      JSON.stringify({
+        route: '/tts',
+        env: c.env.ENVIRONMENT,
+        chars: text.length, // ElevenLabs bills per character
+        mock: !c.env.ELEVENLABS_API_KEY,
+      }),
+    );
+    return c.json(result);
+  } catch (err) {
+    console.error('tts failed:', err);
+    return c.json<ApiError>(
+      { error: 'Neural voice is unavailable right now.', code: 'upstream_error' },
+      502,
+    );
+  }
+});
 
 app.notFound((c) =>
   c.json<ApiError>({ error: 'Not found.', code: 'bad_request' }, 404),

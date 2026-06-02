@@ -63,6 +63,42 @@ describe('POST /summarize', () => {
   });
 });
 
+describe('POST /tts (mock provider)', () => {
+  const ttsReq = (body: unknown) =>
+    new Request('http://worker.local/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+  it('returns audio + parallel character alignment', async () => {
+    const res = await app.fetch(ttsReq({ text: 'Hi there.' }), devEnv());
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as {
+      audioBase64: string;
+      alignment: {
+        characters: string[];
+        character_start_times_seconds: number[];
+        character_end_times_seconds: number[];
+      };
+    };
+    expect(json.audioBase64.length).toBeGreaterThan(0);
+    const a = json.alignment;
+    expect(a.characters.length).toBe('Hi there.'.length);
+    expect(a.character_start_times_seconds.length).toBe(a.characters.length);
+    expect(a.character_end_times_seconds.length).toBe(a.characters.length);
+    // times are monotonic
+    expect(a.character_start_times_seconds[1]!).toBeGreaterThan(
+      a.character_start_times_seconds[0]!,
+    );
+  });
+
+  it('400s when text is missing', async () => {
+    const res = await app.fetch(ttsReq({}), devEnv());
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('CORS', () => {
   it('allows chrome-extension origins', async () => {
     const res = await app.fetch(
