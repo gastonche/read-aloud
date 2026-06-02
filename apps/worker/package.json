@@ -3,9 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "ReadAloud Cloudflare Worker — ElevenLabs TTS proxy + Workers AI summarizer. (Built in milestone 5.)",
+  "description": "ReadAloud Cloudflare Worker — Workers AI summarizer + ElevenLabs TTS proxy.",
   "scripts": {
-    "typecheck": "echo \"worker: scaffolded in M5\" && exit 0",
-    "build": "echo \"worker: scaffolded in M5\" && exit 0"
+    "dev": "wrangler dev",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.12.23"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260602.1",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.96.0"
   }
 }

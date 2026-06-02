@@ -1,0 +1,69 @@
+# ReadAloud Worker — wrangler config (template).
+#
+# Three environments:
+#   • default  → local development (`wrangler dev`). No AI binding and
+#                SUMMARY_BACKEND="mock", so it runs fully offline with no
+#                Cloudflare auth. KV is simulated locally by Miniflare.
+#   • staging  → `wrangler deploy --env staging`
+#   • production → `wrangler deploy --env production`
+#
+# Before deploying, create KV namespaces and paste their ids below:
+#   wrangler kv namespace create RATE_LIMIT --env staging
+#   wrangler kv namespace create RATE_LIMIT --env production
+# And set the ElevenLabs secret per env (milestone 6):
+#   wrangler secret put ELEVENLABS_API_KEY --env staging
+# NEVER commit real secrets — they live in Cloudflare, not here.
+
+name = "readaloud-worker"
+main = "src/index.ts"
+compatibility_date = "2026-06-01"
+workers_dev = true
+
+# ───────────────────────── default: local development ─────────────────────────
+[vars]
+ENVIRONMENT = "development"
+SUMMARY_BACKEND = "mock"
+SUMMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+ALLOWED_ORIGINS = ""
+RATE_LIMIT_PER_MIN = "0"            # disabled locally for easy iteration
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "local-dev"                    # placeholder; Miniflare uses local KV in dev
+
+# ───────────────────────────────── staging ─────────────────────────────────
+[env.staging]
+workers_dev = true
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+SUMMARY_BACKEND = "workers-ai"
+SUMMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+ALLOWED_ORIGINS = "chrome-extension://REPLACE_WITH_EXTENSION_ID"
+RATE_LIMIT_PER_MIN = "30"
+
+[env.staging.ai]
+binding = "AI"
+
+[[env.staging.kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "REPLACE_WITH_STAGING_KV_ID"
+
+# ──────────────────────────────── production ────────────────────────────────
+[env.production]
+workers_dev = false
+# route = "tts.yourdomain.com/*"    # optional custom domain
+
+[env.production.vars]
+ENVIRONMENT = "production"
+SUMMARY_BACKEND = "workers-ai"
+SUMMARY_MODEL = "@cf/meta/llama-3.3-70b-instruct"
+ALLOWED_ORIGINS = "chrome-extension://REPLACE_WITH_EXTENSION_ID"
+RATE_LIMIT_PER_MIN = "20"
+
+[env.production.ai]
+binding = "AI"
+
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "REPLACE_WITH_PRODUCTION_KV_ID"

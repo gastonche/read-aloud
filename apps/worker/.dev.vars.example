@@ -1,0 +1,8 @@
+# Copy to `.dev.vars` for local `wrangler dev`. NEVER commit `.dev.vars`.
+# Local dev uses the mock summarizer, so none of these are required to run.
+# They only matter if you flip SUMMARY_BACKEND to "workers-ai" locally or test
+# the ElevenLabs proxy (milestone 6) against the real API.
+
+# ElevenLabs (milestone 6)
+ELEVENLABS_API_KEY=""
+ELEVENLABS_VOICE_ID="21m00Tcm4TlvDq8ikWAM"
