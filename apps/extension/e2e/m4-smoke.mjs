@@ -9,6 +9,7 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { launchExtension, SHOTS } from './launch.mjs';
+import { installFakeSpeech } from './fake-speech.mjs';
 
 let failures = 0;
 const check = (name, cond, extra = '') => {
@@ -18,69 +19,6 @@ const check = (name, cond, extra = '') => {
 };
 
 const PANEL = 'src/sidepanel/index.html';
-
-// Installed in the page before any app code runs.
-function installFakeSpeech(opts) {
-  function FakeUtter(text) {
-    this.text = text;
-    this.rate = 1;
-    this.voice = null;
-    this.onstart = null;
-    this.onend = null;
-    this.onerror = null;
-    this.onboundary = null;
-  }
-  Object.defineProperty(window, 'SpeechSynthesisUtterance', {
-    configurable: true,
-    writable: true,
-    value: FakeUtter,
-  });
-  const voices = [
-    { voiceURI: 'fake-1', name: 'Fake Voice', lang: 'en-US', default: true },
-  ];
-  const synth = {
-    _paused: false,
-    getVoices: () => voices,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    speak(u) {
-      setTimeout(() => {
-        u.onstart && u.onstart();
-        if (!opts.fireBoundaries) {
-          setTimeout(() => u.onend && u.onend(), 40);
-          return;
-        }
-        const starts = [];
-        const re = /\S+/g;
-        let m;
-        while ((m = re.exec(u.text))) starts.push(m.index);
-        let i = 0;
-        const step = () => {
-          if (synth._paused) return setTimeout(step, 50);
-          if (i < starts.length) {
-            u.onboundary && u.onboundary({ name: 'word', charIndex: starts[i] });
-            i++;
-            setTimeout(step, 120);
-          } else {
-            u.onend && u.onend();
-          }
-        };
-        step();
-      }, 10);
-    },
-    cancel() {},
-    pause() {
-      this._paused = true;
-    },
-    resume() {
-      this._paused = false;
-    },
-  };
-  Object.defineProperty(window, 'speechSynthesis', {
-    configurable: true,
-    get: () => synth,
-  });
-}
 
 const txtFile = (text) => ({
   kind: 'file',

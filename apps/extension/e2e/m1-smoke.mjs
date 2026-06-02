@@ -27,8 +27,7 @@ const PANEL = 'src/sidepanel/index.html';
 
 const run = async () => {
   mkdirSync(SHOTS, { recursive: true });
-  const { context, extensionId, openPage, seedHandoff } =
-    await launchExtension();
+  const { context, extensionId, openPage } = await launchExtension();
   check('extension loaded (service worker id resolved)', !!extensionId, extensionId);
 
   // ── Popup: chooser ───────────────────────────────────────────────
@@ -69,36 +68,36 @@ const run = async () => {
   );
   await panelEmpty.screenshot({ path: resolve(SHOTS, 'm1-panel-empty.png') });
 
-  // ── Side panel: file handoff receipt ─────────────────────────────
-  const content = 'ReadAloud milestone one handoff payload.';
+  // ── Handoff round-trip through chrome.storage.session ────────────
+  // (The visible result of a handoff is now extraction/parsing — see m2/m3.
+  //  Here we verify the storage plumbing + base64 survive intact.)
+  const content = 'ReadAloud handoff payload - bytes must survive.';
   const dataBase64 = Buffer.from(content, 'utf-8').toString('base64');
-  const fileSource = {
-    kind: 'file',
-    name: 'sample.txt',
-    mime: 'text/plain',
-    size: content.length,
-    dataBase64,
-  };
-  const seeder = await openPage(PANEL); // any extension page can write storage
-  await seedHandoff(seeder, fileSource);
-  const panelFile = await openPage(PANEL);
-  await panelFile.waitForSelector('text=Handoff received');
-  const bodyText = await panelFile.locator('body').innerText();
-  check('side panel renders file receipt', bodyText.includes('sample.txt'));
-  check(
-    'decoded bytes match staged size (✓ bytes match)',
-    bodyText.includes('bytes match'),
+  const roundTrip = await popup.evaluate(
+    async ({ key, src }) => {
+      await chrome.storage.session.set({ [key]: src });
+      const got = (await chrome.storage.session.get(key))[key];
+      await chrome.storage.session.remove(key);
+      return { name: got.name, size: got.size, decoded: atob(got.dataBase64) };
+    },
+    {
+      key: 'readaloud:pendingSource',
+      src: {
+        kind: 'file',
+        name: 'sample.txt',
+        mime: 'text/plain',
+        size: content.length,
+        dataBase64,
+      },
+    },
   );
-  await panelFile.screenshot({ path: resolve(SHOTS, 'm1-panel-file.png') });
-
-  // ── Side panel: page handoff receipt ─────────────────────────────
-  await seedHandoff(seeder, { kind: 'page', tabId: 4242, title: 'Example Article' });
-  const panelPage = await openPage(PANEL);
-  await panelPage.waitForSelector('text=Handoff received');
-  const pageText = await panelPage.locator('body').innerText();
-  check('side panel renders page receipt', pageText.includes('Example Article'));
-  check('page receipt shows tab id', pageText.includes('4242'));
-  await panelPage.screenshot({ path: resolve(SHOTS, 'm1-panel-page.png') });
+  check(
+    'file handoff round-trips through storage.session (bytes intact)',
+    roundTrip.name === 'sample.txt' &&
+      roundTrip.size === content.length &&
+      roundTrip.decoded === content,
+    `${roundTrip.size}B`,
+  );
 
   await context.close();
 
