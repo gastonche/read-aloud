@@ -1,6 +1,10 @@
 // Runs every milestone E2E smoke against a real extension build, booting the
-// dev Worker (mock summarizer, offline) for the milestones that need it and
-// tearing it down afterward. Exits non-zero if any smoke fails.
+// dev Worker for the milestones that need it and tearing it down afterward.
+//
+// The Worker is started with `--var SUMMARY_BACKEND:mock` so the suite is
+// hermetic — no Cloudflare login / AI Gateway needed in CI. (Normal local dev
+// uses real Workers AI via the gateway; see apps/worker/wrangler.toml.)
+// Exits non-zero if any smoke fails.
 
 import { spawn } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
@@ -42,7 +46,16 @@ const main = async () => {
   console.log('▶ starting dev Worker (mock) on :8787…');
   const worker = spawn(
     'npx',
-    ['wrangler', 'dev', '--ip', '127.0.0.1', '--port', '8787'],
+    [
+      'wrangler',
+      'dev',
+      '-c',
+      'wrangler.e2e.toml', // no AI binding → boots offline, no auth
+      '--ip',
+      '127.0.0.1',
+      '--port',
+      '8787',
+    ],
     {
       cwd: workerDir,
       stdio: 'ignore',

@@ -1,0 +1,21 @@
+# Hermetic E2E config — used ONLY by apps/extension/e2e/run-all.mjs.
+#
+# Deliberately has NO [ai] binding, so `wrangler dev` boots fully offline with
+# no Cloudflare login (declaring [ai] forces a remote proxy session that needs
+# an account). Forces the mock summarizer. Real local dev uses wrangler.toml,
+# which calls Workers AI via the AI Gateway.
+name = "readaloud-worker-e2e"
+main = "src/index.ts"
+compatibility_date = "2026-06-01"
+
+[vars]
+ENVIRONMENT = "development"
+SUMMARY_BACKEND = "mock"
+SUMMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+AI_GATEWAY_ID = ""
+ALLOWED_ORIGINS = ""
+RATE_LIMIT_PER_MIN = "0"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "e2e-local"

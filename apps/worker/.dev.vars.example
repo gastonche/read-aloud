@@ -1,7 +1,12 @@
 # Copy to `.dev.vars` for local `wrangler dev`. NEVER commit `.dev.vars`.
-# Local dev uses the mock summarizer, so none of these are required to run.
-# They only matter if you flip SUMMARY_BACKEND to "workers-ai" locally or test
-# the ElevenLabs proxy (milestone 6) against the real API.
+#
+# Local dev calls REAL Workers AI through the AI Gateway, so you must first:
+#   wrangler login
+#   wrangler ai gateway create readaloud   # id goes in wrangler.toml (AI_GATEWAY_ID)
+#
+# To iterate fully offline (no Cloudflare account), force the mock summarizer:
+#   wrangler dev --var SUMMARY_BACKEND:mock
+# (This is exactly what the E2E suite does.)
 
 # ElevenLabs (milestone 6)
 ELEVENLABS_API_KEY=""

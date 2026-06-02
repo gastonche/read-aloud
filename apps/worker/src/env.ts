@@ -1,24 +1,27 @@
 /**
  * Worker bindings + vars, per environment.
  *
- * - development (default `wrangler dev`): no AI binding, mock summarizer →
- *   runs fully offline with no Cloudflare auth. KV is Miniflare-local.
- * - staging / production: real `AI` binding + real KV namespace.
+ * All environments (including local `wrangler dev`) call real Workers AI
+ * routed through the Cloudflare AI Gateway, so local dev needs `wrangler login`.
+ * The 'mock' backend is only a credential-free fallback used by the E2E suite
+ * (which sets SUMMARY_BACKEND=mock) and by unit tests (no AI binding).
  *
  * Secrets (ELEVENLABS_API_KEY) are injected via `wrangler secret put` and are
  * never present in source or wrangler.toml.
  */
 
 export interface Env {
-  /** Workers AI binding. Present only in staging/production. */
+  /** Workers AI binding. Absent only in unit tests / forced-mock runs. */
   AI?: Ai;
   /** KV namespace backing the rate limiter. */
   RATE_LIMIT?: KVNamespace;
 
   ENVIRONMENT: 'development' | 'staging' | 'production';
-  /** 'mock' (offline) or 'workers-ai'. */
+  /** 'workers-ai' (default, via AI Gateway) or 'mock' (offline fallback). */
   SUMMARY_BACKEND: 'mock' | 'workers-ai';
   SUMMARY_MODEL: string;
+  /** Cloudflare AI Gateway id to route Workers AI through. Empty = direct. */
+  AI_GATEWAY_ID?: string;
   /** Comma-separated allowed origins (in addition to chrome-extension://*). */
   ALLOWED_ORIGINS: string;
   /** Requests per minute per IP per route. "0" disables. */

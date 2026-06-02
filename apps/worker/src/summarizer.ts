@@ -32,10 +32,11 @@ export class MockSummarizer implements Summarizer {
 interface TextGenAi {
   run(
     model: string,
-    options: {
+    inputs: {
       messages: { role: 'system' | 'user'; content: string }[];
       max_tokens?: number;
     },
+    options?: { gateway?: { id: string } },
   ): Promise<{ response?: string }>;
 }
 
@@ -43,25 +44,31 @@ export class WorkersAiSummarizer implements Summarizer {
   constructor(
     private readonly ai: TextGenAi,
     private readonly model: string,
+    /** Cloudflare AI Gateway id; when set, all calls route through it. */
+    private readonly gatewayId?: string,
   ) {}
 
   async summarize({ text, title }: SummarizeInput): Promise<string> {
-    const result = await this.ai.run(this.model, {
-      max_tokens: 512,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You write tight, faithful TL;DR summaries. Respond with 3–5 ' +
-            'sentences of plain prose. No preamble, no bullet points, no ' +
-            'markdown — just the summary.',
-        },
-        {
-          role: 'user',
-          content: `${title ? `Title: ${title}\n\n` : ''}${text}`,
-        },
-      ],
-    });
+    const result = await this.ai.run(
+      this.model,
+      {
+        max_tokens: 512,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You write tight, faithful TL;DR summaries. Respond with 3–5 ' +
+              'sentences of plain prose. No preamble, no bullet points, no ' +
+              'markdown — just the summary.',
+          },
+          {
+            role: 'user',
+            content: `${title ? `Title: ${title}\n\n` : ''}${text}`,
+          },
+        ],
+      },
+      this.gatewayId ? { gateway: { id: this.gatewayId } } : undefined,
+    );
     const summary = (result.response ?? '').trim();
     if (!summary) throw new Error('Empty summary from model');
     return summary;
@@ -74,6 +81,7 @@ export function getSummarizer(env: Env): Summarizer {
     return new WorkersAiSummarizer(
       env.AI as unknown as TextGenAi,
       env.SUMMARY_MODEL || DEFAULT_SUMMARY_MODEL,
+      env.AI_GATEWAY_ID || undefined,
     );
   }
   return new MockSummarizer();
