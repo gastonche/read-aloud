@@ -104,11 +104,17 @@ export function extractLiveDocument(
     const { segs, full } = collectSegments(block);
     if (!full.trim()) return;
 
+    // Flatten vertical whitespace to spaces WITHOUT changing length, so offsets
+    // still map to the real nodes. Crucial: Unicode rule SB4 breaks sentences
+    // at newlines, and pretty-printed HTML is full of them — segmenting the raw
+    // text would shatter sentences mid-phrase.
+    const flat = full.replace(/\s/g, ' ');
+
     const sentenceTexts = sentSeg
-      ? [...sentSeg.segment(full)]
-      : full
+      ? [...sentSeg.segment(flat)]
+      : flat
           .split(/(?<=[.!?。！？])\s+/)
-          .map((s, i) => ({ segment: s, index: full.indexOf(s, i) }));
+          .map((s, i) => ({ segment: s, index: flat.indexOf(s, i) }));
 
     for (const part of sentenceTexts) {
       const raw = part.segment;

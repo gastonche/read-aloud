@@ -23,6 +23,7 @@ const SMOKES = [
   'm7-smoke.mjs',
   'm8-smoke.mjs',
   'onpage-smoke.mjs',
+  'page-bar-smoke.mjs',
 ];
 
 function run(cmd, args, opts = {}) {

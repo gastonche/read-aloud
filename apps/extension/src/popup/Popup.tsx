@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { sendRuntimeMessage } from '@/messaging/bus';
-import type { PagePendingSource } from '@/messaging/contract';
 import {
   fileToPendingSource,
   FileTooLargeError,
@@ -15,7 +14,6 @@ const ACCEPTED =
 export function Popup() {
   const [mode, setMode] = useState<Mode>('choose');
   const [tabId, setTabId] = useState<number | null>(null);
-  const [pageTitle, setPageTitle] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +24,6 @@ export function Popup() {
       .query({ active: true, currentWindow: true })
       .then(([tab]) => {
         if (tab?.id != null) setTabId(tab.id);
-        if (tab?.title) setPageTitle(tab.title);
       })
       .catch(() => setTabId(null));
   }, []);
@@ -56,14 +53,24 @@ export function Popup() {
     [tabId],
   );
 
+  // Read this page → show the on-page floating bar (no side panel).
   const onReadPage = useCallback(() => {
-    const source: PagePendingSource = {
-      kind: 'page',
-      tabId: tabId ?? -1,
-      ...(pageTitle ? { title: pageTitle } : {}),
-    };
-    void launchPanel(() => stagePendingSource(source));
-  }, [launchPanel, tabId, pageTitle]);
+    if (tabId == null) {
+      setError('No active tab to read.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    sendRuntimeMessage({ type: 'START_PAGE_READER', tabId })
+      .then((res) => {
+        if (!res.ok) throw new Error(res.error);
+        window.close();
+      })
+      .catch((e) => {
+        setBusy(false);
+        setError(e instanceof Error ? e.message : 'Something went wrong.');
+      });
+  }, [tabId]);
 
   const onFile = useCallback(
     (file: File) => {

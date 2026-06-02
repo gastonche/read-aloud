@@ -54,7 +54,16 @@ export interface ExtractPageMessage {
   tabId: number;
 }
 
-export type RuntimeMessage = OpenSidePanelMessage | ExtractPageMessage;
+/** popup → SW: start the on-page reader (floating bar) in `tabId`. [v0.2.0] */
+export interface StartPageReaderMessage {
+  type: 'START_PAGE_READER';
+  tabId: number;
+}
+
+export type RuntimeMessage =
+  | OpenSidePanelMessage
+  | ExtractPageMessage
+  | StartPageReaderMessage;
 
 /** SW → content script: extract readable content from the current document. [M2] */
 export interface ReadabilityExtractMessage {
@@ -84,11 +93,17 @@ export interface ClearHighlightMessage {
   type: 'CLEAR_HIGHLIGHT';
 }
 
+/** SW → content script: show the floating reader bar (builds the live doc). */
+export interface ShowBarMessage {
+  type: 'SHOW_BAR';
+}
+
 export type ContentMessage =
   | ReadabilityExtractMessage
   | BuildLiveDocMessage
   | HighlightMessage
-  | ClearHighlightMessage;
+  | ClearHighlightMessage
+  | ShowBarMessage;
 
 /** Response to BUILD_LIVE_DOC: the normalized doc + a summary for diagnostics. */
 export interface BuildLiveDocResponse {
@@ -126,4 +141,5 @@ export type ExtractPageResponse = Result<ExtractionPayload>;
 export interface RuntimeResponseMap {
   OPEN_SIDE_PANEL: OpenSidePanelResponse;
   EXTRACT_PAGE: ExtractPageResponse;
+  START_PAGE_READER: Result;
 }

@@ -48,6 +48,27 @@ async function extractPage(tabId: number): Promise<ExtractPageResponse> {
   }
 }
 
+const RESTRICTED_PAGE_ERROR =
+  "Can't read this page. Chrome blocks extensions on some pages " +
+  '(the Web Store, chrome:// pages, PDFs). Try a regular web page.';
+
+/** Tell the page's content script to show the floating reader bar. */
+async function startPageReader(tabId: number): Promise<Result> {
+  const show = () => sendTabMessage<Result>(tabId, { type: 'SHOW_BAR' });
+  try {
+    return await show();
+  } catch {
+    try {
+      const files = contentScriptFiles();
+      if (files.length === 0) throw new Error('no content script registered');
+      await chrome.scripting.executeScript({ target: { tabId }, files });
+      return await show();
+    } catch {
+      return { ok: false, error: RESTRICTED_PAGE_ERROR };
+    }
+  }
+}
+
 async function handleMessage(message: RuntimeMessage): Promise<Result> {
   switch (message.type) {
     case 'OPEN_SIDE_PANEL': {
@@ -58,6 +79,10 @@ async function handleMessage(message: RuntimeMessage): Promise<Result> {
 
     case 'EXTRACT_PAGE': {
       return extractPage(message.tabId);
+    }
+
+    case 'START_PAGE_READER': {
+      return startPageReader(message.tabId);
     }
 
     default: {

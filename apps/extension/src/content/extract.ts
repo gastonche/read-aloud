@@ -21,12 +21,13 @@ import type {
   ExtractionPayload,
   Result,
 } from '@/messaging/contract';
+import { highlightApiSupported } from './highlighter';
 import {
-  extractLiveDocument,
-  pickContentRoot,
-  type LiveDocument,
-} from './live-extract';
-import { highlightApiSupported, LiveHighlighter } from './highlighter';
+  buildPageDoc,
+  clearPaint,
+  getLiveDocument,
+  paint,
+} from './page-reader';
 
 const BLOCK_SELECTOR = 'p, li, blockquote, h1, h2, h3, h4, h5, h6, pre';
 
@@ -76,80 +77,71 @@ function extract(): ExtractionPayload {
   return { title: title.trim(), textBlocks: blocks, lang: lang.trim() };
 }
 
-// On-page reader state (v0.2.0). The live document + highlighter are created
-// lazily on BUILD_LIVE_DOC and persist for the page session.
-let liveDoc: LiveDocument | null = null;
-let highlighter: LiveHighlighter | null = null;
-
 chrome.runtime.onMessage.addListener(
   (message: ContentMessage, _sender, sendResponse) => {
     if (!message || typeof message.type !== 'string') return undefined;
 
-    try {
-      switch (message.type) {
-        case 'READABILITY_EXTRACT': {
-          const payload = extract();
+    switch (message.type) {
+      case 'READABILITY_EXTRACT': {
+        try {
           sendResponse({
             ok: true,
-            ...payload,
+            ...extract(),
           } satisfies Result<ExtractionPayload>);
-          return true;
+        } catch (e) {
+          sendResponse({
+            ok: false,
+            error: e instanceof Error ? e.message : 'Extraction failed.',
+          } satisfies Result);
         }
+        return true;
+      }
 
-        case 'BUILD_LIVE_DOC': {
-          liveDoc = extractLiveDocument(
-            pickContentRoot(),
-            message.lang ||
-              document.documentElement.getAttribute('lang') ||
-              undefined,
-          );
-          if (!highlighter && highlightApiSupported()) {
-            highlighter = new LiveHighlighter();
-          }
-          highlighter?.setDocument(liveDoc);
+      case 'BUILD_LIVE_DOC': {
+        void buildPageDoc(message.lang).then((live) => {
           const res: BuildLiveDocResponse = {
             ok: true,
-            title: liveDoc.doc.title,
-            lang: liveDoc.doc.lang,
-            sentenceCount: liveDoc.doc.blocks.length,
-            wordCount: liveDoc.doc.blocks.reduce(
-              (n, s) => n + s.words.length,
-              0,
-            ),
+            title: live.doc.title,
+            lang: live.doc.lang,
+            sentenceCount: live.doc.blocks.length,
+            wordCount: live.doc.blocks.reduce((n, s) => n + s.words.length, 0),
             supported: highlightApiSupported(),
           };
           sendResponse(res);
-          return true;
-        }
-
-        case 'HIGHLIGHT': {
-          highlighter?.highlight(message.sentenceId, message.wordIndex);
-          if (message.scroll) highlighter?.scrollTo(message.sentenceId);
-          const word =
-            liveDoc?.doc.blocks[message.sentenceId]?.words[message.wordIndex]
-              ?.text ?? '';
-          sendResponse({ ok: true, word } satisfies Result<{ word: string }>);
-          return true;
-        }
-
-        case 'CLEAR_HIGHLIGHT': {
-          highlighter?.clear();
-          sendResponse({ ok: true } satisfies Result);
-          return true;
-        }
-
-        default: {
-          const _exhaustive: never = message;
-          void _exhaustive;
-          return undefined;
-        }
+        });
+        return true; // async response
       }
-    } catch (e) {
-      sendResponse({
-        ok: false,
-        error: e instanceof Error ? e.message : 'Content script error.',
-      } satisfies Result);
-      return true;
+
+      case 'HIGHLIGHT': {
+        paint(message.sentenceId, message.wordIndex, message.scroll);
+        const word =
+          getLiveDocument()?.doc.blocks[message.sentenceId]?.words[
+            message.wordIndex
+          ]?.text ?? '';
+        sendResponse({ ok: true, word } satisfies Result<{ word: string }>);
+        return true;
+      }
+
+      case 'CLEAR_HIGHLIGHT': {
+        clearPaint();
+        sendResponse({ ok: true } satisfies Result);
+        return true;
+      }
+
+      case 'SHOW_BAR': {
+        void buildPageDoc().then(async (live) => {
+          const { mountBar } = await import('./bar');
+          mountBar(live.doc);
+          sendResponse({ ok: true } satisfies Result);
+        });
+        return true; // async response
+      }
+
+      default: {
+        const _exhaustive: never = message;
+        void _exhaustive;
+        return undefined;
+      }
     }
   },
 );
