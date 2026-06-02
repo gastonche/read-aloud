@@ -12,6 +12,8 @@
     "e2e": "npm run build && node e2e/run-all.mjs"
   },
   "dependencies": {
+    "@dicebear/collection": "^9.4.2",
+    "@dicebear/core": "^9.4.2",
     "@mozilla/readability": "^0.6.0",
     "@readaloud/shared": "*",
     "dompurify": "^3.4.7",

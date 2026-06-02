@@ -1,5 +1,7 @@
-import { useCallback, useRef } from 'react';
-import type { PlayerApi, EngineId } from '@/ui/hooks/usePlayer';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { createAvatar } from '@dicebear/core';
+import { personas } from '@dicebear/collection';
+import type { EngineId, PlayerApi } from '@/ui/hooks/usePlayer';
 import type { TtsVoice } from '@/core/tts/types';
 
 const SPEED_MIN = 0.5;
@@ -7,9 +9,9 @@ const SPEED_MAX = 3;
 const SPEED_STEP = 0.25;
 
 /**
- * The player deck — the product surface at the bottom of the reader.
- * A voice-quality switch, a tactile voice rail (avatar + personality), the
- * transport with a progress ring, and a vertical speed slider.
+ * Compact player deck: voice (left) · transport (center) · speed (right).
+ * The Built-in/Studio switch lives inside the voice picker; the speed control
+ * is collapsed to a value and expands a vertical slider on hover.
  */
 export function PlayerDeck({
   player,
@@ -19,17 +21,16 @@ export function PlayerDeck({
   progress?: { current: number; total: number } | undefined;
 }) {
   return (
-    <div className="border-t border-slate-200/70 bg-gradient-to-b from-white to-slate-50 px-4 pb-4 pt-3">
+    <div className="border-t border-slate-200/70 bg-gradient-to-b from-white to-slate-50 px-3 pb-3 pt-2.5">
       <Notices player={player} />
-      <ModeSwitch engineId={player.engineId} onChange={player.setEngine} />
-      <VoiceRail
-        voices={player.voices}
-        voiceId={player.voiceId}
-        onPick={player.changeVoice}
-      />
-      <div className="mt-3 flex items-end gap-3">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <div className="justify-self-start">
+          <VoicePicker player={player} />
+        </div>
         <Transport player={player} progress={progress} />
-        <SpeedSlider rate={player.rate} onChange={player.changeRate} />
+        <div className="justify-self-end">
+          <SpeedControl rate={player.rate} onChange={player.changeRate} />
+        </div>
       </div>
     </div>
   );
@@ -56,9 +57,133 @@ function Notices({ player }: { player: PlayerApi }) {
   return null;
 }
 
-// ──────────────────────────── mode switch ────────────────────────────
-// "Built-in" (free, on-device) vs "Studio" (premium neural).
+// ─────────────────────── illustration avatars ───────────────────────
+// Generated locally with DiceBear (offline, deterministic per voice).
 
+const avatarCache = new Map<string, string>();
+function voiceAvatar(seed: string): string {
+  let uri = avatarCache.get(seed);
+  if (!uri) {
+    const svg = createAvatar(personas, {
+      seed,
+      radius: 50,
+      backgroundColor: ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf'],
+    }).toString();
+    uri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    avatarCache.set(seed, uri);
+  }
+  return uri;
+}
+
+function VoiceImage({ voice, size }: { voice: TtsVoice; size: number }) {
+  return (
+    <img
+      src={voiceAvatar(voice.id)}
+      alt=""
+      width={size}
+      height={size}
+      className="shrink-0 rounded-full bg-slate-100"
+    />
+  );
+}
+
+// ─────────────────────────── voice picker ───────────────────────────
+
+function VoicePicker({ player }: { player: PlayerApi }) {
+  const [open, setOpen] = useState(false);
+  const selected = useMemo(
+    () =>
+      player.voices.find((v) => v.id === player.voiceId) ?? player.voices[0],
+    [player.voices, player.voiceId],
+  );
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-label={`Voice: ${selected?.label ?? 'none'}`}
+        aria-expanded={open}
+        className="flex max-w-[150px] items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-2 text-left transition hover:border-slate-300"
+      >
+        {selected ? (
+          <VoiceImage voice={selected} size={28} />
+        ) : (
+          <span className="h-7 w-7 rounded-full bg-slate-200" />
+        )}
+        <span className="min-w-0">
+          <span className="block truncate text-xs font-semibold leading-tight text-ink">
+            {selected?.label ?? 'No voices'}
+          </span>
+          <span className="block truncate text-[10px] leading-tight text-ink-soft">
+            {player.engineId === 'elevenlabs' ? 'Studio' : 'Built-in'}
+          </span>
+        </span>
+        <Chevron />
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
+          <VoiceSheet player={player} onClose={() => setOpen(false)} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function VoiceSheet({
+  player,
+  onClose,
+}: {
+  player: PlayerApi;
+  onClose: () => void;
+}) {
+  return (
+    <div className="absolute bottom-full left-0 z-30 mb-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+      <div className="p-2">
+        <ModeSwitch engineId={player.engineId} onChange={player.setEngine} />
+      </div>
+      <div className="max-h-64 overflow-y-auto px-2 pb-2">
+        {player.voices.length === 0 && (
+          <p className="px-2 py-3 text-center text-[11px] text-ink-soft">
+            No voices available.
+          </p>
+        )}
+        {player.voices.map((v) => {
+          const active = v.id === player.voiceId;
+          return (
+            <button
+              key={v.id}
+              type="button"
+              aria-label={`Select ${v.label}`}
+              onClick={() => {
+                player.changeVoice(v.id);
+                onClose();
+              }}
+              className={`flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left transition ${
+                active ? 'bg-accent-soft' : 'hover:bg-slate-50'
+              }`}
+            >
+              <VoiceImage voice={v} size={36} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-ink">
+                  {v.label}
+                </span>
+                <span className="block truncate text-[11px] text-ink-soft">
+                  {v.description ?? v.lang}
+                </span>
+              </span>
+              {active && <Check />}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/** Built-in (free, on-device) vs Studio (premium neural). */
 function ModeSwitch({
   engineId,
   onChange,
@@ -68,10 +193,10 @@ function ModeSwitch({
 }) {
   const studio = engineId === 'elevenlabs';
   return (
-    <div className="relative flex h-9 rounded-full bg-slate-100 p-1 text-xs font-semibold">
+    <div className="relative flex h-8 rounded-lg bg-slate-100 p-1 text-xs font-semibold">
       <span
         aria-hidden
-        className={`absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-full shadow-sm transition-transform duration-300 ${
+        className={`absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-md shadow-sm transition-transform duration-300 ${
           studio
             ? 'translate-x-[calc(100%+0.5rem)] bg-gradient-to-r from-indigo-500 to-violet-500'
             : 'translate-x-0 bg-white'
@@ -80,109 +205,22 @@ function ModeSwitch({
       <button
         type="button"
         onClick={() => onChange('web-speech')}
-        className={`relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-full transition-colors ${
+        className={`relative z-10 flex flex-1 items-center justify-center gap-1 rounded-md transition-colors ${
           studio ? 'text-ink-soft' : 'text-ink'
         }`}
       >
-        <Glyph kind="chip" />
         Built-in
       </button>
       <button
         type="button"
         onClick={() => onChange('elevenlabs')}
-        className={`relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-full transition-colors ${
+        className={`relative z-10 flex flex-1 items-center justify-center gap-1 rounded-md transition-colors ${
           studio ? 'text-white' : 'text-ink-soft'
         }`}
       >
-        <Glyph kind="spark" />
-        Studio
+        ✦ Studio
       </button>
     </div>
-  );
-}
-
-// ───────────────────────────── voice rail ─────────────────────────────
-
-function VoiceRail({
-  voices,
-  voiceId,
-  onPick,
-}: {
-  voices: TtsVoice[];
-  voiceId: string | undefined;
-  onPick: (id: string) => void;
-}) {
-  if (voices.length === 0) {
-    return (
-      <p className="mt-3 text-center text-[11px] text-ink-soft">
-        No voices available on this device.
-      </p>
-    );
-  }
-  return (
-    <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {voices.map((v) => (
-        <VoiceChip
-          key={v.id}
-          voice={v}
-          selected={v.id === voiceId}
-          onPick={() => onPick(v.id)}
-        />
-      ))}
-    </div>
-  );
-}
-
-function VoiceChip({
-  voice,
-  selected,
-  onPick,
-}: {
-  voice: TtsVoice;
-  selected: boolean;
-  onPick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onPick}
-      aria-pressed={selected}
-      aria-label={`Voice: ${voice.label}`}
-      className={`flex w-[116px] shrink-0 flex-col items-center gap-1 rounded-2xl border px-2 py-2.5 text-center transition ${
-        selected
-          ? 'border-accent bg-accent-soft shadow-sm'
-          : 'border-slate-200 bg-white hover:border-slate-300'
-      }`}
-    >
-      <Avatar name={voice.label} active={selected} />
-      <span className="mt-0.5 max-w-full truncate text-xs font-semibold text-ink">
-        {voice.label}
-      </span>
-      <span className="max-w-full truncate text-[10px] leading-tight text-ink-soft">
-        {voice.description ?? voice.lang}
-      </span>
-    </button>
-  );
-}
-
-/** A deterministic gradient avatar (initial), so voices feel human without
- *  shipping photos. Hue is derived from the name. */
-function Avatar({ name, active }: { name: string; active: boolean }) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++)
-    hash = (hash * 31 + name.charCodeAt(i)) % 360;
-  const h = hash;
-  const bg = `linear-gradient(135deg, hsl(${h} 75% 62%), hsl(${(h + 38) % 360} 70% 48%))`;
-  return (
-    <span
-      aria-hidden
-      style={{ background: bg }}
-      className={`flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold text-white ${
-        active ? 'ring-2 ring-accent ring-offset-2' : ''
-      }`}
-    >
-      {name.charAt(0).toUpperCase()}
-    </span>
   );
 }
 
@@ -202,23 +240,20 @@ function Transport({
       : 0;
 
   return (
-    <div className="flex flex-1 flex-col items-center">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-col items-center">
+      <div className="flex items-center gap-3">
         <GhostButton label="Previous sentence" onClick={player.prev}>
           <path d="M7 6h2v12H7V6zm3.5 6 8.5 6V6l-8.5 6z" />
         </GhostButton>
-
         <PlayButton playing={playing} frac={frac} onClick={player.toggle} />
-
         <GhostButton label="Next sentence" onClick={player.next}>
           <path d="M15 6h2v12h-2V6zM5 6v12l8.5-6L5 6z" />
         </GhostButton>
       </div>
       {progress && progress.total > 0 && (
-        <p className="mt-2 text-[11px] tabular-nums text-ink-soft">
-          {Math.min(progress.current, progress.total)}{' '}
-          <span className="opacity-50">/ {progress.total}</span>
-          <span className="ml-1.5 opacity-50">· Space ⏯</span>
+        <p className="mt-1 text-[10px] tabular-nums text-ink-soft">
+          {Math.min(progress.current, progress.total)}
+          <span className="opacity-50"> / {progress.total}</span>
         </p>
       )}
     </div>
@@ -234,26 +269,26 @@ function PlayButton({
   frac: number;
   onClick: () => void;
 }) {
-  const R = 27;
+  const R = 21;
   const C = 2 * Math.PI * R;
   return (
-    <div className="relative h-16 w-16">
-      <svg viewBox="0 0 64 64" className="absolute inset-0 -rotate-90">
+    <div className="relative h-12 w-12">
+      <svg viewBox="0 0 48 48" className="absolute inset-0 -rotate-90">
         <circle
-          cx="32"
-          cy="32"
+          cx="24"
+          cy="24"
           r={R}
           fill="none"
           stroke="#e2e8f0"
-          strokeWidth="3"
+          strokeWidth="2.5"
         />
         <circle
-          cx="32"
-          cy="32"
+          cx="24"
+          cy="24"
           r={R}
           fill="none"
           stroke="url(#pg)"
-          strokeWidth="3"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeDasharray={C}
           strokeDashoffset={C * (1 - frac)}
@@ -272,7 +307,7 @@ function PlayButton({
         aria-label={playing ? 'Pause' : 'Play'}
         className="absolute inset-1.5 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-md transition active:scale-95"
       >
-        <svg viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor">
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
           {playing ? (
             <path d="M7 5h4v14H7V5zm6 0h4v14h-4V5z" />
           ) : (
@@ -298,7 +333,7 @@ function GhostButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition hover:bg-slate-100 hover:text-ink"
+      className="flex h-8 w-8 items-center justify-center rounded-full text-ink-soft transition hover:bg-slate-100 hover:text-ink"
     >
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
         {children}
@@ -307,15 +342,17 @@ function GhostButton({
   );
 }
 
-// ──────────────────────────── speed slider ────────────────────────────
+// ──────────────────────────── speed control ────────────────────────────
+// Collapsed to a value; hover (or click) grows a vertical slider in.
 
-function SpeedSlider({
+function SpeedControl({
   rate,
   onChange,
 }: {
   rate: number;
   onChange: (rate: number) => void;
 }) {
+  const [open, setOpen] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
   const pct = (rate - SPEED_MIN) / (SPEED_MAX - SPEED_MIN);
 
@@ -332,73 +369,98 @@ function SpeedSlider({
     [onChange],
   );
 
-  const onPointerDown = (e: React.PointerEvent) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
-    setFromClientY(e.clientY);
-  };
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (e.buttons === 0) return;
-    setFromClientY(e.clientY);
-  };
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      onChange(Math.min(SPEED_MAX, rate + SPEED_STEP));
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      onChange(Math.max(SPEED_MIN, rate - SPEED_STEP));
-    }
-  };
-
   return (
-    <div className="flex w-12 shrink-0 flex-col items-center gap-1">
-      <span className="text-xs font-bold tabular-nums text-accent">
-        {formatRate(rate)}
-      </span>
+    <div
+      className="relative flex flex-col items-center"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      {/* Vertical slider grows in above the value. */}
       <div
-        ref={trackRef}
-        role="slider"
-        tabIndex={0}
-        aria-label="Reading speed"
-        aria-valuemin={SPEED_MIN}
-        aria-valuemax={SPEED_MAX}
-        aria-valuenow={rate}
-        aria-valuetext={`${formatRate(rate)} speed`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onKeyDown={onKeyDown}
-        className="relative h-20 w-7 cursor-pointer touch-none rounded-full bg-slate-200"
+        className={`absolute bottom-full mb-1 origin-bottom transition-all duration-200 ${
+          open
+            ? 'scale-y-100 opacity-100'
+            : 'pointer-events-none scale-y-0 opacity-0'
+        }`}
       >
         <div
-          className="absolute inset-x-0 bottom-0 rounded-full bg-gradient-to-t from-indigo-500 to-violet-400"
-          style={{ height: `${pct * 100}%` }}
-        />
-        <div
-          className="absolute inset-x-0 flex justify-center"
-          style={{ bottom: `calc(${pct * 100}% - 7px)` }}
+          ref={trackRef}
+          role="slider"
+          tabIndex={0}
+          aria-label="Reading speed"
+          aria-valuemin={SPEED_MIN}
+          aria-valuemax={SPEED_MAX}
+          aria-valuenow={rate}
+          aria-valuetext={`${formatRate(rate)} speed`}
+          onPointerDown={(e) => {
+            e.currentTarget.setPointerCapture(e.pointerId);
+            setFromClientY(e.clientY);
+          }}
+          onPointerMove={(e) => {
+            if (e.buttons !== 0) setFromClientY(e.clientY);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              onChange(Math.min(SPEED_MAX, rate + SPEED_STEP));
+            } else if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              onChange(Math.max(SPEED_MIN, rate - SPEED_STEP));
+            }
+          }}
+          className="relative h-24 w-6 cursor-pointer touch-none rounded-full bg-slate-200 shadow-inner"
         >
-          <span className="h-3.5 w-3.5 rounded-full border-2 border-white bg-accent shadow" />
+          <div
+            className="absolute inset-x-0 bottom-0 rounded-full bg-gradient-to-t from-indigo-500 to-violet-400"
+            style={{ height: `${pct * 100}%` }}
+          />
+          <div
+            className="absolute inset-x-0 flex justify-center"
+            style={{ bottom: `calc(${pct * 100}% - 6px)` }}
+          >
+            <span className="h-3 w-3 rounded-full border-2 border-white bg-accent shadow" />
+          </div>
         </div>
       </div>
-      <span className="text-[10px] text-ink-soft">Speed</span>
+
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Reading speed"
+        className="flex h-8 min-w-[42px] items-center justify-center gap-0.5 rounded-full border border-slate-200 bg-white px-2 text-xs font-bold tabular-nums text-accent transition hover:border-slate-300"
+      >
+        {formatRate(rate)}
+      </button>
     </div>
   );
 }
 
 function formatRate(rate: number): string {
-  return Number.isInteger(rate) ? `${rate}×` : `${rate}×`;
+  return `${rate}×`;
 }
 
-// ───────────────────────────── small glyphs ─────────────────────────────
+// ───────────────────────────── small icons ─────────────────────────────
 
-function Glyph({ kind }: { kind: 'chip' | 'spark' }) {
+function Chevron() {
   return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
-      {kind === 'chip' ? (
-        <path d="M9 3v2H7a2 2 0 0 0-2 2v2H3v2h2v2H3v2h2v2a2 2 0 0 0 2 2h2v2h2v-2h2v2h2v-2h2a2 2 0 0 0 2-2v-2h2v-2h-2v-2h2V9h-2V7a2 2 0 0 0-2-2h-2V3h-2v2h-2V3H9zm0 6h6v6H9V9z" />
-      ) : (
-        <path d="M12 2l1.8 4.6L18 8l-4.2 1.4L12 14l-1.8-4.6L6 8l4.2-1.4L12 2zm6 10l1 2.6L21 16l-2 .7L18 19l-1-2.3L15 16l2-.7L18 12zM6 13l.9 2.3L9 16l-2.1.8L6 19l-.9-2.2L3 16l2.1-.7L6 13z" />
-      )}
+    <svg
+      viewBox="0 0 24 24"
+      className="ml-auto h-3.5 w-3.5 shrink-0 text-ink-soft"
+      fill="currentColor"
+    >
+      <path d="M7 10l5 5 5-5H7z" />
+    </svg>
+  );
+}
+
+function Check() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4 shrink-0 text-accent"
+      fill="currentColor"
+    >
+      <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
     </svg>
   );
 }

@@ -55,15 +55,17 @@ const run = async () => {
     if (req.url().endsWith('/tts')) ttsRequests++;
   });
 
-  // Switch to the Studio (neural) engine.
+  // Open the voice picker → switch to Studio inside it → pick a neural voice.
+  await panel.locator('button[aria-label^="Voice:"]').first().click();
   await panel.locator('button:has-text("Studio")').click();
-  await panel.waitForSelector('button[aria-label="Voice: Rachel"]', {
+  await panel.waitForSelector('button[aria-label="Select Rachel"]', {
     timeout: 5_000,
   });
   check(
-    'voice rail switches to Studio voices',
-    (await panel.locator('button[aria-label="Voice: Rachel"]').count()) >= 1,
+    'voice picker lists Studio voices',
+    (await panel.locator('button[aria-label="Select Rachel"]').count()) >= 1,
   );
+  await panel.locator('button[aria-label="Select Rachel"]').click(); // selects + closes
 
   // Play → fetch /tts (mock) → fake audio advances → word highlight.
   await panel.locator('button[aria-label="Play"]').click();
@@ -73,14 +75,15 @@ const run = async () => {
 
   await panel.screenshot({ path: resolve(SHOTS, 'm6-neural.png'), fullPage: true });
 
-  // Switch back to Built-in.
+  // Switch back to Built-in via the picker.
+  await panel.locator('button[aria-label^="Voice:"]').first().click();
   await panel.locator('button:has-text("Built-in")').click();
-  await panel.waitForSelector('button[aria-label="Voice: Fake Voice"]', {
+  await panel.waitForSelector('button[aria-label="Select Fake Voice"]', {
     timeout: 5_000,
   });
   check(
-    'voice rail switches back to Built-in voices',
-    (await panel.locator('button[aria-label="Voice: Fake Voice"]').count()) >= 1,
+    'voice picker lists Built-in voices again',
+    (await panel.locator('button[aria-label="Select Fake Voice"]').count()) >= 1,
   );
 
   await context.close();
