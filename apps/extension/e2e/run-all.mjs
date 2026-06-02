@@ -24,6 +24,7 @@ const SMOKES = [
   'm8-smoke.mjs',
   'onpage-smoke.mjs',
   'page-bar-smoke.mjs',
+  'advanced-smoke.mjs',
 ];
 
 function run(cmd, args, opts = {}) {

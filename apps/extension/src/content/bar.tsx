@@ -15,6 +15,7 @@ import type { TtsVoice } from '@/core/tts/types';
 import { usePlayer, type EngineId } from '@/ui/hooks/usePlayer';
 import { hasVoiceForLang, languageName, primaryLang } from '@/core/i18n/lang';
 import { voiceAvatar } from '@/ui/voice-avatar';
+import { sendRuntimeMessage } from '@/messaging/bus';
 import { ViaSwTtsClient } from './via-sw-tts';
 import { buildPageDoc, clearPaint, paint } from './page-reader';
 import { BAR_CSS } from './bar-css';
@@ -158,6 +159,24 @@ function Bar({
     void buildPageDoc(lang).then((live) => setDoc(live.doc));
   };
 
+  // Advanced mode: hand the doc + playback state to the side panel, close bar.
+  const onAdvanced = () => {
+    const wasPlaying = player.status === 'playing';
+    player.pause();
+    void sendRuntimeMessage({
+      type: 'OPEN_ADVANCED',
+      handoff: {
+        kind: 'reader',
+        doc,
+        sentenceId: player.highlight.sentenceId,
+        rate: player.rate,
+        engineId: player.engineId,
+        ...(player.voiceId ? { voiceId: player.voiceId } : {}),
+        playing: wasPlaying,
+      },
+    }).finally(onClose);
+  };
+
   const playing = player.status === 'playing';
   const total = doc.blocks.length;
   const current = Math.min(Math.max(player.highlight.sentenceId + 1, 0), total);
@@ -225,6 +244,16 @@ function Bar({
       <span className="count">
         {current}/{total}
       </span>
+
+      <button
+        className="icon"
+        aria-label="Open advanced reader"
+        onClick={onAdvanced}
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M4 4h7v2H6v5H4V4zm16 16h-7v-2h5v-5h2v7zM4 20v-7h2v5h5v2H4zM20 4v7h-2V6h-5V4h7z" />
+        </svg>
+      </button>
 
       <button
         className="icon close"

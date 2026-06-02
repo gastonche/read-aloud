@@ -48,6 +48,14 @@ import type { TtsClient } from '@/core/tts/elevenlabs';
 export interface PlayerOptions {
   /** Override the Studio TTS client (e.g. the SW-proxied client on a page). */
   ttsClient?: TtsClient;
+  /** Continue from a handed-off session (advanced mode). Applied once on load. */
+  initial?: {
+    engineId?: EngineId;
+    rate?: number;
+    voiceId?: string;
+    sentenceId?: number;
+    play?: boolean;
+  };
 }
 
 function createEngine(id: EngineId, ttsClient?: TtsClient): TtsEngine {
@@ -73,10 +81,15 @@ export function usePlayer(
   const engineRef = useRef<TtsEngine | null>(null);
   const ttsClientRef = useRef(options?.ttsClient);
   ttsClientRef.current = options?.ttsClient;
-  const [engineId, setEngineId] = useState<EngineId>('web-speech');
+  // Initial handoff state is read once (captured on first render).
+  const initialRef = useRef(options?.initial);
+  const appliedInitial = useRef(false);
+  const [engineId, setEngineId] = useState<EngineId>(
+    initialRef.current?.engineId ?? 'web-speech',
+  );
   const [status, setStatus] = useState<PlaybackStatus>('idle');
   const [highlight, setHighlight] = useState<HighlightState>(NO_HIGHLIGHT);
-  const [rate, setRate] = useState(1);
+  const [rate, setRate] = useState(initialRef.current?.rate ?? 1);
   const [voices, setVoices] = useState<TtsVoice[]>([]);
   const [voiceId, setVoiceId] = useState<string | undefined>(undefined);
   const [sentenceLevelOnly, setSentenceLevelOnly] = useState(false);
@@ -142,10 +155,24 @@ export function usePlayer(
       if (cancelled) return;
       setVoices(vs);
       voicesRef.current = vs;
-      const id = voiceForCurrentDoc(vs);
+      const init = initialRef.current;
+      const id =
+        !appliedInitial.current &&
+        init?.voiceId &&
+        vs.some((v) => v.id === init.voiceId)
+          ? init.voiceId
+          : voiceForCurrentDoc(vs);
       setVoiceId(id);
       if (docRef.current) {
         engine.load(docRef.current, { rate: rateRef.current, voiceId: id });
+      }
+      // Continue a handed-off session, once.
+      if (!appliedInitial.current) {
+        appliedInitial.current = true;
+        if (init?.sentenceId != null && init.sentenceId >= 0) {
+          engine.seekToSentence(init.sentenceId);
+        }
+        if (init?.play) engine.play();
       }
     });
     return () => {

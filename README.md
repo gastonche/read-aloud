@@ -2,9 +2,11 @@
 
 > **Listen to any web page or document — with the words highlighted as they're spoken.**
 
-A Speechify-style **Manifest V3** Chrome extension. It reads the current page or
-an uploaded file (**PDF, EPUB, DOCX, TXT**) aloud with real-time **word +
-sentence highlighting**, adjustable speed, voice selection, **two selectable TTS engines**
+A Speechify-style **Manifest V3** Chrome extension. **Read this page** drops a
+draggable floating bar on the page and highlights the words **right on the page**
+as it reads (zero DOM mutation, via the CSS Custom Highlight API); files open in
+a rich side-panel reader. It reads the current page or an uploaded file
+(**PDF, EPUB, DOCX, TXT**) aloud with real-time **word + sentence highlighting**, adjustable speed, voice selection, **two selectable TTS engines**
 (free system voices, or premium neural voices), and an optional AI **TL;DR**
 summary.
 
@@ -39,6 +41,12 @@ voices. That story is told in [Dual-engine highlighting](#dual-engine-highlighti
   vertical speed dial (0.5×–3×), skip ± sentence, click-to-seek, Space-to-play,
   and auto-scroll. Built-in voices are curated to a clean shortlist.
 - **Speaks many languages.** Detects the content's language (`chrome.i18n.detectLanguage`), auto-selects a matching system voice (or routes to multilingual Studio), groups voices by language in the picker, renders right-to-left scripts correctly, and lets you correct the detected language from the top bar.
+- **On-page reader (v0.2).** "Read this page" shows a **floating, draggable
+  control bar** (snaps to 8 dock points) that highlights words on the live
+  page — no side panel, no DOM mutation. **Advanced mode** expands into the
+  side-panel reader, continuing from the same sentence and settings. Audio and
+  Worker calls stay off the page (engines in the page world, /tts proxied via
+  the service worker).
 - **Sentence-chunked playback** so long documents start instantly.
 - **TL;DR** via Cloudflare Workers AI — and the summary reads aloud through the
   same player + highlighting.

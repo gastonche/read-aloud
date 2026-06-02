@@ -18,6 +18,8 @@ import type {
   WorkerFetchResponse,
 } from '@/messaging/contract';
 import { WORKER_BASE_URL } from '@/config';
+import { stagePendingSource } from '@/core/handoff';
+import type { ReaderPendingSource } from '@/messaging/contract';
 
 /** The built content-script path, read from the manifest (CRXJS hashes it). */
 function contentScriptFiles(): string[] {
@@ -100,7 +102,25 @@ async function workerFetch(
   }
 }
 
-async function handleMessage(message: RuntimeMessage): Promise<Result> {
+/** Advanced mode: open the panel (in the gesture) and stage the handoff. */
+async function openAdvanced(
+  handoff: ReaderPendingSource,
+  sender: chrome.runtime.MessageSender,
+): Promise<Result> {
+  const tabId = sender.tab?.id;
+  if (tabId == null)
+    return { ok: false, error: 'No tab to open the panel for.' };
+  // Stage first (fast, within the forwarded activation window), then open — the
+  // panel pulls the staged handoff on boot, so there's no boot race.
+  await stagePendingSource(handoff);
+  await chrome.sidePanel.open({ tabId });
+  return { ok: true };
+}
+
+async function handleMessage(
+  message: RuntimeMessage,
+  sender: chrome.runtime.MessageSender,
+): Promise<Result> {
   switch (message.type) {
     case 'WORKER_FETCH': {
       return workerFetch(message.path, message.body);
@@ -110,6 +130,10 @@ async function handleMessage(message: RuntimeMessage): Promise<Result> {
       // Open synchronously-first to stay within the user gesture.
       await chrome.sidePanel.open({ tabId: message.tabId });
       return { ok: true };
+    }
+
+    case 'OPEN_ADVANCED': {
+      return openAdvanced(message.handoff, sender);
     }
 
     case 'EXTRACT_PAGE': {
@@ -128,7 +152,7 @@ async function handleMessage(message: RuntimeMessage): Promise<Result> {
   }
 }
 
-onRuntimeMessage((message) => handleMessage(message));
+onRuntimeMessage((message, sender) => handleMessage(message, sender));
 
 // Clicking the toolbar icon shows the popup (default_popup). We keep the side
 // panel strictly opened-on-demand so it never auto-opens on unrelated tabs.

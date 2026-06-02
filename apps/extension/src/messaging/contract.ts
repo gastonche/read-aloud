@@ -18,6 +18,8 @@
 // Persisted in chrome.storage.session under HANDOFF_KEY. Read by the panel
 // exactly once on boot, then cleared.
 
+import type { NormalizedDoc } from '@/core/document/types';
+
 export const HANDOFF_KEY = 'readaloud:pendingSource';
 
 /** "Read this page": the panel will extract from this tab. */
@@ -38,7 +40,24 @@ export interface FilePendingSource {
   dataBase64: string;
 }
 
-export type PendingSource = PagePendingSource | FilePendingSource;
+/**
+ * "Advanced mode": the on-page bar hands its already-extracted document and
+ * playback state to the side panel, which continues from the same sentence.
+ */
+export interface ReaderPendingSource {
+  kind: 'reader';
+  doc: NormalizedDoc;
+  sentenceId: number;
+  rate: number;
+  engineId: 'web-speech' | 'elevenlabs';
+  voiceId?: string;
+  playing: boolean;
+}
+
+export type PendingSource =
+  | PagePendingSource
+  | FilePendingSource
+  | ReaderPendingSource;
 
 // ───────────────────────── Runtime messages ──────────────────────────
 
@@ -71,11 +90,18 @@ export interface WorkerFetchMessage {
   body: unknown;
 }
 
+/** content script (bar) → SW: open the side panel and hand off playback. */
+export interface OpenAdvancedMessage {
+  type: 'OPEN_ADVANCED';
+  handoff: ReaderPendingSource;
+}
+
 export type RuntimeMessage =
   | OpenSidePanelMessage
   | ExtractPageMessage
   | StartPageReaderMessage
-  | WorkerFetchMessage;
+  | WorkerFetchMessage
+  | OpenAdvancedMessage;
 
 /** SW → content script: extract readable content from the current document. [M2] */
 export interface ReadabilityExtractMessage {
@@ -158,4 +184,5 @@ export interface RuntimeResponseMap {
   EXTRACT_PAGE: ExtractPageResponse;
   START_PAGE_READER: Result;
   WORKER_FETCH: WorkerFetchResponse;
+  OPEN_ADVANCED: Result;
 }

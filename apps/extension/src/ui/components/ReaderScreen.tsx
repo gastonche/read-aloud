@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { NormalizedDoc } from '@/core/document/types';
 import { normalize, wordCount } from '@/core/document/normalize';
 import { docToText, summarize } from '@/core/summary/client';
-import { usePlayer } from '@/ui/hooks/usePlayer';
+import { usePlayer, type PlayerOptions } from '@/ui/hooks/usePlayer';
 import { languageName, primaryLang } from '@/core/i18n/lang';
 import { ReaderView } from './ReaderView';
 import { PlayerDeck } from './PlayerDeck';
@@ -23,9 +23,11 @@ type SummaryState =
 export function ReaderScreen({
   doc,
   onSetLanguage,
+  initial,
 }: {
   doc: NormalizedDoc;
   onSetLanguage: (lang: string) => void;
+  initial?: PlayerOptions['initial'];
 }) {
   const [summary, setSummary] = useState<SummaryState>({ status: 'idle' });
   const [view, setView] = useState<'doc' | 'summary'>('doc');
@@ -41,7 +43,7 @@ export function ReaderScreen({
     [summary, doc.title, doc.lang],
   );
   const activeDoc = view === 'summary' && summaryDoc ? summaryDoc : doc;
-  const player = usePlayer(activeDoc);
+  const player = usePlayer(activeDoc, initial ? { initial } : undefined);
 
   // "Read aloud" on the summary starts playback once the player has loaded the
   // summary doc (runs after usePlayer's own load effect).

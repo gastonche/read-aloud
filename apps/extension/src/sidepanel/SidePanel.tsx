@@ -18,7 +18,20 @@ type BootState =
   | { phase: 'empty' }
   | { phase: 'working'; label: string }
   | { phase: 'error'; message: string; retry?: () => void }
-  | { phase: 'reader'; doc: NormalizedDoc; raw: RawDocument };
+  | {
+      phase: 'reader';
+      doc: NormalizedDoc;
+      raw: RawDocument;
+      initial?: HandoffPlayback;
+    };
+
+interface HandoffPlayback {
+  engineId: 'web-speech' | 'elevenlabs';
+  rate: number;
+  voiceId?: string;
+  sentenceId: number;
+  play: boolean;
+}
 
 export function SidePanel() {
   const [state, setState] = useState<BootState>({ phase: 'loading' });
@@ -108,6 +121,26 @@ export function SidePanel() {
         sourceRef.current = source;
         if (!source) return setState({ phase: 'empty' });
         if (source.kind === 'page') return void loadPage(source.tabId);
+        if (source.kind === 'reader') {
+          // Advanced-mode handoff: render the doc directly, continuing playback.
+          setState({
+            phase: 'reader',
+            doc: source.doc,
+            raw: {
+              title: source.doc.title,
+              blocks: source.doc.blocks.map((s) => s.text),
+              lang: source.doc.lang,
+            },
+            initial: {
+              engineId: source.engineId,
+              rate: source.rate,
+              ...(source.voiceId ? { voiceId: source.voiceId } : {}),
+              sentenceId: source.sentenceId,
+              play: source.playing,
+            },
+          });
+          return;
+        }
         loadFile(source);
       })
       .catch(() => !cancelled && setState({ phase: 'empty' }));
@@ -121,7 +154,11 @@ export function SidePanel() {
   if (state.phase === 'reader') {
     return (
       <div className="flex h-full flex-col bg-paper text-ink">
-        <ReaderScreen doc={state.doc} onSetLanguage={setLanguage} />
+        <ReaderScreen
+          doc={state.doc}
+          onSetLanguage={setLanguage}
+          initial={state.initial}
+        />
       </div>
     );
   }
