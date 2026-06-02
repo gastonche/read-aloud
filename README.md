@@ -3,8 +3,8 @@
 > **Listen to any web page or document — with the words highlighted as they're spoken.**
 
 A Speechify-style **Manifest V3** Chrome extension. It reads the current page or
-an uploaded file (PDF / TXT) aloud with real-time **word + sentence
-highlighting**, adjustable speed, voice selection, **two selectable TTS engines**
+an uploaded file (**PDF, EPUB, DOCX, TXT**) aloud with real-time **word +
+sentence highlighting**, adjustable speed, voice selection, **two selectable TTS engines**
 (free system voices, or premium neural voices), and an optional AI **TL;DR**
 summary.
 
@@ -26,7 +26,8 @@ voices. That story is told in [Dual-engine highlighting](#dual-engine-highlighti
 
 - **Two entry flows, one reader.** A polished popup chooser: _Read this page_
   (Readability extraction of the active tab) or _Upload a file_ (drag-and-drop
-  PDF/TXT). Both converge on the side panel as the single playback surface.
+  PDF / EPUB / DOCX / TXT). Both converge on the side panel as the single
+  playback surface.
 - **Synced word + sentence highlighting** on **both** engines, rendered only in
   the side panel — the source page DOM is never touched.
 - **Two TTS engines, one contract:** System (free `speechSynthesis`) and Neural
@@ -51,7 +52,7 @@ flowchart TB
     SW["Service Worker<br/>message router · sidePanel.open()"]
     CS["Content Script<br/>Readability + DOMPurify"]
     subgraph PANEL["Side Panel (single playback surface)"]
-      SRC["DocumentSource<br/>page · pdf · txt"]
+      SRC["DocumentSource<br/>page · pdf · epub · docx · txt"]
       NORM["normalize()<br/>→ NormalizedDoc<br/>{ title, blocks: Sentence[] }"]
       READER["ReaderView<br/>per-word spans + highlight"]
       subgraph TTS["TtsEngine (shared contract)"]
@@ -97,7 +98,7 @@ read-aloud/
 Two deliberate abstractions carry the whole app:
 
 - **`DocumentSource` → `normalize()` → `NormalizedDoc`.** Every input (page,
-  PDF, TXT, and future EPUB/DOCX) becomes the _same_ `{ title, blocks:
+  PDF, EPUB, DOCX, TXT) becomes the _same_ `{ title, blocks:
 Sentence[] }` shape where each sentence carries its word breakdown with char
   offsets. Playback and highlighting are completely source-agnostic.
   ([types.ts](apps/extension/src/core/document/types.ts))
@@ -282,9 +283,10 @@ injects a fake `speechSynthesis` / `Audio` to drive the engines deterministicall
   abbreviation dictionary — "Dr. Smith" splits after "Dr.".
 - **PDF** extraction is text-only (no OCR for scanned PDFs) and reconstructs
   paragraphs heuristically from text-item EOL flags.
+- **EPUB / DOCX** extraction is text-only (no images, footnotes, or complex
+  tables); DRM-protected EPUBs can't be read. EPUB is parsed via the OPF spine
+  with JSZip rather than epub.js's renderer — more reliable for headless text.
 - **Uploads** are capped at 6 MB (the `chrome.storage.session` handoff budget).
-- **EPUB / DOCX** are recognized but not yet implemented (fast-follows) — they
-  show a clear "not supported yet" message.
 - **Restricted pages** (`chrome://`, the Web Store, the PDF viewer) can't be
   read; the extension says so instead of failing silently.
 

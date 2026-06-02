@@ -20,6 +20,7 @@ const SMOKES = [
   'm4-smoke.mjs',
   'm5-smoke.mjs',
   'm6-smoke.mjs',
+  'm7-smoke.mjs',
 ];
 
 function run(cmd, args, opts = {}) {

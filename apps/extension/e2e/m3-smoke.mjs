@@ -108,12 +108,16 @@ const run = async () => {
   const errPanel = await openPage(PANEL);
   await seedHandoff(
     errPanel,
-    fileSource('book.epub', 'application/epub+zip', Buffer.from('x')),
+    fileSource('notes.rtf', 'application/rtf', Buffer.from('x')),
   );
   await errPanel.reload();
   await errPanel.waitForSelector('text=Try again', { timeout: 15_000 });
   const errText = await errPanel.locator('body').innerText();
-  check('EPUB: shows unsupported error', errText.includes("aren't supported yet"), '');
+  check(
+    'unsupported type (RTF) shows graceful error',
+    errText.includes("aren't supported yet"),
+    '',
+  );
   await errPanel.screenshot({ path: resolve(SHOTS, 'm3-unsupported.png') });
 
   await context.close();
