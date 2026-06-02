@@ -6,6 +6,8 @@ import { PageSource } from '@/core/document/sources/page';
 import { createFileSource } from '@/core/document/sources';
 import type { DocumentSource, NormalizedDoc } from '@/core/document/types';
 import { ReaderView } from '@/ui/components/ReaderView';
+import { Transport } from '@/ui/components/Transport';
+import { usePlayer } from '@/ui/hooks/usePlayer';
 
 type BootState =
   | { phase: 'loading' }
@@ -100,6 +102,10 @@ export function SidePanel() {
     };
   }, [loadPage, loadFile]);
 
+  // Player owns playback; created once, (re)loads whenever the doc changes.
+  const readerDoc = state.phase === 'reader' ? state.doc : null;
+  const player = usePlayer(readerDoc);
+
   return (
     <div className="flex h-full flex-col bg-paper text-ink">
       <PanelHeader
@@ -116,8 +122,16 @@ export function SidePanel() {
         {state.phase === 'error' && (
           <ErrorState message={state.message} retry={state.retry} />
         )}
-        {state.phase === 'reader' && <ReaderView doc={state.doc} />}
+        {state.phase === 'reader' && (
+          <ReaderView
+            doc={state.doc}
+            activeSentence={player.highlight.sentenceId}
+            activeWord={player.highlight.wordIndex}
+            onSeek={player.seek}
+          />
+        )}
       </div>
+      {state.phase === 'reader' && <Transport player={player} />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { NormalizedDoc, Sentence } from '@/core/document/types';
 
 export interface ReaderViewProps {
@@ -29,8 +29,18 @@ export function ReaderView({
   // Group sentences into their source paragraphs for readable layout.
   const paragraphs = useMemo(() => groupByParagraph(doc.blocks), [doc.blocks]);
 
+  // Keep the spoken sentence in view as playback advances.
+  const rootRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (activeSentence < 0 || !rootRef.current) return;
+    const el = rootRef.current.querySelector(
+      `[data-sentence-id="${activeSentence}"]`,
+    );
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [activeSentence]);
+
   return (
-    <article className="reader mx-auto max-w-prose">
+    <article ref={rootRef} className="reader mx-auto max-w-prose">
       <h1 className="mb-4 font-reader text-2xl font-semibold leading-tight">
         {doc.title}
       </h1>
