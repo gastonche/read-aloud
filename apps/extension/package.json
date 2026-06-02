@@ -9,7 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "e2e": "npm run build && node e2e/m1-smoke.mjs && node e2e/m2-smoke.mjs"
+    "e2e": "npm run build && node e2e/m1-smoke.mjs && node e2e/m2-smoke.mjs && node e2e/m3-smoke.mjs"
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
