@@ -9,7 +9,8 @@ import {
 
 type Mode = 'choose' | 'upload';
 
-const ACCEPTED = '.pdf,.txt,application/pdf,text/plain';
+const ACCEPTED =
+  '.pdf,.txt,.epub,.docx,application/pdf,text/plain,application/epub+zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
 export function Popup() {
   const [mode, setMode] = useState<Mode>('choose');
@@ -155,7 +156,7 @@ function ChooseView({
         disabled={busy}
         onClick={onUpload}
         title="Upload a file"
-        subtitle="PDF or TXT — EPUB & DOCX soon"
+        subtitle="PDF, EPUB, DOCX, or TXT"
         icon={<path d="M12 3 7 8h3v6h4V8h3l-5-5zM5 18h14v2H5v-2z" />}
       />
     </div>
@@ -244,7 +245,9 @@ function UploadView({
         <p className="text-sm font-medium">
           {busy ? 'Loading…' : 'Drag a file here'}
         </p>
-        <p className="mt-0.5 text-xs text-ink-soft">PDF or TXT, up to 6 MB</p>
+        <p className="mt-0.5 text-xs text-ink-soft">
+          PDF, EPUB, DOCX, or TXT — up to 6 MB
+        </p>
         <button
           type="button"
           disabled={busy}
