@@ -19,6 +19,7 @@ const SMOKES = [
   'm3-smoke.mjs',
   'm4-smoke.mjs',
   'm5-smoke.mjs',
+  'm6-smoke.mjs',
 ];
 
 function run(cmd, args, opts = {}) {
@@ -32,13 +33,13 @@ async function waitForHealth(url, attempts = 40) {
   for (let i = 0; i < attempts; i++) {
     try {
       const r = await fetch(url);
-      if (r.ok) return true;
+      if (r.ok) return await r.json();
     } catch {
       /* not up yet */
     }
     await new Promise((r) => setTimeout(r, 500));
   }
-  return false;
+  return null;
 }
 
 const main = async () => {
@@ -63,13 +64,22 @@ const main = async () => {
     },
   );
 
-  const up = await waitForHealth('http://127.0.0.1:8787/health');
-  if (!up) {
+  const health = await waitForHealth('http://127.0.0.1:8787/health');
+  if (!health) {
     console.error('✗ dev Worker did not become healthy');
     worker.kill('SIGTERM');
     process.exit(1);
   }
-  console.log('✓ Worker healthy\n');
+  // Guard against a foreign worker already squatting :8787 (e.g. a real
+  // `wrangler dev`). The hermetic config reports the mock backend.
+  if (health.summaryBackend !== 'mock') {
+    console.error(
+      `✗ another worker is on :8787 (summaryBackend=${health.summaryBackend}). Stop it first.`,
+    );
+    worker.kill('SIGTERM');
+    process.exit(1);
+  }
+  console.log('✓ Worker healthy (hermetic mock)\n');
 
   let failed = 0;
   try {
