@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { PendingSource } from '@/messaging/contract';
-import { readAndClearPendingSource } from '@/core/handoff';
+import type { FilePendingSource, PendingSource } from '@/messaging/contract';
+import { base64ToArrayBuffer, readAndClearPendingSource } from '@/core/handoff';
 import { normalize, wordCount } from '@/core/document/normalize';
 import { PageSource } from '@/core/document/sources/page';
-import type { NormalizedDoc } from '@/core/document/types';
+import { createFileSource } from '@/core/document/sources';
+import type { DocumentSource, NormalizedDoc } from '@/core/document/types';
 import { ReaderView } from '@/ui/components/ReaderView';
 
 type BootState =
@@ -11,36 +12,77 @@ type BootState =
   | { phase: 'empty' }
   | { phase: 'working'; label: string }
   | { phase: 'error'; message: string; retry?: () => void }
-  | { phase: 'reader'; doc: NormalizedDoc }
-  | { phase: 'file-pending'; source: Extract<PendingSource, { kind: 'file' }> };
+  | { phase: 'reader'; doc: NormalizedDoc };
 
 export function SidePanel() {
   const [state, setState] = useState<BootState>({ phase: 'loading' });
   // The pending source is read-and-cleared once; keep it for retry.
   const sourceRef = useRef<PendingSource | null>(null);
 
-  const loadPage = useCallback(async (tabId: number) => {
-    setState({ phase: 'working', label: 'Extracting page…' });
-    try {
-      const raw = await new PageSource(tabId).load();
-      const doc = normalize(raw);
-      if (doc.blocks.length === 0) {
+  // Run any DocumentSource through the shared pipeline: load → normalize →
+  // render, with a labelled spinner, empty-result guard, and retry-on-error.
+  const runSource = useCallback(
+    async (
+      source: DocumentSource,
+      label: string,
+      emptyMessage: string,
+      retry: () => void,
+    ) => {
+      setState({ phase: 'working', label });
+      try {
+        const doc = normalize(await source.load());
+        if (doc.blocks.length === 0) {
+          setState({ phase: 'error', message: emptyMessage, retry });
+          return;
+        }
+        setState({ phase: 'reader', doc });
+      } catch (e) {
         setState({
           phase: 'error',
-          message: 'No readable text found on this page.',
-          retry: () => void loadPage(tabId),
+          message: e instanceof Error ? e.message : 'Something went wrong.',
+          retry,
         });
-        return;
       }
-      setState({ phase: 'reader', doc });
-    } catch (e) {
-      setState({
-        phase: 'error',
-        message: e instanceof Error ? e.message : 'Failed to read the page.',
-        retry: () => void loadPage(tabId),
-      });
-    }
-  }, []);
+    },
+    [],
+  );
+
+  const loadPage = useCallback(
+    (tabId: number) =>
+      runSource(
+        new PageSource(tabId),
+        'Extracting page…',
+        'No readable text found on this page.',
+        () => void loadPage(tabId),
+      ),
+    [runSource],
+  );
+
+  const loadFile = useCallback(
+    (file: FilePendingSource) => {
+      const start = () => {
+        try {
+          const buffer = base64ToArrayBuffer(file.dataBase64);
+          const source = createFileSource(file.name, file.mime, buffer);
+          void runSource(
+            source,
+            `Parsing ${file.name}…`,
+            'No readable text found in this file.',
+            start,
+          );
+        } catch (e) {
+          // Synchronous failures (unsupported type, bad base64) land here.
+          setState({
+            phase: 'error',
+            message: e instanceof Error ? e.message : 'Could not open file.',
+            retry: start,
+          });
+        }
+      };
+      start();
+    },
+    [runSource],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -50,14 +92,13 @@ export function SidePanel() {
         sourceRef.current = source;
         if (!source) return setState({ phase: 'empty' });
         if (source.kind === 'page') return void loadPage(source.tabId);
-        // File parsing arrives in milestone 3; acknowledge the handoff for now.
-        setState({ phase: 'file-pending', source });
+        loadFile(source);
       })
       .catch(() => !cancelled && setState({ phase: 'empty' }));
     return () => {
       cancelled = true;
     };
-  }, [loadPage]);
+  }, [loadPage, loadFile]);
 
   return (
     <div className="flex h-full flex-col bg-paper text-ink">
@@ -76,9 +117,6 @@ export function SidePanel() {
           <ErrorState message={state.message} retry={state.retry} />
         )}
         {state.phase === 'reader' && <ReaderView doc={state.doc} />}
-        {state.phase === 'file-pending' && (
-          <FilePending name={state.source.name} size={state.source.size} />
-        )}
       </div>
     </div>
   );
@@ -150,13 +188,3 @@ function ErrorState({
   );
 }
 
-function FilePending({ name, size }: { name: string; size: number }) {
-  return (
-    <div className="mt-10 text-center">
-      <p className="text-sm font-medium">Received “{name}”</p>
-      <p className="mt-1 text-xs text-ink-soft">
-        {(size / 1024).toFixed(1)} KB · file parsing lands in milestone 3.
-      </p>
-    </div>
-  );
-}
