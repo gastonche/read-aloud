@@ -5,9 +5,7 @@ import { normalize, wordCount } from '@/core/document/normalize';
 import { PageSource } from '@/core/document/sources/page';
 import { createFileSource } from '@/core/document/sources';
 import type { DocumentSource, NormalizedDoc } from '@/core/document/types';
-import { ReaderView } from '@/ui/components/ReaderView';
-import { Transport } from '@/ui/components/Transport';
-import { usePlayer } from '@/ui/hooks/usePlayer';
+import { ReaderScreen } from '@/ui/components/ReaderScreen';
 
 type BootState =
   | { phase: 'loading' }
@@ -102,10 +100,6 @@ export function SidePanel() {
     };
   }, [loadPage, loadFile]);
 
-  // Player owns playback; created once, (re)loads whenever the doc changes.
-  const readerDoc = state.phase === 'reader' ? state.doc : null;
-  const player = usePlayer(readerDoc);
-
   return (
     <div className="flex h-full flex-col bg-paper text-ink">
       <PanelHeader
@@ -115,23 +109,18 @@ export function SidePanel() {
             : undefined
         }
       />
-      <div className="flex-1 overflow-auto px-4 py-4">
-        {state.phase === 'loading' && <Spinner label="Booting…" />}
-        {state.phase === 'working' && <Spinner label={state.label} />}
-        {state.phase === 'empty' && <EmptyState />}
-        {state.phase === 'error' && (
-          <ErrorState message={state.message} retry={state.retry} />
-        )}
-        {state.phase === 'reader' && (
-          <ReaderView
-            doc={state.doc}
-            activeSentence={player.highlight.sentenceId}
-            activeWord={player.highlight.wordIndex}
-            onSeek={player.seek}
-          />
-        )}
-      </div>
-      {state.phase === 'reader' && <Transport player={player} />}
+      {state.phase === 'reader' ? (
+        <ReaderScreen doc={state.doc} />
+      ) : (
+        <div className="flex-1 overflow-auto px-4 py-4">
+          {state.phase === 'loading' && <Spinner label="Booting…" />}
+          {state.phase === 'working' && <Spinner label={state.label} />}
+          {state.phase === 'empty' && <EmptyState />}
+          {state.phase === 'error' && (
+            <ErrorState message={state.message} retry={state.retry} />
+          )}
+        </div>
+      )}
     </div>
   );
 }

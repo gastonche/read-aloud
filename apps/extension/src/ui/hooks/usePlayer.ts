@@ -19,6 +19,8 @@ export interface PlayerApi {
   /** True when the active voice can't highlight individual words. */
   sentenceLevelOnly: boolean;
   error: string | null;
+  play: () => void;
+  pause: () => void;
   toggle: () => void;
   stop: () => void;
   next: () => void;
@@ -71,6 +73,8 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doc]);
 
+  const play = useCallback(() => engineRef.current?.play(), []);
+  const pause = useCallback(() => engineRef.current?.pause(), []);
   const toggle = useCallback(() => {
     const e = engineRef.current;
     if (!e) return;
@@ -107,6 +111,8 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
     voiceId,
     sentenceLevelOnly,
     error,
+    play,
+    pause,
     toggle,
     stop,
     next,
