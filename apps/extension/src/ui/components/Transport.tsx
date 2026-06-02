@@ -23,7 +23,10 @@ export function Transport({ player }: { player: PlayerApi }) {
         </p>
       )}
 
-      <EngineToggle />
+      <EngineToggle
+        engineId={player.engineId}
+        onChange={player.setEngine}
+      />
 
       <div className="mb-3 mt-3 flex items-center justify-center gap-5">
         <IconButton label="Previous sentence" onClick={player.prev}>
@@ -103,19 +106,35 @@ function IconButton({
   );
 }
 
-/** System (active) vs Neural (lands in M6). Kept here so the UI is ready. */
-function EngineToggle() {
+/** System (free, on-device) vs Neural (premium, via the Worker). */
+function EngineToggle({
+  engineId,
+  onChange,
+}: {
+  engineId: 'web-speech' | 'elevenlabs';
+  onChange: (id: 'web-speech' | 'elevenlabs') => void;
+}) {
+  const tab = (id: 'web-speech' | 'elevenlabs', label: string) => {
+    const active = engineId === id;
+    return (
+      <button
+        type="button"
+        onClick={() => onChange(id)}
+        aria-pressed={active}
+        className={`flex-1 rounded-md py-1 text-center transition ${
+          active
+            ? 'bg-white text-ink shadow-sm'
+            : 'text-ink-soft hover:text-ink'
+        }`}
+      >
+        {label}
+      </button>
+    );
+  };
   return (
     <div className="flex rounded-lg bg-slate-100 p-0.5 text-xs font-medium">
-      <span className="flex-1 rounded-md bg-white py-1 text-center text-ink shadow-sm">
-        System
-      </span>
-      <span
-        className="flex-1 cursor-not-allowed py-1 text-center text-ink-soft/60"
-        title="Neural voices arrive in a later milestone"
-      >
-        Neural · soon
-      </span>
+      {tab('web-speech', 'System')}
+      {tab('elevenlabs', 'Neural')}
     </div>
   );
 }

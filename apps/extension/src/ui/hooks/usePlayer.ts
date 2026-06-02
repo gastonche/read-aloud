@@ -2,6 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NormalizedDoc } from '@/core/document/types';
 import { WebSpeechEngine } from '@/core/tts/web-speech';
 import { BrowserSpeechBackend } from '@/core/tts/browser-backend';
+import { ElevenLabsEngine } from '@/core/tts/elevenlabs';
+import {
+  HttpTtsClient,
+  HtmlAudioController,
+  RafTicker,
+} from '@/core/tts/browser-neural';
 import {
   NO_HIGHLIGHT,
   type HighlightState,
@@ -10,7 +16,10 @@ import {
   type TtsVoice,
 } from '@/core/tts/types';
 
+export type EngineId = 'web-speech' | 'elevenlabs';
+
 export interface PlayerApi {
+  engineId: EngineId;
   status: PlaybackStatus;
   highlight: HighlightState;
   rate: number;
@@ -19,6 +28,7 @@ export interface PlayerApi {
   /** True when the active voice can't highlight individual words. */
   sentenceLevelOnly: boolean;
   error: string | null;
+  setEngine: (id: EngineId) => void;
   play: () => void;
   pause: () => void;
   toggle: () => void;
@@ -30,12 +40,25 @@ export interface PlayerApi {
   changeVoice: (voiceId: string) => void;
 }
 
+function createEngine(id: EngineId): TtsEngine {
+  return id === 'elevenlabs'
+    ? new ElevenLabsEngine(
+        new HttpTtsClient(),
+        new HtmlAudioController(),
+        new RafTicker(),
+      )
+    : new WebSpeechEngine(new BrowserSpeechBackend());
+}
+
 /**
- * Owns the engine instance and bridges its event stream to React state. The
- * engine is created once; the document is (re)loaded whenever it changes.
+ * Owns the active engine and bridges its event stream to React state. Switching
+ * engines disposes the old one, creates the new one, and reloads the current
+ * document. A neural-engine error auto-falls-back to Web Speech so playback
+ * keeps working even if the Worker/ElevenLabs is down.
  */
 export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
   const engineRef = useRef<TtsEngine | null>(null);
+  const [engineId, setEngineId] = useState<EngineId>('web-speech');
   const [status, setStatus] = useState<PlaybackStatus>('idle');
   const [highlight, setHighlight] = useState<HighlightState>(NO_HIGHLIGHT);
   const [rate, setRate] = useState(1);
@@ -44,32 +67,48 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
   const [sentenceLevelOnly, setSentenceLevelOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Create the engine once and wire its listener to state setters.
+  // Refs so the engine effect can read current rate/voice/doc without
+  // re-running on every change of them.
+  const rateRef = useRef(rate);
+  rateRef.current = rate;
+  const docRef = useRef(doc);
+  docRef.current = doc;
+
+  // (Re)create the engine when the selected engine changes.
   useEffect(() => {
-    const engine = new WebSpeechEngine(new BrowserSpeechBackend());
+    const engine = createEngine(engineId);
     engineRef.current = engine;
+    setSentenceLevelOnly(false);
+    setError(null);
     engine.setListener({
       onStatus: setStatus,
       onHighlight: setHighlight,
       onWordTimingUnavailable: () => setSentenceLevelOnly(true),
-      onError: (e) => setError(e.message),
+      onError: (e) => {
+        setError(e.message);
+        // Automatic fallback: if the neural engine fails, drop to Web Speech
+        // so the user can still listen.
+        setEngineId((cur) => (cur === 'elevenlabs' ? 'web-speech' : cur));
+      },
     });
     void engine.listVoices().then((vs) => {
       setVoices(vs);
       const def = vs.find((v) => v.isDefault) ?? vs[0];
-      if (def) setVoiceId((prev) => prev ?? def.id);
+      setVoiceId(def?.id);
     });
+    if (docRef.current) {
+      engine.load(docRef.current, { rate: rateRef.current });
+    }
     return () => engine.dispose();
-  }, []);
+  }, [engineId]);
 
-  // Load the document whenever it changes. Rate/voice are applied live via the
-  // engine's setters, so they intentionally aren't dependencies here.
+  // Load the document whenever it changes (rate/voice apply live via setters).
   useEffect(() => {
     const engine = engineRef.current;
     if (!engine || !doc) return;
     setSentenceLevelOnly(false);
     setError(null);
-    engine.load(doc, { rate, voiceId });
+    engine.load(doc, { rate: rateRef.current, voiceId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doc]);
 
@@ -81,14 +120,12 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
     if (status === 'playing') e.pause();
     else e.play();
   }, [status]);
-
   const stop = useCallback(() => engineRef.current?.stop(), []);
 
   const seek = useCallback(
     (sentenceId: number) => engineRef.current?.seekToSentence(sentenceId),
     [],
   );
-
   const current = highlight.sentenceId < 0 ? 0 : highlight.sentenceId;
   const next = useCallback(() => seek(current + 1), [seek, current]);
   const prev = useCallback(() => seek(Math.max(0, current - 1)), [seek, current]);
@@ -97,13 +134,14 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
     setRate(r);
     engineRef.current?.setRate(r);
   }, []);
-
   const changeVoice = useCallback((id: string) => {
     setVoiceId(id);
     engineRef.current?.setVoice(id);
   }, []);
+  const setEngine = useCallback((id: EngineId) => setEngineId(id), []);
 
   return {
+    engineId,
     status,
     highlight,
     rate,
@@ -111,6 +149,7 @@ export function usePlayer(doc: NormalizedDoc | null): PlayerApi {
     voiceId,
     sentenceLevelOnly,
     error,
+    setEngine,
     play,
     pause,
     toggle,
