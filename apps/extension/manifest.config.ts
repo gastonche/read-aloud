@@ -36,6 +36,17 @@ export default defineManifest({
     type: 'module',
   },
 
+  // Readability extraction. Declared so it's present on pages loaded with the
+  // extension installed; the SW also injects it on demand as a fallback for
+  // pages that predate installation. Listener-only until asked to extract.
+  content_scripts: [
+    {
+      matches: ['<all_urls>'],
+      js: ['src/content/extract.ts'],
+      run_at: 'document_idle',
+    },
+  ],
+
   permissions: ['sidePanel', 'storage', 'activeTab', 'scripting'],
 
   // Broad host access so "Read this page" works anywhere the user is.

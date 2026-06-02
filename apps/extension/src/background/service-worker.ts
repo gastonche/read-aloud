@@ -10,8 +10,43 @@
  *   bookkeeping.
  */
 
-import { onRuntimeMessage } from '@/messaging/bus';
-import type { RuntimeMessage, Result } from '@/messaging/contract';
+import { onRuntimeMessage, sendTabMessage } from '@/messaging/bus';
+import type {
+  RuntimeMessage,
+  Result,
+  ExtractPageResponse,
+} from '@/messaging/contract';
+
+/** The built content-script path, read from the manifest (CRXJS hashes it). */
+function contentScriptFiles(): string[] {
+  const scripts = chrome.runtime.getManifest().content_scripts ?? [];
+  return scripts.flatMap((s) => s.js ?? []);
+}
+
+/** Ask the page's content script to extract, injecting it first if absent. */
+async function extractPage(tabId: number): Promise<ExtractPageResponse> {
+  const ask = () =>
+    sendTabMessage<ExtractPageResponse>(tabId, { type: 'READABILITY_EXTRACT' });
+  try {
+    return await ask();
+  } catch {
+    // No receiver yet (tab predates install, or just navigated). Inject the
+    // content script on demand, then retry once.
+    try {
+      const files = contentScriptFiles();
+      if (files.length === 0) throw new Error('no content script registered');
+      await chrome.scripting.executeScript({ target: { tabId }, files });
+      return await ask();
+    } catch {
+      return {
+        ok: false,
+        error:
+          "Can't read this page. Chrome blocks extensions on some pages " +
+          '(the Web Store, chrome:// pages, PDFs). Try a regular web page.',
+      };
+    }
+  }
+}
 
 async function handleMessage(message: RuntimeMessage): Promise<Result> {
   switch (message.type) {
@@ -22,8 +57,7 @@ async function handleMessage(message: RuntimeMessage): Promise<Result> {
     }
 
     case 'EXTRACT_PAGE': {
-      // Wired in milestone 2 (Readability extraction).
-      return { ok: false, error: 'EXTRACT_PAGE not implemented until M2' };
+      return extractPage(message.tabId);
     }
 
     default: {
