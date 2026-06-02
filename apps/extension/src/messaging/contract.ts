@@ -61,7 +61,44 @@ export interface ReadabilityExtractMessage {
   type: 'READABILITY_EXTRACT';
 }
 
-export type ContentMessage = ReadabilityExtractMessage;
+// ── On-page reader (v0.2.0): the content script builds a live doc and paints
+//    highlights over the page via the CSS Custom Highlight API. ──
+
+/** Build a live document (text + per-word DOM Ranges) from the page. */
+export interface BuildLiveDocMessage {
+  type: 'BUILD_LIVE_DOC';
+  lang?: string;
+}
+
+/** Paint the active sentence/word (wordIndex < 0 = sentence-level only). */
+export interface HighlightMessage {
+  type: 'HIGHLIGHT';
+  sentenceId: number;
+  wordIndex: number;
+  /** Scroll the sentence into view. */
+  scroll?: boolean;
+}
+
+/** Clear all on-page highlighting. */
+export interface ClearHighlightMessage {
+  type: 'CLEAR_HIGHLIGHT';
+}
+
+export type ContentMessage =
+  | ReadabilityExtractMessage
+  | BuildLiveDocMessage
+  | HighlightMessage
+  | ClearHighlightMessage;
+
+/** Response to BUILD_LIVE_DOC: the normalized doc + a summary for diagnostics. */
+export interface BuildLiveDocResponse {
+  ok: true;
+  title: string;
+  lang: string;
+  sentenceCount: number;
+  wordCount: number;
+  supported: boolean;
+}
 
 // ──────────────────────────── Responses ──────────────────────────────
 
