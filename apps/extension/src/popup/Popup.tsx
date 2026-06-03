@@ -5,6 +5,7 @@ import {
   FileTooLargeError,
   stagePendingSource,
 } from '@/core/handoff';
+import { ReadAloudMark } from '@/ui/components/ReadAloudMark';
 
 type Mode = 'choose' | 'upload';
 
@@ -127,9 +128,7 @@ function Header() {
   return (
     <div className="mb-4 flex items-center gap-2">
       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-paper">
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
-          <path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12z" />
-        </svg>
+        <ReadAloudMark className="h-5 w-5" />
       </div>
       <div>
         <h1 className="text-base font-semibold leading-none">ReadAloud</h1>

@@ -1,5 +1,6 @@
 ---
 import Icon from './Icon.astro';
+import Logo from './Logo.astro';
 
 const links = [
   { href: '#how', label: 'How it works' },
@@ -19,11 +20,7 @@ const chromeStore = 'https://chrome.google.com/webstore';
     aria-label="Primary"
   >
     <a href="#top" class="flex items-center gap-2.5 font-display text-lg font-semibold">
-      <span
-        class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent-bright to-accent-violet text-white shadow-sm shadow-accent/30"
-      >
-        <Icon name="play" size={16} class="fill-current stroke-none translate-x-px" />
-      </span>
+      <Logo size={36} class="drop-shadow-sm" />
       <span class="tracking-tight">ReadAloud</span>
     </a>
 
