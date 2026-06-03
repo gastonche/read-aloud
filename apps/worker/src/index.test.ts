@@ -69,6 +69,49 @@ describe('POST /summarize', () => {
   });
 });
 
+describe('GET /voices', () => {
+  const get = (env: Env) =>
+    app.fetch(new Request('http://worker.local/voices'), env);
+
+  it('advertises all voices in mock mode (no keys)', async () => {
+    const res = await get(devEnv());
+    const { voices } = (await res.json()) as {
+      voices: { id: string; provider: string }[];
+    };
+    expect(voices.some((v) => v.provider === 'elevenlabs')).toBe(true);
+    expect(voices.some((v) => v.provider === 'openai')).toBe(true);
+  });
+
+  it('advertises only ElevenLabs when only that key is set', async () => {
+    const res = await get(devEnv({ ELEVENLABS_API_KEY: 'x' }));
+    const { voices } = (await res.json()) as { voices: { provider: string }[] };
+    expect(voices.every((v) => v.provider === 'elevenlabs')).toBe(true);
+    expect(voices.length).toBeGreaterThan(0);
+  });
+
+  it('advertises only OpenAI when only that key is set', async () => {
+    const res = await get(devEnv({ OPENAI_API_KEY: 'x' }));
+    const { voices } = (await res.json()) as { voices: { provider: string }[] };
+    expect(voices.every((v) => v.provider === 'openai')).toBe(true);
+  });
+
+  it('advertises both when both keys are set', async () => {
+    const res = await get(
+      devEnv({ ELEVENLABS_API_KEY: 'x', OPENAI_API_KEY: 'y' }),
+    );
+    const { voices } = (await res.json()) as { voices: { provider: string }[] };
+    const providers = new Set(voices.map((v) => v.provider));
+    expect(providers.has('elevenlabs')).toBe(true);
+    expect(providers.has('openai')).toBe(true);
+  });
+
+  it('voice ids are provider-qualified for /tts routing', async () => {
+    const res = await get(devEnv());
+    const { voices } = (await res.json()) as { voices: { id: string }[] };
+    expect(voices.every((v) => /^(elevenlabs|openai):/.test(v.id))).toBe(true);
+  });
+});
+
 describe('POST /tts (mock provider)', () => {
   const ttsReq = (body: unknown) =>
     new Request('http://worker.local/tts', {

@@ -33,9 +33,11 @@ voices. That story is told in [Dual-engine highlighting](#dual-engine-highlighti
 - **Synced word + sentence highlighting** on **both** engines, rendered only in
   the side panel — the source page DOM is never touched.
 - **Two voice modes, one contract:** **Built-in** (free, on-device
-  `speechSynthesis`) and **Studio** (premium neural, ElevenLabs via a Cloudflare
-  Worker). Switch live; Studio failures auto-fall back to Built-in so playback
-  never dies.
+  `speechSynthesis`) and **Studio** (premium neural — **ElevenLabs and/or
+  OpenAI**, via a Cloudflare Worker). The backend advertises which voices exist
+  based on the API keys it holds (`GET /voices`), so adding voices is a
+  backend-only change; the extension renders whatever it gets. Switch live;
+  Studio failures auto-fall back to Built-in.
 - **A player deck that feels like a product:** a voice rail of avatar chips
   with personality ("Warm & natural"), a play button with a progress ring, a
   vertical speed dial (0.5×–3×), skip ± sentence, click-to-seek, Space-to-play,
@@ -80,7 +82,7 @@ flowchart TB
   end
 
   AIGW["Workers AI<br/>(via AI Gateway)"]
-  XI["ElevenLabs<br/>with-timestamps"]
+  XI["ElevenLabs / OpenAI<br/>(/voices advertises<br/>available providers)"]
 
   POPUP -- "OPEN_SIDE_PANEL + storage.session handoff" --> SW
   SW -- "sidePanel.open({tabId})" --> PANEL
@@ -219,10 +221,12 @@ No secrets are committed; `.dev.vars` is gitignored (see `.dev.vars.example`).
 - **Built-in voices: $0.** `speechSynthesis` runs on-device — no API, no
   network. This is why Built-in is the **default** and Studio is strictly
   **opt-in**.
-- **Neural (ElevenLabs):** billed per **~1k characters** synthesized. A typical
-  article (~5k chars) is a few cents; the cost scales with reading length, which
-  is exactly why it's behind a toggle and chunked per sentence (you only pay for
-  what you actually play). The Worker logs character counts per `/tts` call.
+- **Neural (ElevenLabs / OpenAI):** billed per character (ElevenLabs ~per 1k
+  chars; OpenAI TTS at its own per-character rate — and OpenAI returns no word
+  timestamps, so the client estimates word timing from the audio duration). A
+  typical article (~5k chars) is a few cents; cost scales with reading length,
+  which is why neural is behind a toggle and chunked per sentence (you only pay
+  for what you actually play). The Worker logs character counts per `/tts` call.
 - **TL;DR (Workers AI):** billed per token (input + output) on Cloudflare's
   Workers AI pricing; summaries are short and capped (input truncated to 12k
   chars, output to 512 tokens). The AI Gateway can cache identical requests to

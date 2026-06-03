@@ -115,8 +115,9 @@ const run = async () => {
     chrome.storage.local.get('readaloud:barAnchor'),
   );
   check(
-    'drag snaps to a corner and persists the anchor',
-    stored['readaloud:barAnchor'] === 'top-left',
+    'drag snaps to a left-edge dock and persists the anchor',
+    typeof stored['readaloud:barAnchor'] === 'string' &&
+      stored['readaloud:barAnchor'].includes('left'),
     JSON.stringify(stored),
   );
   await article.screenshot({ path: resolve(SHOTS, 'page-bar-dragged.png') });

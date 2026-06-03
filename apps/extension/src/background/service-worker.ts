@@ -73,16 +73,21 @@ async function startPageReader(tabId: number): Promise<Result> {
   }
 }
 
-/** Proxy a POST to the Worker from the SW (off the page's CSP/origin). */
+/** Proxy a request to the Worker from the SW (off the page's CSP/origin). */
 async function workerFetch(
   path: string,
   body: unknown,
+  method: 'GET' | 'POST' = 'POST',
 ): Promise<WorkerFetchResponse> {
   try {
     const res = await fetch(`${WORKER_BASE_URL}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      method,
+      ...(method === 'POST'
+        ? {
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          }
+        : {}),
     });
     if (!res.ok) {
       const err = (await res.json().catch(() => null)) as {
@@ -123,7 +128,7 @@ async function handleMessage(
 ): Promise<Result> {
   switch (message.type) {
     case 'WORKER_FETCH': {
-      return workerFetch(message.path, message.body);
+      return workerFetch(message.path, message.body, message.method ?? 'POST');
     }
 
     case 'OPEN_SIDE_PANEL': {

@@ -16,10 +16,11 @@ import type {
   SummarizeRequest,
   SummarizeResponse,
   TtsRequest,
+  VoicesResponse,
 } from '@readaloud/shared';
 import type { Env } from './env';
 import { getSummarizer } from './summarizer';
-import { getTtsProvider } from './tts';
+import { availableVoices, resolveTts } from './tts';
 import { rateLimit } from './ratelimit';
 
 const MAX_SUMMARY_CHARS = 12_000;
@@ -109,6 +110,12 @@ app.post('/summarize', rateLimit, async (c) => {
   }
 });
 
+// ── GET /voices ──────────────────────────────────────────────────────
+// Advertise the neural voices available given the configured provider keys.
+app.get('/voices', (c) =>
+  c.json<VoicesResponse>({ voices: availableVoices(c.env) }),
+);
+
 // ── POST /tts ────────────────────────────────────────────────────────
 app.post('/tts', rateLimit, async (c) => {
   let body: TtsRequest;
@@ -130,16 +137,14 @@ app.post('/tts', rateLimit, async (c) => {
   }
 
   try {
-    const result = await getTtsProvider(c.env).synthesize({
-      text,
-      voiceId: body.voiceId,
-    });
+    const { provider, voiceId } = resolveTts(c.env, body.voiceId);
+    const result = await provider.synthesize({ text, voiceId });
     console.log(
       JSON.stringify({
         route: '/tts',
         env: c.env.ENVIRONMENT,
-        chars: text.length, // ElevenLabs bills per character
-        mock: !c.env.ELEVENLABS_API_KEY,
+        chars: text.length, // providers bill per character
+        voice: body.voiceId ?? '(default)',
       }),
     );
     return c.json(result);

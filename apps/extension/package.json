@@ -1,7 +1,7 @@
 {
   "name": "@readaloud/extension",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "ReadAloud — a Speechify-style MV3 extension that reads pages and documents aloud with synced highlighting.",
   "scripts": {

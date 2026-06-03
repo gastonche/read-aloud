@@ -86,8 +86,9 @@ export interface StartPageReaderMessage {
  */
 export interface WorkerFetchMessage {
   type: 'WORKER_FETCH';
-  path: '/tts' | '/summarize';
-  body: unknown;
+  path: '/tts' | '/summarize' | '/voices';
+  method?: 'GET' | 'POST';
+  body?: unknown;
 }
 
 /** content script (bar) → SW: open the side panel and hand off playback. */

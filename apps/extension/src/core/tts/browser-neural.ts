@@ -4,49 +4,54 @@
  * Kept out of the engine so the engine stays unit-testable with fakes.
  */
 
-import type { ApiError, TtsResponse } from '@readaloud/shared';
+import type {
+  ApiError,
+  NeuralVoice,
+  TtsResponse,
+  VoicesResponse,
+} from '@readaloud/shared';
 import { WORKER_BASE_URL } from '@/config';
 import type { AudioController, Ticker, TtsClient } from './elevenlabs';
 import type { TtsVoice } from './types';
 
-/** A curated set of ElevenLabs voices (the Worker resolves the id). */
+/**
+ * Offline fallback if the Worker is unreachable (the real list comes from
+ * GET /voices). Ids are provider-qualified, matching the Worker catalog.
+ */
 export const NEURAL_VOICES: TtsVoice[] = [
   {
-    id: '21m00Tcm4TlvDq8ikWAM',
+    id: 'elevenlabs:21m00Tcm4TlvDq8ikWAM',
     label: 'Rachel',
     lang: 'en-US',
     isDefault: true,
     description: 'Warm & natural',
   },
   {
-    id: 'AZnzlk1XvdvUeBnXmlld',
+    id: 'elevenlabs:AZnzlk1XvdvUeBnXmlld',
     label: 'Domi',
     lang: 'en-US',
     isDefault: false,
     description: 'Bold & confident',
   },
   {
-    id: 'EXAVITQu4vr4xnSDxMaL',
+    id: 'elevenlabs:EXAVITQu4vr4xnSDxMaL',
     label: 'Bella',
     lang: 'en-US',
     isDefault: false,
     description: 'Soft & gentle',
   },
-  {
-    id: 'ErXwobaYiN019PkySvjV',
-    label: 'Antoni',
-    lang: 'en-US',
-    isDefault: false,
-    description: 'Crisp & clear',
-  },
-  {
-    id: 'TxGEqnHWrfWFTfGW9XjX',
-    label: 'Josh',
-    lang: 'en-US',
-    isDefault: false,
-    description: 'Deep & steady',
-  },
 ];
+
+/** Map the backend's NeuralVoice list to the engine-agnostic TtsVoice shape. */
+export function toTtsVoices(voices: NeuralVoice[]): TtsVoice[] {
+  return voices.map((v, i) => ({
+    id: v.id,
+    label: v.label,
+    lang: v.lang,
+    isDefault: i === 0,
+    ...(v.description ? { description: v.description } : {}),
+  }));
+}
 
 export class HttpTtsClient implements TtsClient {
   async synthesize(
@@ -74,7 +79,14 @@ export class HttpTtsClient implements TtsClient {
   }
 
   async listVoices(): Promise<TtsVoice[]> {
-    return NEURAL_VOICES;
+    try {
+      const res = await fetch(`${WORKER_BASE_URL}/voices`);
+      if (!res.ok) throw new Error(String(res.status));
+      const data = (await res.json()) as VoicesResponse;
+      return data.voices.length ? toTtsVoices(data.voices) : NEURAL_VOICES;
+    } catch {
+      return NEURAL_VOICES; // Worker unreachable — offline fallback
+    }
   }
 }
 
@@ -100,6 +112,9 @@ export class HtmlAudioController implements AudioController {
   }
   currentTime(): number {
     return this.audio.currentTime;
+  }
+  duration(): number {
+    return this.audio.duration;
   }
   setRate(rate: number): void {
     this.audio.playbackRate = rate;

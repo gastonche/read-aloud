@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   collapseAlignmentToWords,
   wordIndexAtTime,
+  estimateWordSpans,
   type CharacterAlignment,
 } from './index';
 
@@ -85,5 +86,32 @@ describe('wordIndexAtTime', () => {
 
   it('returns -1 for an empty span list', () => {
     expect(wordIndexAtTime([], 1)).toBe(-1);
+  });
+});
+
+describe('estimateWordSpans', () => {
+  it('distributes duration across words and covers [0, duration]', () => {
+    const spans = estimateWordSpans(['hi', 'world'], 10);
+    expect(spans).toHaveLength(2);
+    expect(spans[0]!.startSec).toBe(0);
+    expect(spans.at(-1)!.endSec).toBeCloseTo(10, 5);
+    // contiguous: each end == next start
+    expect(spans[0]!.endSec).toBeCloseTo(spans[1]!.startSec, 5);
+    // longer word gets more time
+    const w0 = spans[0]!.endSec - spans[0]!.startSec;
+    const w1 = spans[1]!.endSec - spans[1]!.startSec;
+    expect(w1).toBeGreaterThan(w0);
+    expect(spans.map((s) => s.index)).toEqual([0, 1]);
+  });
+
+  it('returns empty for no words or non-positive duration', () => {
+    expect(estimateWordSpans([], 5)).toEqual([]);
+    expect(estimateWordSpans(['a'], 0)).toEqual([]);
+  });
+
+  it('drives wordIndexAtTime so OpenAI-style audio still highlights', () => {
+    const spans = estimateWordSpans(['one', 'two', 'three'], 9);
+    expect(wordIndexAtTime(spans, 0.1)).toBe(0);
+    expect(wordIndexAtTime(spans, 8.9)).toBe(2);
   });
 });

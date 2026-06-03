@@ -65,6 +65,12 @@ const run = async () => {
     'voice picker lists Studio voices',
     (await panel.locator('button[aria-label="Select Rachel"]').count()) >= 1,
   );
+  // Backend-driven catalog: voices from BOTH providers reach the UI (mock mode
+  // advertises ElevenLabs "Rachel" + OpenAI "Nova").
+  check(
+    'multi-provider catalog: an OpenAI voice is listed too',
+    (await panel.locator('button[aria-label="Select Nova"]').count()) >= 1,
+  );
   await panel.locator('button[aria-label="Select Rachel"]').click(); // selects + closes
 
   // Play → fetch /tts (mock) → fake audio advances → word highlight.

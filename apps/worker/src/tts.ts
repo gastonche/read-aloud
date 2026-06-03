@@ -1,13 +1,18 @@
 /**
- * Text-to-speech provider abstraction for POST /tts.
+ * Multi-provider text-to-speech for POST /tts + the catalog for GET /voices.
  *
- * The real provider calls ElevenLabs' `with-timestamps` endpoint (the API key
- * is a Worker secret and is NEVER exposed to the client). The mock provider
- * returns a silent WAV of the right duration plus deterministic character
- * alignment, so local dev / the E2E suite work without an ElevenLabs key.
+ * Providers (ElevenLabs `with-timestamps`, OpenAI `audio/speech`) sit behind one
+ * {@link TtsProvider} interface; their API keys are Worker secrets, never seen
+ * by the client. /voices advertises only the voices whose provider key is
+ * configured; /tts routes by the provider prefix on the (opaque) voice id. The
+ * mock provider keeps local dev / the E2E suite working with no keys.
  */
 
-import type { CharacterAlignment, TtsResponse } from '@readaloud/shared';
+import type {
+  CharacterAlignment,
+  NeuralVoice,
+  TtsResponse,
+} from '@readaloud/shared';
 import type { Env } from './env';
 
 export interface TtsInput {
@@ -20,6 +25,118 @@ export interface TtsProvider {
 }
 
 const DEFAULT_VOICE = '21m00Tcm4TlvDq8ikWAM'; // ElevenLabs "Rachel"
+const EMPTY_ALIGNMENT: CharacterAlignment = {
+  characters: [],
+  character_start_times_seconds: [],
+  character_end_times_seconds: [],
+};
+
+// ─────────────────────────── voice catalog ───────────────────────────
+// Add voices here and they appear in the extension — no client change.
+
+const ELEVENLABS_VOICES: NeuralVoice[] = [
+  {
+    id: 'elevenlabs:21m00Tcm4TlvDq8ikWAM',
+    label: 'Rachel',
+    lang: 'en-US',
+    description: 'Warm & natural',
+    provider: 'elevenlabs',
+  },
+  {
+    id: 'elevenlabs:AZnzlk1XvdvUeBnXmlld',
+    label: 'Domi',
+    lang: 'en-US',
+    description: 'Bold & confident',
+    provider: 'elevenlabs',
+  },
+  {
+    id: 'elevenlabs:EXAVITQu4vr4xnSDxMaL',
+    label: 'Bella',
+    lang: 'en-US',
+    description: 'Soft & gentle',
+    provider: 'elevenlabs',
+  },
+  {
+    id: 'elevenlabs:ErXwobaYiN019PkySvjV',
+    label: 'Antoni',
+    lang: 'en-US',
+    description: 'Crisp & clear',
+    provider: 'elevenlabs',
+  },
+  {
+    id: 'elevenlabs:TxGEqnHWrfWFTfGW9XjX',
+    label: 'Josh',
+    lang: 'en-US',
+    description: 'Deep & steady',
+    provider: 'elevenlabs',
+  },
+];
+
+const OPENAI_VOICES: NeuralVoice[] = [
+  {
+    id: 'openai:alloy',
+    label: 'Alloy',
+    lang: 'en-US',
+    description: 'Neutral & balanced',
+    provider: 'openai',
+  },
+  {
+    id: 'openai:nova',
+    label: 'Nova',
+    lang: 'en-US',
+    description: 'Bright & lively',
+    provider: 'openai',
+  },
+  {
+    id: 'openai:shimmer',
+    label: 'Shimmer',
+    lang: 'en-US',
+    description: 'Warm & expressive',
+    provider: 'openai',
+  },
+  {
+    id: 'openai:echo',
+    label: 'Echo',
+    lang: 'en-US',
+    description: 'Calm & clear',
+    provider: 'openai',
+  },
+  {
+    id: 'openai:fable',
+    label: 'Fable',
+    lang: 'en-US',
+    description: 'Storytelling',
+    provider: 'openai',
+  },
+  {
+    id: 'openai:onyx',
+    label: 'Onyx',
+    lang: 'en-US',
+    description: 'Deep & resonant',
+    provider: 'openai',
+  },
+];
+
+/** Voices to advertise, based on which provider keys are configured. */
+export function availableVoices(env: Env): NeuralVoice[] {
+  const out: NeuralVoice[] = [];
+  if (env.ELEVENLABS_API_KEY) out.push(...ELEVENLABS_VOICES);
+  if (env.OPENAI_API_KEY) out.push(...OPENAI_VOICES);
+  // No keys (mock/dev): advertise everything so the UI has voices to show.
+  if (out.length === 0) out.push(...ELEVENLABS_VOICES, ...OPENAI_VOICES);
+  return out;
+}
+
+/** Split a qualified voice id ("openai:nova") into provider + bare id. */
+function parseVoiceId(id: string | undefined): {
+  provider: string;
+  bareId: string | undefined;
+} {
+  if (!id) return { provider: '', bareId: undefined };
+  const i = id.indexOf(':');
+  if (i < 0) return { provider: '', bareId: id };
+  return { provider: id.slice(0, i), bareId: id.slice(i + 1) };
+}
 
 // ───────────────────────────── real provider ─────────────────────────────
 
@@ -67,6 +184,42 @@ export class ElevenLabsProvider implements TtsProvider {
   }
 }
 
+// ─────────────────────────── OpenAI provider ───────────────────────────
+// OpenAI's speech endpoint returns audio only — NO timestamps — so we return an
+// empty alignment and the client estimates word timing from the audio duration.
+
+export class OpenAiProvider implements TtsProvider {
+  constructor(
+    private readonly apiKey: string,
+    private readonly model: string,
+  ) {}
+
+  async synthesize({ text, voiceId }: TtsInput): Promise<TtsResponse> {
+    const res = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${this.apiKey}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: this.model,
+        voice: voiceId || 'alloy',
+        input: text,
+        response_format: 'mp3',
+      }),
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error(`OpenAI ${res.status}: ${detail.slice(0, 200)}`);
+    }
+    const audio = await res.arrayBuffer();
+    return {
+      audioBase64: arrayBufferToBase64(audio),
+      alignment: EMPTY_ALIGNMENT,
+    };
+  }
+}
+
 // ───────────────────────────── mock provider ─────────────────────────────
 
 export class MockTtsProvider implements TtsProvider {
@@ -97,14 +250,45 @@ export class MockTtsProvider implements TtsProvider {
   }
 }
 
-export function getTtsProvider(env: Env): TtsProvider {
-  if (env.ELEVENLABS_API_KEY) {
-    return new ElevenLabsProvider(
-      env.ELEVENLABS_API_KEY,
-      env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE,
-    );
+/**
+ * Route to the provider for a (qualified) voice id, returning the bare id to
+ * pass upstream. Falls back to the mock provider when the matching key is
+ * absent (local dev) or the provider is unknown.
+ */
+export function resolveTts(
+  env: Env,
+  voiceId: string | undefined,
+): { provider: TtsProvider; voiceId: string | undefined } {
+  const { provider, bareId } = parseVoiceId(voiceId);
+  if (provider === 'openai' && env.OPENAI_API_KEY) {
+    return {
+      provider: new OpenAiProvider(
+        env.OPENAI_API_KEY,
+        env.OPENAI_TTS_MODEL || 'gpt-4o-mini-tts',
+      ),
+      voiceId: bareId,
+    };
   }
-  return new MockTtsProvider();
+  if (provider === 'elevenlabs' && env.ELEVENLABS_API_KEY) {
+    return {
+      provider: new ElevenLabsProvider(
+        env.ELEVENLABS_API_KEY,
+        env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE,
+      ),
+      voiceId: bareId,
+    };
+  }
+  return { provider: new MockTtsProvider(), voiceId: bareId };
+}
+
+/** Chunked base64 of an ArrayBuffer (audio from a binary provider). */
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(binary);
 }
 
 // ─────────────────────── silent WAV generator (mock) ───────────────────────

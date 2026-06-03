@@ -8,6 +8,10 @@
 #   wrangler dev --var SUMMARY_BACKEND:mock
 # (This is exactly what the E2E suite does.)
 
-# ElevenLabs (milestone 6)
+# Neural TTS providers. Set either, both, or neither — /voices advertises only
+# the voices whose key is present, and /tts routes by the voice's provider.
+# With no key set, the mock provider is used (silent audio + synthetic timing).
 ELEVENLABS_API_KEY=""
 ELEVENLABS_VOICE_ID="21m00Tcm4TlvDq8ikWAM"
+OPENAI_API_KEY=""
+OPENAI_TTS_MODEL="gpt-4o-mini-tts"

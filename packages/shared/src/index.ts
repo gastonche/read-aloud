@@ -32,8 +32,33 @@ export interface CharacterAlignment {
 export interface TtsResponse {
   /** base64-encoded audio (mp3) for an <audio> element / data URL. */
   audioBase64: string;
-  /** Character-level alignment used to drive word highlighting. */
+  /**
+   * Character-level alignment used to drive word highlighting. May be EMPTY for
+   * providers that don't return timestamps (e.g. OpenAI) — the client then
+   * estimates word timing from the audio duration.
+   */
   alignment: CharacterAlignment;
+}
+
+// ───────────────────────────── GET /voices ────────────────────────────
+// The backend advertises which neural voices are available based on the API
+// keys it has (ElevenLabs, OpenAI, or both). The client renders these
+// generically — the provider is encoded in the opaque, qualified `id`
+// ("elevenlabs:…" / "openai:…") which /tts uses to route.
+
+export type VoiceProvider = 'elevenlabs' | 'openai' | 'mock';
+
+export interface NeuralVoice {
+  /** Provider-qualified, opaque id, e.g. "openai:nova". */
+  id: string;
+  label: string;
+  lang: string;
+  description?: string;
+  provider: VoiceProvider;
+}
+
+export interface VoicesResponse {
+  voices: NeuralVoice[];
 }
 
 // ────────────────────────── POST /summarize ──────────────────────────
@@ -135,6 +160,30 @@ export function collapseAlignmentToWords(
  * highlight during any lead-in). Binary-searched, so it's cheap to call every
  * animation frame.
  */
+/**
+ * Estimate word-level spans when a provider returns no alignment (e.g. OpenAI):
+ * distribute the real audio duration across words proportionally to their
+ * length (+1 for the following space). Approximate but keeps word highlighting;
+ * the index lines up 1:1 with the sentence's own word list.
+ */
+export function estimateWordSpans(
+  words: string[],
+  durationSec: number,
+): WordSpan[] {
+  if (words.length === 0 || !(durationSec > 0)) return [];
+  const weights = words.map((w) => w.length + 1);
+  const total = weights.reduce((a, b) => a + b, 0);
+  const spans: WordSpan[] = [];
+  let acc = 0;
+  words.forEach((word, index) => {
+    const start = (acc / total) * durationSec;
+    acc += weights[index]!;
+    const end = (acc / total) * durationSec;
+    spans.push({ word, startSec: start, endSec: end, index });
+  });
+  return spans;
+}
+
 export function wordIndexAtTime(spans: WordSpan[], t: number): number {
   if (spans.length === 0 || t < spans[0]!.startSec) return -1;
   let lo = 0;

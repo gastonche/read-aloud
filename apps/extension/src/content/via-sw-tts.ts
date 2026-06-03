@@ -4,9 +4,9 @@
  * are never involved.
  */
 
-import type { TtsResponse } from '@readaloud/shared';
+import type { TtsResponse, VoicesResponse } from '@readaloud/shared';
 import { sendRuntimeMessage } from '@/messaging/bus';
-import { NEURAL_VOICES } from '@/core/tts/browser-neural';
+import { NEURAL_VOICES, toTtsVoices } from '@/core/tts/browser-neural';
 import type { TtsClient } from '@/core/tts/elevenlabs';
 import type { TtsVoice } from '@/core/tts/types';
 
@@ -25,6 +25,17 @@ export class ViaSwTtsClient implements TtsClient {
   }
 
   async listVoices(): Promise<TtsVoice[]> {
-    return NEURAL_VOICES;
+    try {
+      const res = await sendRuntimeMessage({
+        type: 'WORKER_FETCH',
+        path: '/voices',
+        method: 'GET',
+      });
+      if (!res.ok) throw new Error(res.error);
+      const data = res.data as VoicesResponse;
+      return data.voices.length ? toTtsVoices(data.voices) : NEURAL_VOICES;
+    } catch {
+      return NEURAL_VOICES; // Worker unreachable — offline fallback
+    }
   }
 }

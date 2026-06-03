@@ -36,9 +36,21 @@ function alignmentOf(text: string): TtsResponse {
 class FakeClient implements TtsClient {
   calls: string[] = [];
   fail = false;
+  /** When true, return audio with NO alignment (OpenAI-style). */
+  emptyAlignment = false;
   async synthesize(text: string): Promise<TtsResponse> {
     this.calls.push(text);
     if (this.fail) throw new Error('upstream down');
+    if (this.emptyAlignment) {
+      return {
+        audioBase64: 'AAAA',
+        alignment: {
+          characters: [],
+          character_start_times_seconds: [],
+          character_end_times_seconds: [],
+        },
+      };
+    }
     return alignmentOf(text);
   }
   async listVoices(): Promise<TtsVoice[]> {
@@ -67,6 +79,10 @@ class FakeAudio implements AudioController {
   }
   currentTime() {
     return this.t;
+  }
+  dur = 0;
+  duration() {
+    return this.dur;
   }
   setRate(r: number) {
     this.rate = r;
@@ -144,6 +160,19 @@ describe('ElevenLabsEngine playback', () => {
     ticker.frame();
     expect(highlights.at(-1)).toEqual({ sentenceId: 0, wordIndex: 0 });
     audio.t = 0.7; // within "world." (starts 0.6)
+    ticker.frame();
+    expect(highlights.at(-1)).toEqual({ sentenceId: 0, wordIndex: 1 });
+  });
+
+  it('estimates word timing from duration when alignment is empty (OpenAI)', async () => {
+    client.emptyAlignment = true;
+    audio.dur = 2; // "Hello world." → 2s
+    engine.play();
+    await flush();
+    audio.t = 0.1; // early → first word
+    ticker.frame();
+    expect(highlights.at(-1)).toEqual({ sentenceId: 0, wordIndex: 0 });
+    audio.t = 1.9; // late → second word
     ticker.frame();
     expect(highlights.at(-1)).toEqual({ sentenceId: 0, wordIndex: 1 });
   });

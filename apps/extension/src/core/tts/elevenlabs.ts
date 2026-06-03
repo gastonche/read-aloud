@@ -16,6 +16,7 @@
 
 import {
   collapseAlignmentToWords,
+  estimateWordSpans,
   wordIndexAtTime,
   type TtsResponse,
   type WordSpan,
@@ -47,6 +48,8 @@ export interface AudioController {
   /** Pause and reset to the start. */
   stop(): void;
   currentTime(): number;
+  /** Audio length in seconds (NaN until metadata loads). */
+  duration(): number;
   setRate(rate: number): void;
   onEnded(cb: () => void): void;
   onError(cb: (reason: string) => void): void;
@@ -263,6 +266,17 @@ export class ElevenLabsEngine implements TtsEngine {
 
   private tick(): void {
     if (!this.current) return;
+    // No alignment (e.g. OpenAI)? Estimate word spans from the real audio
+    // duration once it's known — keeps word highlighting, provider-agnostic.
+    if (this.words.length === 0) {
+      const dur = this.audio.duration();
+      if (dur > 0 && Number.isFinite(dur)) {
+        this.words = estimateWordSpans(
+          this.current.words.map((w) => w.text),
+          dur,
+        );
+      }
+    }
     const wi = wordIndexAtTime(this.words, this.audio.currentTime());
     if (wi !== this.lastWord) {
       this.lastWord = wi;

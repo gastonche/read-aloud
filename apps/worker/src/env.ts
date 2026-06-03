@@ -27,9 +27,13 @@ export interface Env {
   /** Requests per minute per IP per route. "0" disables. */
   RATE_LIMIT_PER_MIN: string;
 
-  // ── ElevenLabs (milestone 6) ──
+  // ── Neural TTS providers (secrets). The set of configured keys decides which
+  //    voices /voices advertises and which providers /tts can route to. ──
   ELEVENLABS_API_KEY?: string;
   ELEVENLABS_VOICE_ID?: string;
+  OPENAI_API_KEY?: string;
+  /** OpenAI TTS model (default gpt-4o-mini-tts). */
+  OPENAI_TTS_MODEL?: string;
 }
 
 export const DEFAULT_SUMMARY_MODEL = '@cf/meta/llama-3.1-8b-instruct';

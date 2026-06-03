@@ -57,6 +57,12 @@ const main = async () => {
       'dev',
       '-c',
       'wrangler.e2e.toml', // no AI binding → boots offline, no auth
+      // Force empty provider keys so the suite is hermetic regardless of any
+      // local .dev.vars: /voices advertises both providers, /tts stays mock.
+      '--var',
+      'ELEVENLABS_API_KEY:',
+      '--var',
+      'OPENAI_API_KEY:',
       '--ip',
       '127.0.0.1',
       '--port',
