@@ -1,0 +1,22 @@
+{
+  "name": "@readaloud/landing",
+  "private": true,
+  "version": "0.3.0",
+  "type": "module",
+  "description": "ReadAloud marketing landing page — Astro + Tailwind.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "astro": "^5.16.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@tailwindcss/vite": "^4.3.0",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^5.7.0"
+  }
+}

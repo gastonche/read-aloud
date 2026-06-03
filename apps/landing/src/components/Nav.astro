@@ -1,0 +1,100 @@
+---
+import Icon from './Icon.astro';
+
+const links = [
+  { href: '#how', label: 'How it works' },
+  { href: '#features', label: 'Features' },
+  { href: '#voices', label: 'Voices' },
+  { href: '#pricing', label: 'Pricing' },
+  { href: '#faq', label: 'FAQ' },
+];
+const chromeStore = 'https://chrome.google.com/webstore';
+---
+
+<header
+  class="sticky top-0 z-50 border-b border-transparent bg-paper/80 backdrop-blur-md transition-colors dark:bg-night/80"
+>
+  <nav
+    class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3.5 lg:px-8"
+    aria-label="Primary"
+  >
+    <a href="#top" class="flex items-center gap-2.5 font-display text-lg font-semibold">
+      <span
+        class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent-bright to-accent-violet text-white shadow-sm shadow-accent/30"
+      >
+        <Icon name="play" size={16} class="fill-current stroke-none translate-x-px" />
+      </span>
+      <span class="tracking-tight">ReadAloud</span>
+    </a>
+
+    <ul class="hidden items-center gap-7 text-sm font-medium text-ink-soft md:flex dark:text-slate-300">
+      {
+        links.map((l) => (
+          <li>
+            <a
+              href={l.href}
+              class="transition-colors hover:text-ink dark:hover:text-white"
+            >
+              {l.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        data-theme-toggle
+        aria-label="Toggle dark mode"
+        class="grid h-9 w-9 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-paper-dim dark:text-slate-300 dark:hover:bg-night-soft"
+      >
+        <Icon name="sun" size={18} class="hidden dark:block" />
+        <Icon name="moon" size={18} class="block dark:hidden" />
+      </button>
+
+      <a
+        href={chromeStore}
+        class="hidden items-center gap-2 rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 sm:inline-flex dark:bg-white dark:text-ink"
+      >
+        <Icon name="chrome" size={16} />
+        Add to Chrome
+      </a>
+
+      <button
+        type="button"
+        data-menu-btn
+        aria-expanded="false"
+        aria-label="Open menu"
+        class="grid h-9 w-9 place-items-center rounded-lg text-ink-soft hover:bg-paper-dim md:hidden dark:text-slate-300 dark:hover:bg-night-soft"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="20" y2="17" /></svg>
+      </button>
+    </div>
+  </nav>
+
+  <div data-menu class="hidden border-t border-paper-dim px-5 py-3 md:hidden dark:border-night-line">
+    <ul class="flex flex-col gap-1 text-sm font-medium">
+      {
+        links.map((l) => (
+          <li>
+            <a
+              href={l.href}
+              class="block rounded-lg px-3 py-2.5 text-ink-soft hover:bg-paper-dim dark:text-slate-300 dark:hover:bg-night-soft"
+            >
+              {l.label}
+            </a>
+          </li>
+        ))
+      }
+      <li class="pt-1">
+        <a
+          href={chromeStore}
+          class="flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-2.5 font-semibold text-white dark:bg-white dark:text-ink"
+        >
+          <Icon name="chrome" size={16} /> Add to Chrome — free
+        </a>
+      </li>
+    </ul>
+  </div>
+</header>

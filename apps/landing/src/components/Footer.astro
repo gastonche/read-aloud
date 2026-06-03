@@ -1,0 +1,76 @@
+---
+import Icon from './Icon.astro';
+
+const year = new Date().getFullYear();
+const cols = [
+  {
+    title: 'Product',
+    links: [
+      { label: 'How it works', href: '#how' },
+      { label: 'Features', href: '#features' },
+      { label: 'Voices', href: '#voices' },
+      { label: 'Pricing', href: '#pricing' },
+    ],
+  },
+  {
+    title: 'Coming soon',
+    links: [
+      { label: 'iOS app', href: '#mobile' },
+      { label: 'Android app', href: '#mobile' },
+      { label: 'Join the waitlist', href: '#mobile' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'Privacy', href: '#' },
+      { label: 'Terms', href: '#' },
+      { label: 'Contact', href: '#' },
+    ],
+  },
+];
+---
+
+<footer class="border-t border-paper-dim bg-paper dark:border-night-line dark:bg-night">
+  <div class="mx-auto max-w-7xl px-5 py-14 lg:px-8">
+    <div class="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+      <div class="max-w-xs">
+        <a href="#top" class="flex items-center gap-2.5 font-display text-lg font-semibold text-ink dark:text-white">
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent-bright to-accent-violet text-white">
+            <Icon name="play" size={16} class="fill-current stroke-none translate-x-px" />
+          </span>
+          ReadAloud
+        </a>
+        <p class="mt-4 text-sm leading-relaxed text-ink-soft dark:text-slate-400">
+          Listen to anything you read — with every word highlighted as it&rsquo;s
+          spoken. Web pages, PDFs, EPUBs and more.
+        </p>
+      </div>
+
+      {
+        cols.map((c) => (
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">{c.title}</p>
+            <ul class="mt-4 space-y-2.5 text-sm">
+              {c.links.map((l) => (
+                <li>
+                  <a
+                    href={l.href}
+                    class="text-ink-soft transition-colors hover:text-ink dark:text-slate-400 dark:hover:text-white"
+                  >
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-paper-dim pt-6 text-xs text-ink-faint sm:flex-row dark:border-night-line">
+      <p>&copy; {year} ReadAloud. All rights reserved.</p>
+      <p>Made for people with more to read than time to read it.</p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,61 @@
+---
+import Icon from './Icon.astro';
+
+const steps = [
+  {
+    n: '01',
+    icon: 'chrome',
+    title: 'Add it to Chrome',
+    body: 'One click from the Web Store. No sign-up, no credit card, no onboarding maze. You&rsquo;re ready in about ten seconds.',
+  },
+  {
+    n: '02',
+    icon: 'highlighter',
+    title: 'Open anything & hit play',
+    body: 'On any page, a slim floating bar appears and reads — highlighting each word right on the page. Or drop in a PDF, EPUB, DOCX, or TXT.',
+  },
+  {
+    n: '03',
+    icon: 'headphones',
+    title: 'Listen, your way',
+    body: 'Pick a voice, set the speed from 0.5× to 3×, switch languages, and follow along — or look away. It picks up exactly where you left off.',
+  },
+];
+---
+
+<section id="how" class="scroll-mt-20 bg-paper-warm py-20 lg:py-28 dark:bg-night-soft">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <p class="text-sm font-semibold uppercase tracking-[0.16em] text-accent">How it works</p>
+      <h2 class="mt-3 font-display text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-tight tracking-tight text-ink dark:text-white">
+        From “I&rsquo;ll read it later” to done — in three steps
+      </h2>
+    </div>
+
+    <ol class="reveal mt-14 grid gap-6 md:grid-cols-3">
+      {
+        steps.map((s, i) => (
+          <li class="relative">
+            {i < steps.length - 1 && (
+              <span class="absolute right-[-20px] top-12 hidden text-ink-faint md:block">
+                <Icon name="arrowRight" size={22} />
+              </span>
+            )}
+            <div class="h-full rounded-3xl border border-paper-dim bg-paper p-7 dark:border-night-line dark:bg-night">
+              <div class="flex items-center justify-between">
+                <span class="grid h-12 w-12 place-items-center rounded-2xl bg-accent text-white shadow-lg shadow-accent/25">
+                  <Icon name={s.icon} size={22} />
+                </span>
+                <span class="font-display text-3xl font-semibold text-paper-dim dark:text-night-line">
+                  {s.n}
+                </span>
+              </div>
+              <h3 class="mt-5 text-lg font-semibold text-ink dark:text-white">{s.title}</h3>
+              <p class="mt-2 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300" set:html={s.body} />
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>

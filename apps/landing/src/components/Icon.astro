@@ -1,0 +1,65 @@
+---
+// Inline, single-stroke SVG icons (Lucide geometry) so we never ship emoji as
+// icons and everything inherits currentColor + a consistent 1.75 stroke.
+interface Props {
+  name: string;
+  class?: string;
+  size?: number;
+}
+const { name, class: klass = '', size = 24 } = Astro.props;
+
+const paths: Record<string, string> = {
+  highlighter:
+    'm9 11-6 6v3h9l3-3 M22 12 18.5 8.5l-7 7L8 19l4.5-1.5 7-7L22 12 M16 5l3 3',
+  languages:
+    'm5 8 6 6 M4 14l6-6 2-3 M2 5h12 M7 2h1 m22 22-5-10-5 10 M14 18h6',
+  fileText:
+    'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8',
+  sparkles:
+    'M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z M20 3v4 M22 5h-4 M4 17v2 M5 18H3',
+  gauge: 'm12 14 4-4 M3.34 19a10 10 0 1 1 17.32 0',
+  shield:
+    'M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z',
+  play: 'M6 3v18l15-9z',
+  pause: 'M14 4h4v16h-4z M6 4h4v16H6z',
+  chrome:
+    'M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0-20 0 M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0 M21.17 8H12 M3.95 6.06 8.54 14 M10.88 21.94 15.46 14',
+  apple:
+    'M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06z M10 2c1 .5 2 2 2 5',
+  android:
+    'M5 16V9a7 7 0 0 1 14 0v7 M5 16h14a2 2 0 0 1 2 2 1 1 0 0 1-1 1H4a1 1 0 0 1-1-1 2 2 0 0 1 2-2 M9 7 7.5 4.5 M15 7l1.5-2.5 M9 12h.01 M15 12h.01',
+  check: 'm5 12 5 5L20 7',
+  chevronDown: 'm6 9 6 6 6-6',
+  headphones: 'M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zm0 0a9 9 0 0 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2z',
+  bolt: 'M13 2 3 14h9l-1 8 10-12h-9z',
+  arrowRight: 'M5 12h14 M12 5l7 7-7 7',
+  quote:
+    'M10 11H6a1 1 0 0 1-1-1V7a2 2 0 0 1 2-2h1a1 1 0 0 1 1 1v6a4 4 0 0 1-4 4 M21 11h-4a1 1 0 0 1-1-1V7a2 2 0 0 1 2-2h1a1 1 0 0 1 1 1v6a4 4 0 0 1-4 4',
+  star: 'M11.5 2.6a.5.5 0 0 1 .9 0l2.6 5.3 5.8.85a.5.5 0 0 1 .28.85l-4.2 4.1 1 5.8a.5.5 0 0 1-.73.53L12 17.3l-5.2 2.73a.5.5 0 0 1-.73-.53l1-5.8-4.2-4.1a.5.5 0 0 1 .28-.85l5.8-.85z',
+  lock: 'M5 11h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z M8 11V7a4 4 0 0 1 8 0v4',
+  scissors:
+    'M6 6m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0 M6 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0 M20 4 8.12 15.88 M14.47 14.48 20 20 M8.12 8.12 12 12',
+  micVocal:
+    'M12 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M9.3 6.3 3 12.6V21h8.4l6.3-6.3 M16 8l4 4',
+  moon: 'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z',
+  sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M12 2v2 M12 20v2 M4.9 4.9l1.4 1.4 M17.7 17.7l1.4 1.4 M2 12h2 M20 12h2 M6.3 17.7l-1.4 1.4 M19.1 4.9l-1.4 1.4',
+};
+
+const d = paths[name] ?? '';
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.75"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class={klass}
+  aria-hidden="true"
+>
+  {d.split(' M').map((seg, i) => <path d={i === 0 ? seg : `M${seg}`} />)}
+</svg>

@@ -1,0 +1,123 @@
+---
+import Icon from './Icon.astro';
+---
+
+<section id="features" class="scroll-mt-20 mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
+  <div class="reveal mx-auto max-w-2xl text-center">
+    <p class="text-sm font-semibold uppercase tracking-[0.16em] text-accent">Everything in one reader</p>
+    <h2 class="mt-3 font-display text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-tight tracking-tight text-ink dark:text-white">
+      The polish you&rsquo;d expect from an app you pay for
+    </h2>
+    <p class="mt-4 text-lg leading-relaxed text-ink-soft dark:text-slate-300">
+      Most read-aloud tools sound robotic and lose your place. ReadAloud was built
+      the other way around — accuracy and feel first.
+    </p>
+  </div>
+
+  <div class="reveal mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <!-- Hero feature: word-perfect highlighting (spans 2 cols) -->
+    <article
+      class="group relative overflow-hidden rounded-3xl border border-accent/20 bg-gradient-to-br from-accent-soft/80 to-paper p-7 sm:col-span-2 dark:border-accent-bright/25 dark:from-accent-bright/10 dark:to-night-soft"
+    >
+      <span class="grid h-11 w-11 place-items-center rounded-2xl bg-accent text-white shadow-md shadow-accent/30">
+        <Icon name="highlighter" size={20} />
+      </span>
+      <h3 class="mt-5 text-xl font-semibold text-ink dark:text-white">Word-perfect highlighting, on the live page</h3>
+      <p class="mt-2 max-w-lg text-[15px] leading-relaxed text-ink-soft dark:text-slate-300">
+        Every word lights up exactly as it&rsquo;s spoken — painted right over the
+        real page with zero changes to it. Your eyes and ears stay in lock-step,
+        so nothing gets lost.
+      </p>
+      <p class="mt-5 font-display text-lg leading-relaxed text-ink dark:text-white">
+        Reading becomes <span class="mark">effortless</span> when the words
+        <span class="rounded-[0.35em] bg-accent px-1 text-white">keep your place</span> for you.
+      </p>
+    </article>
+
+    <!-- Two engines -->
+    <article class="rounded-3xl border border-paper-dim bg-paper p-7 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 dark:border-night-line dark:bg-night-soft">
+      <span class="grid h-11 w-11 place-items-center rounded-2xl bg-paper-warm text-accent dark:bg-night dark:text-accent-soft">
+        <Icon name="micVocal" size={20} />
+      </span>
+      <h3 class="mt-5 text-lg font-semibold text-ink dark:text-white">Two voice engines</h3>
+      <p class="mt-2 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300">
+        Free on-device voices that work offline, or premium neural voices from
+        ElevenLabs &amp; OpenAI that sound genuinely human. Switch anytime.
+      </p>
+    </article>
+
+    <!-- Languages -->
+    <article class="rounded-3xl border border-paper-dim bg-paper p-7 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 dark:border-night-line dark:bg-night-soft">
+      <span class="grid h-11 w-11 place-items-center rounded-2xl bg-paper-warm text-accent dark:bg-night dark:text-accent-soft">
+        <Icon name="languages" size={20} />
+      </span>
+      <h3 class="mt-5 text-lg font-semibold text-ink dark:text-white">Reads 30+ languages</h3>
+      <p class="mt-2 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300">
+        It detects the language automatically, picks a matching voice, and renders
+        right-to-left scripts correctly — no settings to fiddle with.
+      </p>
+    </article>
+
+    <!-- Files -->
+    <article class="rounded-3xl border border-paper-dim bg-paper p-7 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 dark:border-night-line dark:bg-night-soft">
+      <span class="grid h-11 w-11 place-items-center rounded-2xl bg-paper-warm text-accent dark:bg-night dark:text-accent-soft">
+        <Icon name="fileText" size={20} />
+      </span>
+      <h3 class="mt-5 text-lg font-semibold text-ink dark:text-white">Not just web pages</h3>
+      <p class="mt-2 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300">
+        Drag in a PDF, EPUB, DOCX, or TXT and it opens in a clean reader — long
+        documents start playing instantly, chunk by chunk.
+      </p>
+    </article>
+
+    <!-- TL;DR (spans 2) -->
+    <article class="group relative overflow-hidden rounded-3xl border border-paper-dim bg-paper p-7 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 sm:col-span-2 dark:border-night-line dark:bg-night-soft">
+      <div class="flex items-start justify-between gap-4">
+        <div class="max-w-lg">
+          <span class="grid h-11 w-11 place-items-center rounded-2xl bg-paper-warm text-accent dark:bg-night dark:text-accent-soft">
+            <Icon name="sparkles" size={20} />
+          </span>
+          <h3 class="mt-5 text-lg font-semibold text-ink dark:text-white">AI TL;DR before you commit</h3>
+          <p class="mt-2 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300">
+            Not sure a 4,000-word piece is worth it? Get an instant summary —
+            and have <em>that</em> read aloud too, with the same highlighting.
+          </p>
+        </div>
+        <div class="hidden shrink-0 rounded-2xl border border-paper-dim bg-paper-warm p-4 sm:block dark:border-night-line dark:bg-night">
+          <div class="mb-2 flex items-center gap-1.5 text-accent">
+            <Icon name="sparkles" size={14} /><span class="text-xs font-semibold">TL;DR</span>
+          </div>
+          <div class="space-y-1.5">
+            <span class="block h-1.5 w-32 rounded-full bg-accent/30"></span>
+            <span class="block h-1.5 w-28 rounded-full bg-accent/20"></span>
+            <span class="block h-1.5 w-20 rounded-full bg-accent/20"></span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Privacy -->
+    <article class="rounded-3xl border border-paper-dim bg-paper p-7 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 dark:border-night-line dark:bg-night-soft">
+      <span class="grid h-11 w-11 place-items-center rounded-2xl bg-paper-warm text-accent dark:bg-night dark:text-accent-soft">
+        <Icon name="shield" size={20} />
+      </span>
+      <h3 class="mt-5 text-lg font-semibold text-ink dark:text-white">Private by design</h3>
+      <p class="mt-2 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300">
+        No account. Free voices run entirely on your device. We never touch the
+        page&rsquo;s content beyond reading it to you — and never sell a thing.
+      </p>
+    </article>
+
+    <!-- Controls -->
+    <article class="rounded-3xl border border-paper-dim bg-paper p-7 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 dark:border-night-line dark:bg-night-soft">
+      <span class="grid h-11 w-11 place-items-center rounded-2xl bg-paper-warm text-accent dark:bg-night dark:text-accent-soft">
+        <Icon name="gauge" size={20} />
+      </span>
+      <h3 class="mt-5 text-lg font-semibold text-ink dark:text-white">Controls that get out of the way</h3>
+      <p class="mt-2 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300">
+        Speed 0.5×–3×, skip by sentence, click any word to jump there, Space to
+        play, auto-scroll, and a draggable bar that docks where you want it.
+      </p>
+    </article>
+  </div>
+</section>

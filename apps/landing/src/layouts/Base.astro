@@ -1,0 +1,149 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'ReadAloud — Listen to anything you read',
+  description = 'ReadAloud reads any web page, PDF, EPUB, DOCX or article out loud and highlights every word as it speaks. Free natural voices, premium neural voices, 30+ languages. Add it to Chrome free.',
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const ogImage = new URL('/og.png', Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#4f46e5" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ReadAloud" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Fonts: editorial serif display + Inter body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- No-flash init: set .dark + .js before paint. .js gates the scroll-reveal
+         so content is fully visible without JavaScript. -->
+    <script is:inline>
+      (function () {
+        var el = document.documentElement;
+        el.classList.add('js');
+        try {
+          var saved = localStorage.getItem('ra-theme');
+          var dark =
+            saved === 'dark' ||
+            (!saved &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) el.classList.add('dark');
+        } catch (_) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-paper text-ink antialiased dark:bg-night dark:text-slate-100">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >Skip to content</a
+    >
+    <slot />
+
+    <!-- Scroll reveal + theme toggle wiring -->
+    <script is:inline>
+      // Reveal on scroll. Anything already in (or above) the viewport on load is
+      // revealed immediately; a safety net reveals everything after 1.2s so a
+      // missed observer callback can never leave a section blank.
+      const reveals = Array.from(document.querySelectorAll('.reveal'));
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add('in');
+              io.unobserve(e.target);
+            }
+          }
+        },
+        { threshold: 0, rootMargin: '0px 0px -6% 0px' },
+      );
+      reveals.forEach((el) => {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('in');
+        else io.observe(el);
+      });
+      setTimeout(() => reveals.forEach((el) => el.classList.add('in')), 1200);
+
+      // Theme toggle
+      function setTheme(dark) {
+        document.documentElement.classList.toggle('dark', dark);
+        try {
+          localStorage.setItem('ra-theme', dark ? 'dark' : 'light');
+        } catch (_) {}
+      }
+      document.querySelectorAll('[data-theme-toggle]').forEach((btn) => {
+        btn.addEventListener('click', () =>
+          setTheme(!document.documentElement.classList.contains('dark')),
+        );
+      });
+
+      // Mobile menu
+      const menuBtn = document.querySelector('[data-menu-btn]');
+      const menu = document.querySelector('[data-menu]');
+      if (menuBtn && menu) {
+        menuBtn.addEventListener('click', () => {
+          const open = menu.classList.toggle('hidden');
+          menuBtn.setAttribute('aria-expanded', String(!open));
+        });
+        menu.querySelectorAll('a').forEach((a) =>
+          a.addEventListener('click', () => {
+            menu.classList.add('hidden');
+            menuBtn.setAttribute('aria-expanded', 'false');
+          }),
+        );
+      }
+
+      // Waitlist (demo): validate + show inline confirmation, no backend call.
+      const form = document.querySelector('[data-waitlist]');
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const input = form.querySelector('input[type="email"]');
+          const ok = form.querySelector('[data-waitlist-ok]');
+          if (input && input.checkValidity() && ok) {
+            form.querySelector('[data-waitlist-fields]')?.classList.add('hidden');
+            ok.classList.remove('hidden');
+          } else {
+            input?.reportValidity();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

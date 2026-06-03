@@ -5,6 +5,7 @@ node_modules/
 dist/
 .turbo/
 .wrangler/
+.astro/
 
 # E2E artifacts (regenerated on each run)
 apps/extension/e2e/screenshots/

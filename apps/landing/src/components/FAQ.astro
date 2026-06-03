@@ -1,0 +1,73 @@
+---
+import Icon from './Icon.astro';
+
+const faqs = [
+  {
+    q: 'Is ReadAloud really free?',
+    a: 'Yes. Reading web pages and files with your device&rsquo;s built-in voices is free forever, with no account required. Premium only adds the studio-grade neural voices and AI summaries.',
+  },
+  {
+    q: 'Do I need to create an account?',
+    a: 'No. You can install it and start listening immediately. An account is only needed if you choose to subscribe to Premium voices.',
+  },
+  {
+    q: 'What can it read?',
+    a: 'Any web page, plus uploaded PDF, EPUB, DOCX, and TXT files. It uses smart extraction to pull just the article text — skipping menus, ads, and clutter.',
+  },
+  {
+    q: 'How is my data handled?',
+    a: 'Built-in voices run entirely on your device, so that text never leaves your computer. For premium neural voices, text is sent to the voice provider only to generate audio. We don&rsquo;t sell your data, and we never modify the pages you read.',
+  },
+  {
+    q: 'Which browsers are supported?',
+    a: 'ReadAloud is a Chrome extension and works on Chrome and other Chromium-based browsers like Edge, Brave, and Arc. Dedicated iOS and Android apps are coming soon.',
+  },
+  {
+    q: 'Will it work in my language?',
+    a: 'Almost certainly. It automatically detects the content&rsquo;s language and reads 30+ languages, including right-to-left scripts. Available built-in voices depend on your operating system; premium voices are multilingual.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: f.a.replace(/&rsquo;/g, '’').replace(/&[a-z]+;/g, ''),
+    },
+  })),
+};
+---
+
+<section id="faq" class="scroll-mt-20 mx-auto max-w-3xl px-5 py-20 lg:px-8 lg:py-28">
+  <div class="reveal text-center">
+    <p class="text-sm font-semibold uppercase tracking-[0.16em] text-accent">FAQ</p>
+    <h2 class="mt-3 font-display text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-tight tracking-tight text-ink dark:text-white">
+      Questions, answered
+    </h2>
+  </div>
+
+  <div class="reveal mt-12 divide-y divide-paper-dim rounded-3xl border border-paper-dim bg-paper dark:divide-night-line dark:border-night-line dark:bg-night-soft">
+    {
+      faqs.map((f) => (
+        <details class="group px-6">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-left text-[15px] font-semibold text-ink marker:hidden dark:text-white">
+            {f.q}
+            <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-paper-warm text-ink-soft transition-transform group-open:rotate-180 dark:bg-night dark:text-slate-300">
+              <Icon name="chevronDown" size={16} />
+            </span>
+          </summary>
+          <p
+            class="-mt-1 pb-5 pr-10 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300"
+            set:html={f.a}
+          />
+        </details>
+      ))
+    }
+  </div>
+</section>
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
