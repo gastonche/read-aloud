@@ -22,7 +22,7 @@ export const BAR_CSS = `
 .ring { position: absolute; inset: 0; transform: rotate(-90deg); }
 .ring-bg { fill: none; stroke: #e2e8f0; stroke-width: 3; }
 .ring-fg { fill: none; stroke: #6366f1; stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset .2s linear; }
-.play { position: absolute; inset: 4px; border-radius: 9999px; background: linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; display:flex; align-items:center; justify-content:center; }
+.playwrap .play { position: absolute; inset: 4px; border-radius: 9999px; background: linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; display:flex; align-items:center; justify-content:center; }
 .play svg { width: 20px; height: 20px; fill: #fff; }
 .play:active { transform: scale(.94); }
 
@@ -61,6 +61,9 @@ export const BAR_CSS = `
 .voice-name { font-size:13px; font-weight:600; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .voice-desc { font-size:11px; color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .tick { color:#6366f1; font-weight:700; }
+
+.pop-err { width: 220px; font-size: 11px; line-height: 1.4; color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+.pop-note { width: 220px; font-size: 11px; line-height: 1.4; color: #b45309; background: #fffbeb; border-color: #fde68a; }
 
 .pop-lang { width: 168px; max-height: 280px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; }
 .lang-item { display:flex; justify-content:space-between; align-items:center; padding:7px 9px; border-radius:9px; font-size:12px; color:#0f172a; text-align:left; }

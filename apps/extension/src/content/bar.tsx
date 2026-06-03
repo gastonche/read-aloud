@@ -282,6 +282,17 @@ function Bar({
       {pop === 'lang' && (
         <LangPopover side={popSide} lang={doc.lang} onPick={onPickLanguage} />
       )}
+
+      {player.error && (
+        <div className={`pop pop-${popSide} pop-err`} role="alert">
+          {player.error}
+        </div>
+      )}
+      {!player.error && player.sentenceLevelOnly && (
+        <div className={`pop pop-${popSide} pop-note`}>
+          This voice highlights by sentence — pick another for word-by-word.
+        </div>
+      )}
     </div>
   );
 }

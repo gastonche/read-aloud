@@ -115,10 +115,19 @@ async function openAdvanced(
   const tabId = sender.tab?.id;
   if (tabId == null)
     return { ok: false, error: 'No tab to open the panel for.' };
-  // Stage first (fast, within the forwarded activation window), then open — the
-  // panel pulls the staged handoff on boot, so there's no boot race.
+  // sidePanel.open() must be called WITHIN the forwarded user gesture, i.e.
+  // synchronously before any await. We kick it off first (consuming the
+  // gesture), then stage the handoff in parallel; the panel reads it on boot.
+  let opening: Promise<void>;
+  try {
+    opening = chrome.sidePanel.open({ tabId });
+  } catch (e) {
+    opening = Promise.reject(e);
+  }
   await stagePendingSource(handoff);
-  await chrome.sidePanel.open({ tabId });
+  await opening.catch(() => {
+    /* headless / lost-gesture: handoff is still staged for the panel */
+  });
   return { ok: true };
 }
 
