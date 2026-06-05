@@ -84,9 +84,12 @@ const run = async () => {
   const s2 = await activeSentenceText(article);
   check('Next advances the highlight to a new sentence', !!s2 && s2 !== s1, s2?.slice(0, 40));
 
-  // Voice popover → switch to Studio → neural voices listed.
+  // Voice popover → switch to Studio → neural voices listed. Scope to the
+  // segmented toggle (.seg-btn): when the OS has no matching voice — e.g.
+  // headless CI, which has no system voices at all — a "try Studio" nudge also
+  // contains the word "Studio", so a bare text match would be ambiguous.
   await article.locator('button[aria-label="Choose voice"]').click();
-  await article.locator('button:has-text("Studio")').click();
+  await article.locator('.seg-btn', { hasText: 'Studio' }).click();
   await article.waitForSelector('button[aria-label="Select Rachel"]', { timeout: 5_000 });
   check(
     'voice popover lists Studio voices',
