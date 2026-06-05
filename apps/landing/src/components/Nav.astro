@@ -1,6 +1,7 @@
 ---
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
+import { INSTALL_URL as chromeStore } from '../config';
 
 const links = [
   { href: '#how', label: 'How it works' },
@@ -9,7 +10,6 @@ const links = [
   { href: '#pricing', label: 'Pricing' },
   { href: '#faq', label: 'FAQ' },
 ];
-const chromeStore = 'https://chrome.google.com/webstore';
 ---
 
 <header
