@@ -1,5 +1,5 @@
-import React from "react";
-import { GRADIENT } from "../theme";
+import React from 'react';
+import { GRADIENT } from '../theme';
 
 // A calm gradient silhouette — head + shoulders leaning back, earbud + soft
 // listening rings. Stylized, brand-gradient filled. `listen` (0..1) pulses the rings.

@@ -31,24 +31,33 @@ const cols = [
 ];
 ---
 
-<footer class="border-t border-paper-dim bg-paper dark:border-night-line dark:bg-night">
+<footer
+  class="border-t border-paper-dim bg-paper dark:border-night-line dark:bg-night"
+>
   <div class="mx-auto max-w-7xl px-5 py-14 lg:px-8">
     <div class="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
       <div class="max-w-xs">
-        <a href="#top" class="flex items-center gap-2.5 font-display text-lg font-semibold text-ink dark:text-white">
+        <a
+          href="#top"
+          class="flex items-center gap-2.5 font-display text-lg font-semibold text-ink dark:text-white"
+        >
           <Logo size={36} />
           ReadAloud
         </a>
-        <p class="mt-4 text-sm leading-relaxed text-ink-soft dark:text-slate-400">
-          Listen to anything you read — with every word highlighted as it&rsquo;s
-          spoken. Web pages, PDFs, EPUBs and more.
+        <p
+          class="mt-4 text-sm leading-relaxed text-ink-soft dark:text-slate-400"
+        >
+          Listen to anything you read — with every word highlighted as
+          it&rsquo;s spoken. Web pages, PDFs, EPUBs and more.
         </p>
       </div>
 
       {
         cols.map((c) => (
           <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">{c.title}</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">
+              {c.title}
+            </p>
             <ul class="mt-4 space-y-2.5 text-sm">
               {c.links.map((l) => (
                 <li>
@@ -66,7 +75,9 @@ const cols = [
       }
     </div>
 
-    <div class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-paper-dim pt-6 text-xs text-ink-faint sm:flex-row dark:border-night-line">
+    <div
+      class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-paper-dim pt-6 text-xs text-ink-faint sm:flex-row dark:border-night-line"
+    >
       <p>&copy; {year} ReadAloud. All rights reserved.</p>
       <p>Made for people with more to read than time to read it.</p>
     </div>

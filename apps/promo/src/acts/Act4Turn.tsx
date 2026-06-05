@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   AbsoluteFill,
   useCurrentFrame,
@@ -7,10 +7,10 @@ import {
   Sequence,
   spring,
   useVideoConfig,
-} from "remotion";
-import { COLORS, GRADIENT, FONT } from "../theme";
-import { Wordmark } from "../components/Wordmark";
-import { AudioRibbons } from "../components/AudioRibbons";
+} from 'remotion';
+import { COLORS, GRADIENT, FONT } from '../theme';
+import { Wordmark } from '../components/Wordmark';
+import { AudioRibbons } from '../components/AudioRibbons';
 
 const ease = Easing.bezier(0.22, 1, 0.36, 1);
 
@@ -22,7 +22,7 @@ export const Act4Turn: React.FC = () => {
         background: `linear-gradient(180deg, ${COLORS.cream}, ${COLORS.paper})`,
       }}
     >
-      <AbsoluteFill style={{ opacity: 0.22, transform: "translateY(330px)" }}>
+      <AbsoluteFill style={{ opacity: 0.22, transform: 'translateY(330px)' }}>
         <AudioRibbons count={5} amplitude={38} speed={0.7} />
       </AbsoluteFill>
 
@@ -42,27 +42,27 @@ export const Act4Turn: React.FC = () => {
 const Testimonial: React.FC = () => {
   const frame = useCurrentFrame();
   const op = interpolate(frame, [4, 16, 44, 56], [0, 1, 1, 0], {
-    extrapolateRight: "clamp",
+    extrapolateRight: 'clamp',
   });
   const y = interpolate(frame, [4, 20], [18, 0], {
-    extrapolateRight: "clamp",
+    extrapolateRight: 'clamp',
     easing: ease,
   });
   return (
     <AbsoluteFill
       style={{
-        alignItems: "center",
-        justifyContent: "center",
+        alignItems: 'center',
+        justifyContent: 'center',
         opacity: op,
-        padding: "0 260px",
+        padding: '0 260px',
       }}
     >
-      <div style={{ transform: `translateY(${y}px)`, textAlign: "center" }}>
+      <div style={{ transform: `translateY(${y}px)`, textAlign: 'center' }}>
         <div
           style={{
             fontFamily: FONT.display,
             fontWeight: 500,
-            fontStyle: "italic",
+            fontStyle: 'italic',
             fontSize: 62,
             lineHeight: 1.3,
             color: COLORS.ink,
@@ -94,19 +94,19 @@ const EndCard: React.FC = () => {
   const { fps } = useVideoConfig();
 
   const reveal = interpolate(frame, [0, 32], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
   });
   const sweep = interpolate(frame, [24, 70], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
     easing: ease,
   });
 
   // tagline + CTA enter after the logo lands
   const taglineIn = interpolate(frame, [48, 72], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
     easing: ease,
   });
   const ctaPop = spring({
@@ -115,16 +115,16 @@ const EndCard: React.FC = () => {
     config: { damping: 13, stiffness: 150 },
   });
   const trustIn = interpolate(frame, [88, 108], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
   });
 
   return (
     <AbsoluteFill
       style={{
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
         gap: 44,
       }}
     >
@@ -138,7 +138,7 @@ const EndCard: React.FC = () => {
           fontWeight: 600,
           fontSize: 56,
           color: COLORS.ink,
-          textAlign: "center",
+          textAlign: 'center',
           maxWidth: 1200,
         }}
       >
@@ -152,17 +152,17 @@ const EndCard: React.FC = () => {
         style={{
           transform: `scale(${0.8 + ctaPop * 0.2})`,
           opacity: ctaPop,
-          padding: "22px 46px",
+          padding: '22px 46px',
           borderRadius: 999,
           background: GRADIENT,
-          color: "white",
+          color: 'white',
           fontFamily: FONT.body,
           fontWeight: 800,
           fontSize: 32,
-          display: "flex",
-          alignItems: "center",
+          display: 'flex',
+          alignItems: 'center',
           gap: 16,
-          boxShadow: "0 22px 50px rgba(79,70,229,0.4)",
+          boxShadow: '0 22px 50px rgba(79,70,229,0.4)',
         }}
       >
         <ChromeMark />
@@ -177,9 +177,9 @@ const EndCard: React.FC = () => {
           fontWeight: 600,
           fontSize: 24,
           color: COLORS.inkSoft,
-          display: "flex",
+          display: 'flex',
           gap: 18,
-          alignItems: "center",
+          alignItems: 'center',
         }}
       >
         <span>No account</span>
@@ -197,9 +197,9 @@ const Dot = () => (
     style={{
       width: 6,
       height: 6,
-      borderRadius: "50%",
+      borderRadius: '50%',
       background: COLORS.indigoBright,
-      display: "inline-block",
+      display: 'inline-block',
     }}
   />
 );

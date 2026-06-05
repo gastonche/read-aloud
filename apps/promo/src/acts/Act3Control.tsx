@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   AbsoluteFill,
   useCurrentFrame,
@@ -7,11 +7,11 @@ import {
   useVideoConfig,
   Easing,
   Sequence,
-} from "remotion";
-import { COLORS, GRADIENT, FONT } from "../theme";
-import { ControlDeck } from "../components/ControlDeck";
-import { PersonSilhouette } from "../components/PersonSilhouette";
-import { AudioRibbons } from "../components/AudioRibbons";
+} from 'remotion';
+import { COLORS, GRADIENT, FONT } from '../theme';
+import { ControlDeck } from '../components/ControlDeck';
+import { PersonSilhouette } from '../components/PersonSilhouette';
+import { AudioRibbons } from '../components/AudioRibbons';
 
 const ease = Easing.bezier(0.22, 1, 0.36, 1);
 
@@ -25,11 +25,11 @@ export const Act3Control: React.FC = () => {
   const deckX = interpolate(snap, [0, 1], [-200, 80]);
   // speed dial climbs 1x -> 1.75x
   const speedT = interpolate(frame, [38, 60], [1, 1.75], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
     easing: ease,
   });
-  const speedLabel = `${speedT.toFixed(2).replace(/0$/, "")}×`;
+  const speedLabel = `${speedT.toFixed(2).replace(/0$/, '')}×`;
 
   // person enters bottom-right at the end, leading into Act IV
   const personIn = spring({
@@ -44,17 +44,17 @@ export const Act3Control: React.FC = () => {
         background: `linear-gradient(180deg, ${COLORS.cream}, ${COLORS.paper})`,
       }}
     >
-      <AbsoluteFill style={{ opacity: 0.35, transform: "translateY(300px)" }}>
+      <AbsoluteFill style={{ opacity: 0.35, transform: 'translateY(300px)' }}>
         <AudioRibbons count={5} amplitude={42} speed={0.9} />
       </AbsoluteFill>
 
       {/* floating control deck snapping to corner */}
-      <div style={{ position: "absolute", left: deckX, top: 120 }}>
+      <div style={{ position: 'absolute', left: deckX, top: 120 }}>
         <ControlDeck speed={speedLabel} glow={snap} />
       </div>
 
       {/* center feature montage */}
-      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
+      <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center' }}>
         <Sequence from={6} durationInFrames={60} layout="none">
           <FeatureBeat>
             <LanguageFlip />
@@ -75,7 +75,7 @@ export const Act3Control: React.FC = () => {
       {/* person leaning back, listening */}
       <div
         style={{
-          position: "absolute",
+          position: 'absolute',
           right: 120,
           bottom: -40,
           opacity: personIn,
@@ -92,12 +92,12 @@ export const Act3Control: React.FC = () => {
 const FeatureBeat: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const frame = useCurrentFrame();
   const inP = interpolate(frame, [0, 12], [0, 1], {
-    extrapolateRight: "clamp",
+    extrapolateRight: 'clamp',
     easing: ease,
   });
   const outP = interpolate(frame, [44, 56], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
   });
   const op = Math.min(inP, outP);
   return (
@@ -116,7 +116,14 @@ const Card: React.FC<{ children: React.ReactNode; label: string }> = ({
   children,
   label,
 }) => (
-  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 28 }}>
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 28,
+    }}
+  >
     {children}
     <div
       style={{
@@ -124,7 +131,7 @@ const Card: React.FC<{ children: React.ReactNode; label: string }> = ({
         fontWeight: 700,
         fontSize: 34,
         color: COLORS.inkSoft,
-        letterSpacing: "-0.01em",
+        letterSpacing: '-0.01em',
       }}
     >
       {label}
@@ -135,9 +142,9 @@ const Card: React.FC<{ children: React.ReactNode; label: string }> = ({
 const LanguageFlip: React.FC = () => {
   const frame = useCurrentFrame();
   const langs = [
-    { t: "English", rtl: false },
-    { t: "日本語", rtl: false },
-    { t: "العربية", rtl: true },
+    { t: 'English', rtl: false },
+    { t: '日本語', rtl: false },
+    { t: 'العربية', rtl: true },
   ];
   const idx = Math.min(2, Math.floor(frame / 16));
   const cur = langs[idx];
@@ -149,14 +156,14 @@ const LanguageFlip: React.FC = () => {
   return (
     <Card label="30+ languages, auto-detected">
       <div
-        dir={cur.rtl ? "rtl" : "ltr"}
+        dir={cur.rtl ? 'rtl' : 'ltr'}
         style={{
           minWidth: 360,
-          textAlign: "center",
-          padding: "26px 52px",
+          textAlign: 'center',
+          padding: '26px 52px',
           borderRadius: 28,
-          background: "white",
-          boxShadow: "0 24px 60px rgba(79,70,229,0.16)",
+          background: 'white',
+          boxShadow: '0 24px 60px rgba(79,70,229,0.16)',
           fontFamily: FONT.display,
           fontWeight: 600,
           fontSize: 72,
@@ -171,11 +178,11 @@ const LanguageFlip: React.FC = () => {
 };
 
 const FileMorph: React.FC = () => {
-  const files = ["PDF", "EPUB", "DOCX", "TXT"];
+  const files = ['PDF', 'EPUB', 'DOCX', 'TXT'];
   const frame = useCurrentFrame();
   return (
     <Card label="PDFs, ebooks, docs — not just web pages">
-      <div style={{ display: "flex", gap: 22 }}>
+      <div style={{ display: 'flex', gap: 22 }}>
         {files.map((f, i) => {
           const pop = spring({
             frame: frame - i * 6,
@@ -190,16 +197,16 @@ const FileMorph: React.FC = () => {
                 height: 150,
                 borderRadius: 18,
                 background: GRADIENT,
-                color: "white",
-                display: "flex",
-                alignItems: "flex-end",
-                justifyContent: "center",
+                color: 'white',
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
                 paddingBottom: 16,
                 fontFamily: FONT.body,
                 fontWeight: 800,
                 fontSize: 24,
                 transform: `translateY(${interpolate(pop, [0, 1], [40, 0])}px) scale(${pop})`,
-                boxShadow: "0 18px 40px rgba(99,102,241,0.3)",
+                boxShadow: '0 18px 40px rgba(99,102,241,0.3)',
               }}
             >
               {f}
@@ -221,14 +228,14 @@ const SummaryBeat: React.FC = () => {
           width: 560,
           padding: 36,
           borderRadius: 24,
-          background: "white",
-          boxShadow: "0 24px 60px rgba(79,70,229,0.16)",
+          background: 'white',
+          boxShadow: '0 24px 60px rgba(79,70,229,0.16)',
         }}
       >
         <div
           style={{
-            display: "inline-block",
-            padding: "6px 16px",
+            display: 'inline-block',
+            padding: '6px 16px',
             borderRadius: 16,
             background: COLORS.wash,
             color: COLORS.indigo,
@@ -241,11 +248,16 @@ const SummaryBeat: React.FC = () => {
           ✦ AI summary
         </div>
         {lines.map((l) => {
-          const w = interpolate(frame, [14 + l * 8, 30 + l * 8], [0, [88, 96, 64][l]], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-            easing: ease,
-          });
+          const w = interpolate(
+            frame,
+            [14 + l * 8, 30 + l * 8],
+            [0, [88, 96, 64][l]],
+            {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+              easing: ease,
+            },
+          );
           return (
             <div
               key={l}
@@ -253,7 +265,7 @@ const SummaryBeat: React.FC = () => {
                 height: 16,
                 width: `${w}%`,
                 borderRadius: 8,
-                background: l === 2 ? "#cdd0ec" : COLORS.indigoBright,
+                background: l === 2 ? '#cdd0ec' : COLORS.indigoBright,
                 marginBottom: 16,
                 opacity: 0.85,
               }}

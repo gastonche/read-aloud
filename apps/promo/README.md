@@ -2,8 +2,8 @@
 
 The ReadAloud promotional motion-graphics videos, built with [Remotion](https://remotion.dev). Two compositions:
 
-- **`PlanA`** — *"The Backlog Breathes"*, 30s 1920×1080, emotional/aspirational (landing hero, YouTube). Four acts: **The Weight** (overwhelm) → **The Release** (word-sync highlight) → **Effortless Control** (feature montage) → **The Turn** (testimonial, logo, CTA). Plan: [`docs/marketing/video-plan-A-the-backlog-breathes.md`](../../docs/marketing/video-plan-A-the-backlog-breathes.md).
-- **`PlanB`** — *"Speed Read"*, 15s 1080×1920 (9:16), fast feature-demo for Reels/TikTok/Shorts. Nine beat-locked scenes, burned-in captions, built sound-off. Plan: [`docs/marketing/video-plan-B-speed-read.md`](../../docs/marketing/video-plan-B-speed-read.md).
+- **`PlanA`** — _"The Backlog Breathes"_, 30s 1920×1080, emotional/aspirational (landing hero, YouTube). Four acts: **The Weight** (overwhelm) → **The Release** (word-sync highlight) → **Effortless Control** (feature montage) → **The Turn** (testimonial, logo, CTA). Plan: [`docs/marketing/video-plan-A-the-backlog-breathes.md`](../../docs/marketing/video-plan-A-the-backlog-breathes.md).
+- **`PlanB`** — _"Speed Read"_, 15s 1080×1920 (9:16), fast feature-demo for Reels/TikTok/Shorts. Nine beat-locked scenes, burned-in captions, built sound-off. Plan: [`docs/marketing/video-plan-B-speed-read.md`](../../docs/marketing/video-plan-B-speed-read.md).
 
 Both have **no voiceover** — motion + on-screen text + a music bed.
 
@@ -37,8 +37,8 @@ motion + on-screen text + music.
 
 ## Audio
 
-**Music only, no VO.** A synthetic voiceover undercut a product that sells *human
-voices you'll love*, so the film leans on motion, typeset lines, and a music bed.
+**Music only, no VO.** A synthetic voiceover undercut a product that sells _human
+voices you'll love_, so the film leans on motion, typeset lines, and a music bed.
 
 ### ⚠️ Attribution required
 
@@ -63,6 +63,7 @@ Cloudflare-gated against `curl`). Then:
    `PlanA.tsx` if the new track needs it.
 
 ### SFX (not shipped)
+
 A soft "chime-swish" frame-synced to each highlight-word sweep would make a nice sonic
 signature. It needs an SFX asset; add it as a second `<Audio>` in `PlanA.tsx`.
 

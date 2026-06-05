@@ -95,7 +95,8 @@ const ogImage = new URL('/og.png', Astro.site).toString();
         { threshold: 0, rootMargin: '0px 0px -6% 0px' },
       );
       reveals.forEach((el) => {
-        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('in');
+        if (el.getBoundingClientRect().top < window.innerHeight)
+          el.classList.add('in');
         else io.observe(el);
       });
       setTimeout(() => reveals.forEach((el) => el.classList.add('in')), 1200);
@@ -137,7 +138,9 @@ const ogImage = new URL('/og.png', Astro.site).toString();
           const input = form.querySelector('input[type="email"]');
           const ok = form.querySelector('[data-waitlist-ok]');
           if (input && input.checkValidity() && ok) {
-            form.querySelector('[data-waitlist-fields]')?.classList.add('hidden');
+            form
+              .querySelector('[data-waitlist-fields]')
+              ?.classList.add('hidden');
             ok.classList.remove('hidden');
           } else {
             input?.reportValidity();

@@ -1,6 +1,6 @@
-import React from "react";
-import { useCurrentFrame } from "remotion";
-import { COLORS } from "../theme";
+import React from 'react';
+import { useCurrentFrame } from 'remotion';
+import { COLORS } from '../theme';
 
 type Props = {
   count?: number;
@@ -30,12 +30,13 @@ export const AudioRibbons: React.FC<Props> = ({
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
-      style={{ position: "absolute", inset: 0, opacity }}
+      style={{ position: 'absolute', inset: 0, opacity }}
     >
       {Array.from({ length: count }).map((_, i) => {
         const baseY = height / 2 + (i - (count - 1) / 2) * 90;
         const phase = i * 0.7;
-        const amp = amplitude * (1 - Math.abs(i - (count - 1) / 2) / count) + 18;
+        const amp =
+          amplitude * (1 - Math.abs(i - (count - 1) / 2) / count) + 18;
         const pts: string[] = [];
         for (let x = 0; x <= width; x += 24) {
           const y =
@@ -48,7 +49,7 @@ export const AudioRibbons: React.FC<Props> = ({
         return (
           <polyline
             key={i}
-            points={pts.join(" ")}
+            points={pts.join(' ')}
             fill="none"
             stroke={stroke}
             strokeWidth={3.5}

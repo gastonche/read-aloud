@@ -18,28 +18,45 @@ const premium = [
 ];
 ---
 
-<section id="pricing" class="scroll-mt-20 bg-paper-warm py-20 lg:py-28 dark:bg-night-soft">
+<section
+  id="pricing"
+  class="scroll-mt-20 bg-paper-warm py-20 lg:py-28 dark:bg-night-soft"
+>
   <div class="mx-auto max-w-7xl px-5 lg:px-8">
     <div class="reveal mx-auto max-w-2xl text-center">
-      <p class="text-sm font-semibold uppercase tracking-[0.16em] text-accent">Pricing</p>
-      <h2 class="mt-3 font-display text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-tight tracking-tight text-ink dark:text-white">
+      <p class="text-sm font-semibold uppercase tracking-[0.16em] text-accent">
+        Pricing
+      </p>
+      <h2
+        class="mt-3 font-display text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-tight tracking-tight text-ink dark:text-white"
+      >
         Start free. Upgrade only if you fall in love.
       </h2>
       <p class="mt-4 text-lg leading-relaxed text-ink-soft dark:text-slate-300">
-        The free plan isn&rsquo;t a crippled trial — it&rsquo;s genuinely useful forever.
-        Premium is for when you want the human-sounding voices every day.
+        The free plan isn&rsquo;t a crippled trial — it&rsquo;s genuinely useful
+        forever. Premium is for when you want the human-sounding voices every
+        day.
       </p>
     </div>
 
-    <div class="reveal mx-auto mt-14 grid max-w-4xl items-start gap-6 md:grid-cols-2">
+    <div
+      class="reveal mx-auto mt-14 grid max-w-4xl items-start gap-6 md:grid-cols-2"
+    >
       <!-- Free -->
-      <div class="rounded-3xl border border-paper-dim bg-paper p-8 dark:border-night-line dark:bg-night">
+      <div
+        class="rounded-3xl border border-paper-dim bg-paper p-8 dark:border-night-line dark:bg-night"
+      >
         <h3 class="text-lg font-semibold text-ink dark:text-white">Free</h3>
         <p class="mt-3 flex items-baseline gap-1">
-          <span class="font-display text-5xl font-semibold text-ink dark:text-white">$0</span>
+          <span
+            class="font-display text-5xl font-semibold text-ink dark:text-white"
+            >$0</span
+          >
           <span class="text-sm text-ink-faint">forever</span>
         </p>
-        <p class="mt-2 text-sm text-ink-soft dark:text-slate-300">Everything you need to read with your ears.</p>
+        <p class="mt-2 text-sm text-ink-soft dark:text-slate-300">
+          Everything you need to read with your ears.
+        </p>
         <a
           href={chromeStore}
           class="mt-6 flex items-center justify-center gap-2 rounded-2xl border border-ink/15 bg-paper px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-paper-warm dark:border-white/15 dark:bg-night-soft dark:text-white dark:hover:bg-night-line"
@@ -50,7 +67,11 @@ const premium = [
           {
             free.map((f) => (
               <li class="flex gap-2.5">
-                <Icon name="check" size={18} class="mt-0.5 shrink-0 text-accent" />
+                <Icon
+                  name="check"
+                  size={18}
+                  class="mt-0.5 shrink-0 text-accent"
+                />
                 <span>{f}</span>
               </li>
             ))
@@ -59,16 +80,25 @@ const premium = [
       </div>
 
       <!-- Premium -->
-      <div class="relative rounded-3xl border-2 border-accent bg-paper p-8 shadow-xl shadow-accent/10 dark:bg-night">
-        <span class="absolute -top-3 left-8 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+      <div
+        class="relative rounded-3xl border-2 border-accent bg-paper p-8 shadow-xl shadow-accent/10 dark:bg-night"
+      >
+        <span
+          class="absolute -top-3 left-8 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white"
+        >
           Most popular
         </span>
         <h3 class="text-lg font-semibold text-ink dark:text-white">Premium</h3>
         <p class="mt-3 flex items-baseline gap-1">
-          <span class="font-display text-5xl font-semibold text-ink dark:text-white">$5</span>
+          <span
+            class="font-display text-5xl font-semibold text-ink dark:text-white"
+            >$5</span
+          >
           <span class="text-sm text-ink-faint">/ month</span>
         </p>
-        <p class="mt-2 text-sm text-ink-soft dark:text-slate-300">Cancel anytime. Less than one coffee.</p>
+        <p class="mt-2 text-sm text-ink-soft dark:text-slate-300">
+          Cancel anytime. Less than one coffee.
+        </p>
         <a
           href={chromeStore}
           class="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-transform hover:-translate-y-0.5"
@@ -79,7 +109,11 @@ const premium = [
           {
             premium.map((f) => (
               <li class="flex gap-2.5">
-                <Icon name="check" size={18} class="mt-0.5 shrink-0 text-accent" />
+                <Icon
+                  name="check"
+                  size={18}
+                  class="mt-0.5 shrink-0 text-accent"
+                />
                 <span>{f}</span>
               </li>
             ))
@@ -88,7 +122,8 @@ const premium = [
       </div>
     </div>
     <p class="reveal mt-8 text-center text-sm text-ink-faint">
-      Prices shown are illustrative for this preview. No payment is taken on this page.
+      Prices shown are illustrative for this preview. No payment is taken on
+      this page.
     </p>
   </div>
 </section>

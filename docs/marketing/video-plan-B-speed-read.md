@@ -1,6 +1,6 @@
 # Promo Video — Plan B: "Speed Read"
 
-**Direction:** Fast / punchy feature-demo. Sells *capability* in rapid, satisfying hits.
+**Direction:** Fast / punchy feature-demo. Sells _capability_ in rapid, satisfying hits.
 **Best for:** Paid social (Reels/TikTok/Shorts), pre-roll, retargeting, app-store preview — anywhere you have ~2 seconds to earn the scroll-stop and need click-through.
 **Length:** 15s primary (variants in §8).
 
@@ -8,25 +8,25 @@
 
 ## 1. The Idea
 
-No slow build, no setup. **Frame one is the payoff:** a real article on screen with the highlight wash sweeping word-by-word in perfect sync and a caption snapping in. From there it's a tight, beat-locked montage of "watch it just *do* this" moments — each capability landing on a music hit — ending on the offer.
+No slow build, no setup. **Frame one is the payoff:** a real article on screen with the highlight wash sweeping word-by-word in perfect sync and a caption snapping in. From there it's a tight, beat-locked montage of "watch it just _do_ this" moments — each capability landing on a music hit — ending on the offer.
 
 This plan trades emotional depth for **density and momentum.** It assumes a skeptical, fast-scrolling viewer and rewards them instantly, then keeps the dopamine coming with quick wins.
 
-**The through-line:** still the highlight wash, but used as a *rhythm device* — each new feature enters on the sweep, on the beat.
+**The through-line:** still the highlight wash, but used as a _rhythm device_ — each new feature enters on the sweep, on the beat.
 
 ---
 
 ## 2. Marketing Psychology
 
-| Principle | How it's used here |
-|---|---|
-| **First-frame hook** | The wow (live word-sync) is frame 1 — no patience required. Critical for paid social where 2s decides everything. |
-| **Show, don't tell** | Every claim is demonstrated on real content; zero "we believe…" filler. |
-| **Cognitive fluency / rhythm** | Beat-synced cuts feel satisfying and "right," which the brain transfers onto the product. |
-| **Curiosity gap micro-loops** | Each ~1.5s beat opens and closes a tiny loop ("wait, it does PDFs too?") keeping retention high. |
-| **Specificity = credibility** | Concrete numbers (30+ languages, 0.5×–3×, 4,000 words → 3 lines) read as proof, not puff. |
-| **Risk reversal** | "Free. No account." in the last beat removes the only friction at the moment of intent. |
-| **Recency / CTA primacy** | The offer is the final, biggest, most-held frame — the thing they leave with. |
+| Principle                      | How it's used here                                                                                                |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| **First-frame hook**           | The wow (live word-sync) is frame 1 — no patience required. Critical for paid social where 2s decides everything. |
+| **Show, don't tell**           | Every claim is demonstrated on real content; zero "we believe…" filler.                                           |
+| **Cognitive fluency / rhythm** | Beat-synced cuts feel satisfying and "right," which the brain transfers onto the product.                         |
+| **Curiosity gap micro-loops**  | Each ~1.5s beat opens and closes a tiny loop ("wait, it does PDFs too?") keeping retention high.                  |
+| **Specificity = credibility**  | Concrete numbers (30+ languages, 0.5×–3×, 4,000 words → 3 lines) read as proof, not puff.                         |
+| **Risk reversal**              | "Free. No account." in the last beat removes the only friction at the moment of intent.                           |
+| **Recency / CTA primacy**      | The offer is the final, biggest, most-held frame — the thing they leave with.                                     |
 
 ---
 
@@ -34,12 +34,12 @@ This plan trades emotional depth for **density and momentum.** It assumes a skep
 
 > Cuts land on the beat. Target ~9–11 distinct beats. Energetic but clean — snappy, not chaotic.
 
-- **0:00–0:02 — HOOK.** Cold open on a real article. A warm human voice is *already* reading; the highlight wash sweeps word-by-word, dead in sync. On-screen text snaps in: **"It reads any page out loud."**
+- **0:00–0:02 — HOOK.** Cold open on a real article. A warm human voice is _already_ reading; the highlight wash sweeps word-by-word, dead in sync. On-screen text snaps in: **"It reads any page out loud."**
 - **0:02–0:04 — Voices.** Voice-picker pops; two friendly avatars. Caption: **"In human voices you'll love."** (free + premium chips visible, no jargon).
 - **0:04–0:05 — Speed.** Speed dial flicks 1× → 2× → 3×; audio pitches up playfully then settles. Caption: **"As fast as you want."**
 - **0:05–0:07 — Files.** PDF, EPUB, DOCX icons fly in and morph into flowing highlighted text. Caption: **"PDFs. Ebooks. Docs."**
 - **0:07–0:08 — Languages.** Language chip rapid-flips English → 日本語 → عربى (RTL flips correctly). Caption: **"30+ languages."**
-- **0:08–0:10 — AI summary.** A long article visually compresses; an "AI summary" chip resolves it to 3 lines, then reads *those* aloud. Caption: **"Too long? Get the TL;DR."**
+- **0:08–0:10 — AI summary.** A long article visually compresses; an "AI summary" chip resolves it to 3 lines, then reads _those_ aloud. Caption: **"Too long? Get the TL;DR."**
 - **0:10–0:12 — Control bar.** The floating bar drags and snaps to a corner; Space-to-play, click-to-seek, auto-scroll flash by. Caption: **"Controls that stay out of the way."**
 - **0:12–0:13 — Privacy beat.** Quick lock icon. Caption: **"No account. Private by design."**
 - **0:13–0:15 — OFFER.** Logo + tagline **"Stop reading everything. Start listening to it."** → big button **"Add to Chrome — it's free"**. Held, biggest frame. A ReadAloud voice reads the tagline aloud over it.
@@ -48,7 +48,7 @@ This plan trades emotional depth for **density and momentum.** It assumes a skep
 
 ## 4. On-Screen Copy (no voiceover)
 
-**No voiceover** — captions do the talking and the music drives the cuts. This is the right call for paid social anyway (most plays are muted), and it avoids a synthetic VO undercutting a product that sells *human voices you'll love*. Burned-in captions, bold and high-contrast, one line per beat:
+**No voiceover** — captions do the talking and the music drives the cuts. This is the right call for paid social anyway (most plays are muted), and it avoids a synthetic VO undercutting a product that sells _human voices you'll love_. Burned-in captions, bold and high-contrast, one line per beat:
 
 > "It reads any page out loud." → "In human voices you'll love." → "As fast as you want." →
 > "PDFs. Ebooks. Docs." → "30+ languages." → "Too long? Get the TL;DR." →
@@ -61,12 +61,12 @@ This plan trades emotional depth for **density and momentum.** It assumes a skep
 
 ## 5. Music (drives the edit)
 
-In Plan B the **music is the spine** — cuts land on the beat, so pick the track *first* and map beats to it.
+In Plan B the **music is the spine** — cuts land on the beat, so pick the track _first_ and map beats to it.
 
 - **Vibe:** upbeat, modern, light-electronic or clean pop-corporate with a clear 4-on-the-floor pulse. 110–125 BPM so cuts land crisply. Confident, not aggressive.
-- **Shipped track:** *"Blippy Trance"* by **Kevin MacLeod** (incompetech.com) — upbeat electronic with a steady driving pulse, good for beat-locked cuts. Licensed **CC BY 4.0** (attribution required — see README). Bundled in `apps/promo/public/music/`.
+- **Shipped track:** _"Blippy Trance"_ by **Kevin MacLeod** (incompetech.com) — upbeat electronic with a steady driving pulse, good for beat-locked cuts. Licensed **CC BY 4.0** (attribution required — see README). Bundled in `apps/promo/public/music/`.
 - **Other free / license-clean sources:**
-  - **Pixabay Music** — royalty-free, *no attribution required*, free commercial use. Swap to this if you want zero credit obligations. (Download via browser — the site is Cloudflare-gated against curl.)
+  - **Pixabay Music** — royalty-free, _no attribution required_, free commercial use. Swap to this if you want zero credit obligations. (Download via browser — the site is Cloudflare-gated against curl.)
   - **Incompetech / Kevin MacLeod** — CC BY 4.0, direct download (what's shipped).
   - **Paid** for bespoke energy: Artlist / Epidemic / Musicbed.
 - **Note:** the beats are on a clean grid right now (cuts ~every 1.5–2s). For tighter edit-to-music feel, nudge the `B` beat-map frames in `PlanB.tsx` to land on the track's downbeats.
@@ -77,7 +77,7 @@ In Plan B the **music is the spine** — cuts land on the beat, so pick the trac
 
 - **Hit-synced edits:** every feature beat lands on a downbeat or snare hit — the satisfaction comes from edit-to-music tightness.
 - **Signature SFX (optional):** a soft "chime-swish" on each highlight sweep doubles as a rhythmic accent — keep it frame-perfect. Needs an SFX asset; add as a second `<Audio>`.
-- **UI SFX (optional):** crisp, tactile pops/clicks on each chip, dial, and snap — they sell *responsiveness*.
+- **UI SFX (optional):** crisp, tactile pops/clicks on each chip, dial, and snap — they sell _responsiveness_.
 - **Final beat:** music hits a satisfying resolve/stab on the CTA frame.
 - **Mix:** with no VO, the music sits forward the whole way; just fade in/out at the ends.
 - **Licensing:** free (Pixabay / Incompetech) or licensed (Artlist, Epidemic, Musicbed) — never commercial tracks.
@@ -97,13 +97,13 @@ In Plan B the **music is the spine** — cuts land on the beat, so pick the trac
 
 ## 8. Deliverables
 
-| Cut | Length | Aspect | Use |
-|---|---|---|---|
-| **Primary** | 15s | 9:16 | Reels / TikTok / Shorts |
-| **Square** | 15s | 1:1 | Feed placements |
-| **Wide** | 15s | 16:9 | YouTube pre-roll, landing secondary |
-| **6s bumper** | 6s | 16:9 / 9:16 | Pre-roll — hook → 3 fastest beats → CTA |
-| **App-store preview** | 15–20s | 9:16 | iOS/Android store listing (when apps ship) |
+| Cut                   | Length | Aspect      | Use                                        |
+| --------------------- | ------ | ----------- | ------------------------------------------ |
+| **Primary**           | 15s    | 9:16        | Reels / TikTok / Shorts                    |
+| **Square**            | 15s    | 1:1         | Feed placements                            |
+| **Wide**              | 15s    | 16:9        | YouTube pre-roll, landing secondary        |
+| **6s bumper**         | 6s     | 16:9 / 9:16 | Pre-roll — hook → 3 fastest beats → CTA    |
+| **App-store preview** | 15–20s | 9:16        | iOS/Android store listing (when apps ship) |
 
 - **Captions:** always burned-in. This cut is built sound-off first.
 - **Hook variants:** produce 2–3 alternate first-2-seconds (different opening article / first caption) to A/B which earns the most scroll-stops.
@@ -121,4 +121,4 @@ In Plan B the **music is the spine** — cuts land on the beat, so pick the trac
 
 ## 10. Why Plan B vs Plan A
 
-Choose **B** when the goal is performance: paid social, retargeting, app-store listing, or anywhere click-through and scroll-stop rate matter more than brand feeling. It assumes no patience and pays off instantly. If you instead want the landing-page hero or a brand story that makes people *feel* the relief, see **Plan A (The Backlog Breathes)**.
+Choose **B** when the goal is performance: paid social, retargeting, app-store listing, or anywhere click-through and scroll-stop rate matter more than brand feeling. It assumes no patience and pays off instantly. If you instead want the landing-page hero or a brand story that makes people _feel_ the relief, see **Plan A (The Backlog Breathes)**.

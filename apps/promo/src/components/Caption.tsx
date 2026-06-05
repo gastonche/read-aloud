@@ -1,6 +1,6 @@
-import React from "react";
-import { useCurrentFrame, interpolate, spring, useVideoConfig } from "remotion";
-import { COLORS, FONT } from "../theme";
+import React from 'react';
+import { useCurrentFrame, interpolate, spring, useVideoConfig } from 'remotion';
+import { COLORS, FONT } from '../theme';
 
 type Props = {
   children: React.ReactNode;
@@ -11,7 +11,11 @@ type Props = {
 };
 
 // Burned-in social caption: bold, high-contrast, springy pop-in, readable muted.
-export const Caption: React.FC<Props> = ({ children, appear = 0, size = 72 }) => {
+export const Caption: React.FC<Props> = ({
+  children,
+  appear = 0,
+  size = 72,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const pop = spring({
@@ -20,8 +24,8 @@ export const Caption: React.FC<Props> = ({ children, appear = 0, size = 72 }) =>
     config: { damping: 14, stiffness: 200 },
   });
   const op = interpolate(frame, [appear, appear + 6], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
   });
   return (
     <div
@@ -32,11 +36,11 @@ export const Caption: React.FC<Props> = ({ children, appear = 0, size = 72 }) =>
         fontWeight: 800,
         fontSize: size,
         lineHeight: 1.1,
-        letterSpacing: "-0.02em",
+        letterSpacing: '-0.02em',
         color: COLORS.ink,
-        textAlign: "center",
+        textAlign: 'center',
         maxWidth: 920,
-        textWrap: "balance",
+        textWrap: 'balance',
       }}
     >
       {children}

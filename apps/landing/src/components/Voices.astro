@@ -4,21 +4,42 @@ import Icon from './Icon.astro';
 const premiumVoices = [
   { name: 'Aria', tag: 'Warm & natural', grad: 'from-rose-200 to-amber-200' },
   { name: 'Atlas', tag: 'Deep & steady', grad: 'from-sky-200 to-indigo-200' },
-  { name: 'Nova', tag: 'Bright & crisp', grad: 'from-violet-200 to-fuchsia-200' },
+  {
+    name: 'Nova',
+    tag: 'Bright & crisp',
+    grad: 'from-violet-200 to-fuchsia-200',
+  },
   { name: 'Sage', tag: 'Calm & clear', grad: 'from-emerald-200 to-teal-200' },
 ];
 
 const langs = [
-  'English', 'Español', 'Français', 'Deutsch', '日本語', '中文',
-  'Português', 'العربية', 'हिन्दी', 'Italiano', '한국어', 'Nederlands',
+  'English',
+  'Español',
+  'Français',
+  'Deutsch',
+  '日本語',
+  '中文',
+  'Português',
+  'العربية',
+  'हिन्दी',
+  'Italiano',
+  '한국어',
+  'Nederlands',
 ];
 ---
 
-<section id="voices" class="scroll-mt-20 bg-paper-warm py-20 lg:py-28 dark:bg-night-soft">
+<section
+  id="voices"
+  class="scroll-mt-20 bg-paper-warm py-20 lg:py-28 dark:bg-night-soft"
+>
   <div class="mx-auto max-w-7xl px-5 lg:px-8">
     <div class="reveal mx-auto max-w-2xl text-center">
-      <p class="text-sm font-semibold uppercase tracking-[0.16em] text-accent">Voices &amp; languages</p>
-      <h2 class="mt-3 font-display text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-tight tracking-tight text-ink dark:text-white">
+      <p class="text-sm font-semibold uppercase tracking-[0.16em] text-accent">
+        Voices &amp; languages
+      </p>
+      <h2
+        class="mt-3 font-display text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-tight tracking-tight text-ink dark:text-white"
+      >
         Voices you&rsquo;ll actually want in your ears
       </h2>
       <p class="mt-4 text-lg leading-relaxed text-ink-soft dark:text-slate-300">
@@ -30,51 +51,90 @@ const langs = [
 
     <div class="reveal mt-14 grid gap-5 lg:grid-cols-2">
       <!-- Free voices -->
-      <div class="rounded-3xl border border-paper-dim bg-paper p-7 dark:border-night-line dark:bg-night">
+      <div
+        class="rounded-3xl border border-paper-dim bg-paper p-7 dark:border-night-line dark:bg-night"
+      >
         <div class="flex items-center gap-3">
-          <span class="grid h-11 w-11 place-items-center rounded-2xl bg-paper-warm text-ink-soft dark:bg-night-soft dark:text-slate-300">
+          <span
+            class="grid h-11 w-11 place-items-center rounded-2xl bg-paper-warm text-ink-soft dark:bg-night-soft dark:text-slate-300"
+          >
             <Icon name="micVocal" size={20} />
           </span>
           <div>
-            <h3 class="text-lg font-semibold text-ink dark:text-white">Free voices</h3>
-            <p class="text-xs font-medium text-ink-faint">Free forever · works offline</p>
+            <h3 class="text-lg font-semibold text-ink dark:text-white">
+              Free voices
+            </h3>
+            <p class="text-xs font-medium text-ink-faint">
+              Free forever · works offline
+            </p>
           </div>
         </div>
-        <p class="mt-4 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300">
+        <p
+          class="mt-4 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300"
+        >
           A handpicked set of the voices already on your device, organised by
-          language. No connection, no cost, no account — perfect for everyday reading.
+          language. No connection, no cost, no account — perfect for everyday
+          reading.
         </p>
         <ul class="mt-5 space-y-2 text-sm text-ink dark:text-slate-200">
-          <li class="flex items-center gap-2"><Icon name="check" size={16} class="text-accent" /> Works completely offline</li>
-          <li class="flex items-center gap-2"><Icon name="check" size={16} class="text-accent" /> Nothing leaves your device</li>
-          <li class="flex items-center gap-2"><Icon name="check" size={16} class="text-accent" /> Follows along as it reads</li>
+          <li class="flex items-center gap-2">
+            <Icon name="check" size={16} class="text-accent" /> Works completely offline
+          </li>
+          <li class="flex items-center gap-2">
+            <Icon name="check" size={16} class="text-accent" /> Nothing leaves your
+            device
+          </li>
+          <li class="flex items-center gap-2">
+            <Icon name="check" size={16} class="text-accent" /> Follows along as it
+            reads
+          </li>
         </ul>
       </div>
 
       <!-- Premium voices -->
-      <div class="relative overflow-hidden rounded-3xl border border-accent/25 bg-gradient-to-br from-accent-soft/70 to-paper p-7 dark:border-accent-bright/30 dark:from-accent-bright/12 dark:to-night">
-        <span class="absolute right-5 top-5 rounded-full bg-accent px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">Premium</span>
+      <div
+        class="relative overflow-hidden rounded-3xl border border-accent/25 bg-gradient-to-br from-accent-soft/70 to-paper p-7 dark:border-accent-bright/30 dark:from-accent-bright/12 dark:to-night"
+      >
+        <span
+          class="absolute right-5 top-5 rounded-full bg-accent px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white"
+          >Premium</span
+        >
         <div class="flex items-center gap-3">
-          <span class="grid h-11 w-11 place-items-center rounded-2xl bg-accent text-white shadow-md shadow-accent/30">
+          <span
+            class="grid h-11 w-11 place-items-center rounded-2xl bg-accent text-white shadow-md shadow-accent/30"
+          >
             <Icon name="sparkles" size={20} />
           </span>
           <div>
-            <h3 class="text-lg font-semibold text-ink dark:text-white">Premium voices</h3>
-            <p class="text-xs font-medium text-accent-ink dark:text-accent-soft">Ultra-realistic · sounds human</p>
+            <h3 class="text-lg font-semibold text-ink dark:text-white">
+              Premium voices
+            </h3>
+            <p
+              class="text-xs font-medium text-accent-ink dark:text-accent-soft"
+            >
+              Ultra-realistic · sounds human
+            </p>
           </div>
         </div>
-        <p class="mt-4 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300">
-          Narration so lifelike it&rsquo;s easy to forget no one&rsquo;s actually reading to
-          you — and the highlighting stays perfectly in step. Each voice has its own
-          personality; pick the one you want to spend an hour with.
+        <p
+          class="mt-4 text-[15px] leading-relaxed text-ink-soft dark:text-slate-300"
+        >
+          Narration so lifelike it&rsquo;s easy to forget no one&rsquo;s
+          actually reading to you — and the highlighting stays perfectly in
+          step. Each voice has its own personality; pick the one you want to
+          spend an hour with.
         </p>
         <div class="mt-5 grid grid-cols-2 gap-2.5">
           {
             premiumVoices.map((v) => (
               <div class="flex items-center gap-2.5 rounded-2xl border border-paper-dim bg-paper/70 px-3 py-2.5 dark:border-night-line dark:bg-night-soft/70">
-                <span class={`h-8 w-8 shrink-0 rounded-full bg-gradient-to-br ${v.grad}`} />
+                <span
+                  class={`h-8 w-8 shrink-0 rounded-full bg-gradient-to-br ${v.grad}`}
+                />
                 <div class="min-w-0">
-                  <p class="truncate text-sm font-semibold text-ink dark:text-white">{v.name}</p>
+                  <p class="truncate text-sm font-semibold text-ink dark:text-white">
+                    {v.name}
+                  </p>
                   <p class="truncate text-[11px] text-ink-faint">{v.tag}</p>
                 </div>
               </div>
@@ -86,7 +146,9 @@ const langs = [
 
     <!-- Language marquee -->
     <div class="reveal mt-10">
-      <p class="text-center text-xs font-semibold uppercase tracking-[0.16em] text-ink-faint">
+      <p
+        class="text-center text-xs font-semibold uppercase tracking-[0.16em] text-ink-faint"
+      >
         Automatically detects &amp; reads
       </p>
       <div class="mt-5 flex flex-wrap justify-center gap-2.5">
@@ -97,7 +159,9 @@ const langs = [
             </span>
           ))
         }
-        <span class="rounded-full border border-accent/30 bg-accent-soft px-4 py-1.5 text-sm font-semibold text-accent-ink dark:border-accent-bright/30 dark:bg-accent-bright/10 dark:text-accent-soft">
+        <span
+          class="rounded-full border border-accent/30 bg-accent-soft px-4 py-1.5 text-sm font-semibold text-accent-ink dark:border-accent-bright/30 dark:bg-accent-bright/10 dark:text-accent-soft"
+        >
           + many more
         </span>
       </div>

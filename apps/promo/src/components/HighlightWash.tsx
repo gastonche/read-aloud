@@ -1,6 +1,6 @@
-import React from "react";
-import { interpolate, Easing } from "remotion";
-import { COLORS, FONT } from "../theme";
+import React from 'react';
+import { interpolate, Easing } from 'remotion';
+import { COLORS, FONT } from '../theme';
 
 type Props = {
   words: string[];
@@ -32,10 +32,10 @@ export const HighlightWash: React.FC<Props> = ({
         fontSize,
         fontWeight: weight,
         lineHeight,
-        letterSpacing: "-0.01em",
-        textAlign: "left",
-        display: "flex",
-        flexWrap: "wrap",
+        letterSpacing: '-0.01em',
+        textAlign: 'left',
+        display: 'flex',
+        flexWrap: 'wrap',
         rowGap: fontSize * (lineHeight - 1) * 0.4,
       }}
     >
@@ -43,8 +43,8 @@ export const HighlightWash: React.FC<Props> = ({
         // local progress of the head within this word: <0 unread, 0..1 active, >1 read
         const local = head - i;
         const fill = interpolate(local, [0, 1], [0, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
           easing: Easing.bezier(0.22, 1, 0.36, 1),
         });
         const isActive = local > 0 && local < 1.15;
@@ -53,17 +53,19 @@ export const HighlightWash: React.FC<Props> = ({
         const textColor = interpolateColor(fill, COLORS.slate, COLORS.ink);
         // wash background sweeps in left->right across the word
         const washOpacity = interpolate(fill, [0, 0.15, 1], [0, 0.55, 1], {
-          extrapolateRight: "clamp",
+          extrapolateRight: 'clamp',
         });
-        const lift = isActive ? interpolate(local, [0, 0.5, 1.15], [0, -3, 0]) : 0;
+        const lift = isActive
+          ? interpolate(local, [0, 0.5, 1.15], [0, -3, 0])
+          : 0;
 
         return (
           <span
             key={i}
             style={{
-              position: "relative",
-              padding: "0.04em 0.16em",
-              marginRight: "0.06em",
+              position: 'relative',
+              padding: '0.04em 0.16em',
+              marginRight: '0.06em',
               color: textColor,
               transform: `translateY(${lift}px)`,
               borderRadius: fontSize * 0.18,
@@ -72,7 +74,7 @@ export const HighlightWash: React.FC<Props> = ({
             {/* the wash — clipped to a left->right reveal so it paints across the word */}
             <span
               style={{
-                position: "absolute",
+                position: 'absolute',
                 inset: 0,
                 background: COLORS.wash,
                 opacity: washOpacity,
@@ -80,10 +82,10 @@ export const HighlightWash: React.FC<Props> = ({
                 clipPath: `inset(0 ${(1 - fill) * 100}% 0 0)`,
                 boxShadow: isActive
                   ? `0 2px 14px ${hexA(COLORS.indigoBright, 0.28)}`
-                  : "none",
+                  : 'none',
               }}
             />
-            <span style={{ position: "relative" }}>{word}</span>
+            <span style={{ position: 'relative' }}>{word}</span>
           </span>
         );
       })}
@@ -93,7 +95,7 @@ export const HighlightWash: React.FC<Props> = ({
 
 // --- tiny color helpers (no deps) ---
 function hexToRgb(hex: string) {
-  const h = hex.replace("#", "");
+  const h = hex.replace('#', '');
   return {
     r: parseInt(h.slice(0, 2), 16),
     g: parseInt(h.slice(2, 4), 16),
