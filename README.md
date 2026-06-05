@@ -2,6 +2,13 @@
 
 > **Listen to any web page or document — with the words highlighted as they're spoken.**
 
+[![CI](https://github.com/gastonche/read-aloud/actions/workflows/ci.yml/badge.svg)](https://github.com/gastonche/read-aloud/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)
+![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4.svg)
+
+_A portfolio project: a full-stack Chrome extension + Cloudflare Worker, a marketing site, and a motion promo — in one Turborepo._
+
 A Speechify-style **Manifest V3** Chrome extension. **Read this page** drops a
 draggable floating bar on the page and highlights the words **right on the page**
 as it reads (zero DOM mutation, via the CSS Custom Highlight API); files open in
@@ -19,10 +26,15 @@ voices. That story is told in [Dual-engine highlighting](#dual-engine-highlighti
 
 ## Demo
 
-| Read this page                                         | Upload a file                                          |
-| ------------------------------------------------------ | ------------------------------------------------------ |
-| ![Page flow](docs/images/page-flow.gif)                | ![File flow](docs/images/file-flow.gif)                |
-| _(demo GIF placeholder — `docs/images/page-flow.gif`)_ | _(demo GIF placeholder — `docs/images/file-flow.gif`)_ |
+Two ways in, one reader:
+
+- **Read this page** — a draggable control bar drops onto the page and highlights
+  each word **on the live DOM** as it speaks (zero DOM mutation).
+- **Upload a file** — a PDF / EPUB / DOCX / TXT opens in the side-panel reader with
+  the same synced highlighting.
+
+The marketing site lives in [`apps/landing`](apps/landing) (Astro) and a 30-second
+motion promo in [`apps/promo`](apps/promo) (Remotion).
 
 ## Features
 
@@ -30,8 +42,9 @@ voices. That story is told in [Dual-engine highlighting](#dual-engine-highlighti
   (Readability extraction of the active tab) or _Upload a file_ (drag-and-drop
   PDF / EPUB / DOCX / TXT). Both converge on the side panel as the single
   playback surface.
-- **Synced word + sentence highlighting** on **both** engines, rendered only in
-  the side panel — the source page DOM is never touched.
+- **Synced word + sentence highlighting** on **both** engines, rendered both
+  **on the live page** (via the CSS Custom Highlight API) and in the side-panel
+  reader — always with **zero DOM mutation** of the source page.
 - **Two voice modes, one contract:** **Built-in** (free, on-device
   `speechSynthesis`) and **Studio** (premium neural — **ElevenLabs and/or
   OpenAI**, via a Cloudflare Worker). The backend advertises which voices exist
@@ -103,7 +116,9 @@ flowchart TB
 read-aloud/
 ├── apps/
 │   ├── extension/   # Vite 8 + CRXJS + React 19 + Tailwind 4, MV3, TS strict
-│   └── worker/      # Cloudflare Worker (Hono): /summarize, /tts
+│   ├── worker/      # Cloudflare Worker (Hono): /summarize, /tts, /voices
+│   ├── landing/     # Marketing site — Astro 5 + Tailwind 4
+│   └── promo/       # 30s motion promo — Remotion
 ├── packages/
 │   └── shared/      # @readaloud/shared — client↔worker HTTP contract + alignment math
 └── turbo.json
@@ -244,8 +259,8 @@ Requires Node ≥ 20 (developed on Node 25 / npm 11).
 ```bash
 npm install          # all workspaces
 npm run build        # build everything (extension → apps/extension/dist)
-npm run typecheck    # tsc --noEmit across all workspaces
-npm test             # vitest — pure logic (73 tests)
+npm run typecheck    # tsc --noEmit / astro check across all workspaces
+npm test             # vitest — pure logic (93 tests)
 npm run dev          # CRXJS dev server (HMR) for the extension
 ```
 
@@ -264,7 +279,7 @@ The harness drives the **real built extension in Playwright's bundled Chromium**
 Worker for the milestones that need it:
 
 ```bash
-npm run e2e -w @readaloud/extension     # builds, boots mock Worker, runs m1–m6
+npm run e2e -w @readaloud/extension     # builds, boots mock Worker, runs all 11 smokes
 ```
 
 Headless Chromium has no system voices and won't play audio, so the suite
@@ -328,6 +343,6 @@ hash)`, and Workers-AI summaries in the **AI Gateway** — repeat reads become
   neural highlighting on character offsets to fully eliminate the word-drift
   edge case.
 
-```
+## License
 
-```
+[MIT](LICENSE) © Gaston
