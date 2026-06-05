@@ -4,6 +4,8 @@
   "version": "0.3.0",
   "type": "module",
   "description": "ReadAloud — a Speechify-style MV3 extension that reads pages and documents aloud with synced highlighting.",
+  "license": "MIT",
+  "author": "Gaston <gastonnkh@gmail.com>",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

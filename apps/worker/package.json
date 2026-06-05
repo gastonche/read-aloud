@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "description": "ReadAloud Cloudflare Worker — Workers AI summarizer + ElevenLabs TTS proxy.",
+  "license": "MIT",
+  "author": "Gaston <gastonnkh@gmail.com>",
   "scripts": {
     "dev": "wrangler dev",
     "deploy:staging": "wrangler deploy --env staging",

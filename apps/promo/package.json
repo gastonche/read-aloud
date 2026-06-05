@@ -4,6 +4,8 @@
   "version": "0.3.0",
   "type": "module",
   "description": "ReadAloud promotional motion-graphics video (Plan A — \"The Backlog Breathes\"). Built with Remotion.",
+  "license": "MIT",
+  "author": "Gaston <gastonnkh@gmail.com>",
   "scripts": {
     "studio": "remotion studio",
     "render": "remotion render PlanA out/plan-a.mp4",

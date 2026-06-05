@@ -4,6 +4,8 @@
   "version": "0.3.0",
   "type": "module",
   "description": "ReadAloud marketing landing page — Astro + Tailwind.",
+  "license": "MIT",
+  "author": "Gaston <gastonnkh@gmail.com>",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",

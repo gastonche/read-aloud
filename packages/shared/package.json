@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "description": "Wire-level HTTP contract shared between the ReadAloud extension client and the Cloudflare Worker.",
+  "license": "MIT",
+  "author": "Gaston <gastonnkh@gmail.com>",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
