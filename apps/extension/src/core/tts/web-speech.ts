@@ -1,17 +1,9 @@
-/**
- * WebSpeechEngine — the free, default engine.
- *
- * Mechanism: speak ONE sentence per SpeechSynthesisUtterance (short utterances
- * dodge Chrome's ~15s cutoff bug and let long docs start instantly). Word
- * highlighting is driven by `onboundary` charIndex → word index. When a voice
- * doesn't fire boundaries, we degrade gracefully to sentence-level highlighting
- * and notify the UI once.
- *
- * Robustness details:
- *  - A generation token invalidates the handlers of any utterance we cancel, so
- *    cancel()/seek/rate-change never trigger a stale auto-advance.
- *  - cancel()-induced 'interrupted'/'canceled' errors are expected and ignored.
- */
+// Speaks ONE sentence per utterance: short utterances dodge Chrome's ~15s cutoff
+// bug and let long docs start instantly. Word highlighting comes from `onboundary`;
+// voices that don't fire boundaries degrade to sentence-level highlighting.
+// A generation token invalidates handlers of any utterance we cancel, so
+// cancel()/seek/rate-change never trigger a stale auto-advance; the resulting
+// 'interrupted'/'canceled' errors are expected and ignored.
 
 import type { NormalizedDoc } from '@/core/document/types';
 import { wordIndexAtChar } from './word-lookup';
@@ -42,7 +34,6 @@ export class WebSpeechEngine implements TtsEngine {
 
   private index = 0;
   private status: PlaybackStatus = 'idle';
-  /** Bumped to invalidate handlers of an utterance we're abandoning. */
   private generation = 0;
   private everSawBoundary = false;
   private warnedNoBoundary = false;
@@ -125,8 +116,6 @@ export class WebSpeechEngine implements TtsEngine {
     this.cancelCurrent();
     this.listener = noopListener;
   }
-
-  // ───────────────────────── internals ─────────────────────────
 
   private restartCurrent(): void {
     this.cancelCurrent();

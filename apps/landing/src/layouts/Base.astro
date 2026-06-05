@@ -28,7 +28,6 @@ const ogImage = new URL('/og.png', Astro.site).toString();
     <link rel="canonical" href={canonical} />
     <meta name="theme-color" content="#4f46e5" />
 
-    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ReadAloud" />
     <meta property="og:title" content={title} />
@@ -38,13 +37,11 @@ const ogImage = new URL('/og.png', Astro.site).toString();
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
 
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
 
-    <!-- Fonts: editorial serif display + Inter body -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -52,8 +49,7 @@ const ogImage = new URL('/og.png', Astro.site).toString();
       rel="stylesheet"
     />
 
-    <!-- No-flash init: set .dark + .js before paint. .js gates the scroll-reveal
-         so content is fully visible without JavaScript. -->
+    <!-- Set .dark + .js before paint. .js gates scroll-reveal so content stays visible without JS. -->
     <script is:inline>
       (function () {
         var el = document.documentElement;
@@ -77,11 +73,9 @@ const ogImage = new URL('/og.png', Astro.site).toString();
     >
     <slot />
 
-    <!-- Scroll reveal + theme toggle wiring -->
     <script is:inline>
-      // Reveal on scroll. Anything already in (or above) the viewport on load is
-      // revealed immediately; a safety net reveals everything after 1.2s so a
-      // missed observer callback can never leave a section blank.
+      // Reveal on scroll; a 1.2s safety net reveals everything so a missed
+      // observer callback can never leave a section blank.
       const reveals = Array.from(document.querySelectorAll('.reveal'));
       const io = new IntersectionObserver(
         (entries) => {
@@ -101,7 +95,6 @@ const ogImage = new URL('/og.png', Astro.site).toString();
       });
       setTimeout(() => reveals.forEach((el) => el.classList.add('in')), 1200);
 
-      // Theme toggle
       function setTheme(dark) {
         document.documentElement.classList.toggle('dark', dark);
         try {
@@ -114,7 +107,6 @@ const ogImage = new URL('/og.png', Astro.site).toString();
         );
       });
 
-      // Mobile menu
       const menuBtn = document.querySelector('[data-menu-btn]');
       const menu = document.querySelector('[data-menu]');
       if (menuBtn && menu) {

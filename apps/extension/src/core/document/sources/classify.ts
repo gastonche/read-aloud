@@ -1,14 +1,10 @@
-/**
- * Pure file-type classification — kept free of any source imports (especially
- * pdfjs/mammoth/jszip, which touch browser globals at import time) so the
- * routing logic is unit-testable in a plain Node environment.
- */
+// Kept free of source imports (pdfjs/mammoth/jszip touch browser globals at
+// import time) so routing stays unit-testable in plain Node.
 
 export type SupportedKind = 'pdf' | 'txt' | 'epub' | 'docx';
 
 export interface Unsupported {
   unsupported: true;
-  /** Human label for the rejected type, e.g. "RTF". */
   label: string;
 }
 
@@ -20,7 +16,6 @@ function extension(name: string): string {
 const DOCX_MIME =
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
-/** Decide how to handle a file from its name + MIME, or report it unsupported. */
 export function classifyFile(
   name: string,
   mime: string,

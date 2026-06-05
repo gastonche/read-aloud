@@ -1,10 +1,5 @@
-/**
- * DOCX DocumentSource (mammoth). Extracts the raw text and splits it into
- * paragraph blocks; normalization handles sentences/words.
- *
- * mammoth resolves to its browser build in the extension (via the package's
- * `browser` field), so this runs in the side panel without Node APIs.
- */
+// mammoth resolves to its browser build in the extension (via the package's
+// `browser` field), so this runs in the side panel without Node APIs.
 
 import { extractRawText } from 'mammoth';
 import type { DocumentSource, RawDocument } from '@/core/document/types';

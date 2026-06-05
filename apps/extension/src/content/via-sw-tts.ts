@@ -1,8 +1,5 @@
-/**
- * Studio TTS client for the on-page bar: fetches /tts through the service
- * worker (WORKER_FETCH) instead of from the page, so the page's CSP and origin
- * are never involved.
- */
+// Studio TTS client for the on-page bar: fetches through the SW (WORKER_FETCH)
+// instead of the page, so the page's CSP and origin are never involved.
 
 import type { TtsResponse, VoicesResponse } from '@readaloud/shared';
 import { sendRuntimeMessage } from '@/messaging/bus';

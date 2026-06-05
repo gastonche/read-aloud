@@ -1,18 +1,9 @@
-/**
- * ElevenLabsEngine — the neural, opt-in engine.
- *
- * SAME highlighting contract as WebSpeechEngine, DIFFERENT timing model:
- * instead of event-driven `onboundary`, it plays returned audio and samples
- * `currentTime` against word-level spans collapsed from ElevenLabs' character
- * alignment (collapseAlignmentToWords + wordIndexAtTime, both in @readaloud/shared).
- *
- * Per-sentence requests (same chunking as WebSpeech) keep startup fast; the
- * next sentence is prefetched while the current one plays. All network goes
- * through the Worker — the ElevenLabs key never reaches the client.
- *
- * Depends only on injectable seams (TtsClient / AudioController / Ticker) so the
- * full state machine is unit-testable without a browser or network.
- */
+// Same highlighting contract as WebSpeechEngine, different timing model: it
+// plays returned audio and samples `currentTime` against word spans collapsed
+// from ElevenLabs' character alignment, rather than reacting to `onboundary`.
+// Per-sentence requests keep startup fast; the next sentence is prefetched while
+// the current one plays. All network goes through the Worker so the key never
+// reaches the client. Depends only on injectable seams for unit-testing.
 
 import {
   collapseAlignmentToWords,
@@ -41,14 +32,12 @@ export interface TtsClient {
 }
 
 export interface AudioController {
-  /** Load audio from base64 (no playback yet). */
   load(audioBase64: string): void;
   play(): Promise<void>;
   pause(): void;
-  /** Pause and reset to the start. */
   stop(): void;
   currentTime(): number;
-  /** Audio length in seconds (NaN until metadata loads). */
+  /** NaN until metadata loads. */
   duration(): number;
   setRate(rate: number): void;
   onEnded(cb: () => void): void;
@@ -56,7 +45,6 @@ export interface AudioController {
   dispose(): void;
 }
 
-/** Drives currentTime sampling (a requestAnimationFrame loop in the browser). */
 export interface Ticker {
   start(onTick: () => void): void;
   stop(): void;
@@ -182,8 +170,6 @@ export class ElevenLabsEngine implements TtsEngine {
     this.audio.dispose();
     this.listener = noopListener;
   }
-
-  // ───────────────────────── internals ─────────────────────────
 
   private cancelCurrent(): void {
     this.generation++;

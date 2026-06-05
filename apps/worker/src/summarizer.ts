@@ -1,9 +1,3 @@
-/**
- * Summarizer abstraction. The handler depends only on the {@link Summarizer}
- * interface; the concrete backend is chosen per environment so local dev never
- * needs Cloudflare credentials.
- */
-
 import { DEFAULT_SUMMARY_MODEL, type Env } from './env';
 
 export interface SummarizeInput {
@@ -28,7 +22,6 @@ export class MockSummarizer implements Summarizer {
   }
 }
 
-/** Minimal shape of the Workers AI text-generation call we rely on. */
 interface TextGenAi {
   run(
     model: string,
@@ -81,7 +74,6 @@ export class WorkersAiSummarizer implements Summarizer {
   }
 }
 
-/** Pick the summarizer for the current environment. */
 export function getSummarizer(env: Env): Summarizer {
   if (env.SUMMARY_BACKEND === 'workers-ai' && env.AI) {
     return new WorkersAiSummarizer(

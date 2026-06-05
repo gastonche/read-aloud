@@ -1,17 +1,8 @@
-/**
- * Map a character index (from a speechSynthesis `onboundary` event, which is an
- * offset into the spoken sentence text) to the index of the word that contains
- * it. Pure and binary-searched so long sentences map in O(log n).
- */
-
 import type { WordToken } from '@/core/document/types';
 
-/**
- * Returns the index of the word whose [charStart, charEnd) range contains
- * `charIndex`, or the nearest preceding word if the index falls in a gap
- * (punctuation/space). Clamps to [0, words.length-1]; returns -1 only for an
- * empty word list.
- */
+// Maps an onboundary charIndex to its word index via binary search. Falls back
+// to the nearest preceding word when the index lands in a gap (punctuation/space);
+// returns -1 only for an empty word list.
 export function wordIndexAtChar(words: WordToken[], charIndex: number): number {
   if (words.length === 0) return -1;
   if (charIndex <= words[0]!.charStart) return 0;

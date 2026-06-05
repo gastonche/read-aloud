@@ -11,8 +11,6 @@ type Props = {
   height?: number;
 };
 
-// Smooth gradient "audio ribbons" — the calm waveform the clutter dissolves into.
-// Pure sine math (deterministic per frame) so it renders identically every pass.
 export const AudioRibbons: React.FC<Props> = ({
   count = 5,
   opacity = 1,

@@ -12,7 +12,6 @@ interface Captured {
   options?: { gateway?: { id: string } };
 }
 
-/** Fake Workers AI that records the call and returns a canned response. */
 function fakeAi(response: string) {
   const calls: Captured[] = [];
   const ai = {

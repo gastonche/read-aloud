@@ -13,30 +13,26 @@ import { ARTICLE_WORDS } from '../timeline';
 
 const ease = Easing.bezier(0.22, 1, 0.36, 1);
 
-// Act II local frames: 0..270 (9s). The highlight sweep is purely visual.
 export const Act2Release: React.FC = () => {
   const frame = useCurrentFrame();
 
-  // reading head synced to the diegetic clip's speech window (see timeline.ts)
+  // reading head synced to the clip's speech window (see timeline.ts)
   const head = interpolate(frame, [21, 141], [0, ARTICLE_WORDS.length], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
 
-  // night -> warm paper as the sweep lands
   const warm = interpolate(frame, [120, 190], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
     easing: ease,
   });
 
-  // page enters as the first word ignites
   const pageIn = interpolate(frame, [4, 26], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
     easing: ease,
   });
-  // page settles upward in phase B so the VO2 statement can take center
   const settle = interpolate(frame, [150, 200], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -45,14 +41,12 @@ export const Act2Release: React.FC = () => {
   const pageY = interpolate(settle, [0, 1], [0, -150]);
   const pageScale = interpolate(settle, [0, 1], [1, 0.86]);
 
-  // VO2 statement (phase B)
   const vo2In = interpolate(frame, [158, 184], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
     easing: ease,
   });
 
-  // clutter dissolving into ribbons
   const clutterOut = interpolate(frame, [0, 60], [1, 0], {
     extrapolateRight: 'clamp',
   });
@@ -67,7 +61,6 @@ export const Act2Release: React.FC = () => {
         background: `linear-gradient(180deg, ${COLORS.nightTop}, ${COLORS.nightBottom})`,
       }}
     >
-      {/* warm paper crossfade */}
       <AbsoluteFill
         style={{
           background: `linear-gradient(180deg, ${COLORS.cream}, ${COLORS.paper})`,
@@ -75,7 +68,6 @@ export const Act2Release: React.FC = () => {
         }}
       />
 
-      {/* leftover clutter dissolving */}
       <AbsoluteFill style={{ opacity: clutterOut }}>
         {Array.from({ length: 8 }).map((_, i) => {
           const fall = interpolate(frame, [0, 60], [0, 240 + i * 30], {
@@ -100,7 +92,6 @@ export const Act2Release: React.FC = () => {
         })}
       </AbsoluteFill>
 
-      {/* calm audio ribbons the clutter becomes */}
       <AbsoluteFill
         style={{
           opacity: ribbonsIn * (0.35 + warm * 0.35),
@@ -110,7 +101,6 @@ export const Act2Release: React.FC = () => {
         <AudioRibbons count={5} amplitude={46} speed={0.8} />
       </AbsoluteFill>
 
-      {/* the page being read */}
       <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center' }}>
         <div
           style={{
@@ -133,7 +123,6 @@ export const Act2Release: React.FC = () => {
         </div>
       </AbsoluteFill>
 
-      {/* VO2 statement — phase B */}
       <AbsoluteFill
         style={{
           alignItems: 'center',

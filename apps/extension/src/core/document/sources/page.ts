@@ -1,8 +1,5 @@
-/**
- * Page DocumentSource — adapts a content-script extraction (run via the service
- * worker) into the source-agnostic RawDocument. All the real work (Readability)
- * happens in the content script; this just routes and shapes the result.
- */
+// The real extraction (Readability) happens in the content script; this just
+// routes the request through the service worker and shapes the result.
 
 import { sendRuntimeMessage } from '@/messaging/bus';
 import type { RawDocument, DocumentSource } from '@/core/document/types';

@@ -1,12 +1,6 @@
-/**
- * Floating page-reader bar (content script, v0.2.0 M3).
- *
- * A vertical, draggable control deck mounted in a Shadow DOM host (style
- * isolation). Drag-to-snap across 8 anchors (4 corners + 4 edge midpoints,
- * persisted). Reuses usePlayer (engines run in the page); Studio /tts is fetched
- * through the SW (ViaSwTtsClient) so the page's CSP/origin is never touched.
- * Highlighting is painted on the page via the page-reader singleton.
- */
+// Floating page-reader bar: a draggable control deck mounted in a Shadow DOM
+// host for style isolation, snapping across 8 persisted anchors. Engines run in
+// the page; Studio /tts goes through the SW (ViaSwTtsClient) to dodge page CSP.
 
 import { StrictMode, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -113,7 +107,6 @@ function Bar({
   const [pop, setPop] = useState<'voice' | 'speed' | 'lang' | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
-  // Load persisted anchor.
   useEffect(() => {
     chrome.storage?.local?.get(ANCHOR_KEY).then((r) => {
       const a = r[ANCHOR_KEY] as Anchor | undefined;
@@ -121,7 +114,6 @@ function Bar({
     });
   }, []);
 
-  // Paint on-page highlight from the playback stream.
   useEffect(() => {
     paint(player.highlight.sentenceId, player.highlight.wordIndex, true);
   }, [player.highlight]);
@@ -159,7 +151,6 @@ function Bar({
     void buildPageDoc(lang).then((live) => setDoc(live.doc));
   };
 
-  // Advanced mode: hand the doc + playback state to the side panel, close bar.
   const onAdvanced = () => {
     const wasPlaying = player.status === 'playing';
     player.pause();

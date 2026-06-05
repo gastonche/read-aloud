@@ -1,17 +1,7 @@
-/**
- * File / page handoff over chrome.storage.session.
- *
- * Why storage.session (not a runtime message) for files:
- *  - It decouples producer (popup) from consumer (side panel) lifecycles. The
- *    popup can stage and close immediately; the panel reads on its own boot.
- *  - It avoids the SW→panel race (panel may not exist when the SW runs).
- *
- * Size budget:
- *  - storage.session has a ~10 MB quota. base64 inflates bytes by ~33%, so a
- *    raw file must stay well under that. We cap raw input at MAX_FILE_BYTES and
- *    surface a clear, catchable error above it (handled as an upload error in
- *    the popup UI). Larger files are a known limitation documented in the README.
- */
+// Handoff over chrome.storage.session (not a runtime message): it decouples the
+// popup's lifecycle from the panel's and avoids the SW→panel race where the
+// panel may not exist yet. The ~10 MB session quota plus base64's ~33% inflation
+// is why raw input is capped at MAX_FILE_BYTES.
 
 import {
   HANDOFF_KEY,
@@ -19,10 +9,8 @@ import {
   type PendingSource,
 } from '@/messaging/contract';
 
-/** Raw upload ceiling. Leaves headroom under the ~10 MB session quota post-base64. */
 export const MAX_FILE_BYTES = 6 * 1024 * 1024; // 6 MB
 
-/** Thrown when an uploaded file exceeds {@link MAX_FILE_BYTES}. */
 export class FileTooLargeError extends Error {
   constructor(
     readonly size: number,
@@ -36,10 +24,8 @@ export class FileTooLargeError extends Error {
   }
 }
 
-// ─────────────────────────── base64 codecs ───────────────────────────
 // Chunked to avoid blowing the call stack on String.fromCharCode(...spread)
 // for multi-megabyte buffers.
-
 const CHUNK = 0x8000; // 32k
 
 export function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -61,9 +47,6 @@ export function base64ToArrayBuffer(base64: string): ArrayBuffer {
   return bytes.buffer;
 }
 
-// ───────────────────────── stage / read / clear ──────────────────────
-
-/** Read a File into a staged, message-safe FilePendingSource (or throw). */
 export async function fileToPendingSource(
   file: File,
 ): Promise<FilePendingSource> {
@@ -80,15 +63,11 @@ export async function fileToPendingSource(
   };
 }
 
-/** Stage the source the side panel should consume on its next boot. */
 export async function stagePendingSource(source: PendingSource): Promise<void> {
   await chrome.storage.session.set({ [HANDOFF_KEY]: source });
 }
 
-/**
- * Read the pending source exactly once and clear it, so a panel reload doesn't
- * re-trigger a stale handoff. Returns null if nothing is staged.
- */
+// Reads and clears in one shot so a panel reload doesn't re-trigger a stale handoff.
 export async function readAndClearPendingSource(): Promise<PendingSource | null> {
   const record = await chrome.storage.session.get(HANDOFF_KEY);
   const source = record[HANDOFF_KEY] as PendingSource | undefined;

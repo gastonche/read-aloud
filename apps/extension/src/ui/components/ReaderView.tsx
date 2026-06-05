@@ -4,30 +4,22 @@ import { isRtl } from '@/core/i18n/lang';
 
 export interface ReaderViewProps {
   doc: NormalizedDoc;
-  /** Sentence currently being spoken (-1 = none). Drives sentence highlight. */
+  /** Sentence being spoken (-1 = none). */
   activeSentence?: number;
-  /** Word index within the active sentence (-1 = none). Drives word highlight. */
+  /** Word index within the active sentence (-1 = none). */
   activeWord?: number;
-  /** Click a sentence to seek playback there. */
   onSeek?: (sentenceId: number) => void;
 }
 
-/**
- * Renders the normalized document as selectable, highlightable text.
- *
- * Each word is its own <span> carrying data-sentence/data-word so the engines
- * can drive highlighting by index without re-rendering prose. The gaps between
- * words (spaces, punctuation) are emitted verbatim from the sentence text, so
- * what's shown matches exactly what's spoken. Highlights live only here, in the
- * panel — the source page DOM is never touched.
- */
+// Each word is its own data-sentence/data-word <span> so engines drive
+// highlighting by index without re-rendering prose; inter-word gaps are emitted
+// verbatim so what's shown matches what's spoken.
 export function ReaderView({
   doc,
   activeSentence = -1,
   activeWord = -1,
   onSeek,
 }: ReaderViewProps) {
-  // Group sentences into their source paragraphs for readable layout.
   const paragraphs = useMemo(() => groupByParagraph(doc.blocks), [doc.blocks]);
 
   // Keep the spoken sentence in view as playback advances.

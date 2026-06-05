@@ -1,15 +1,3 @@
-/**
- * Service worker — the message router and the only place that calls
- * chrome.sidePanel.open().
- *
- * Gesture preservation (the subtle MV3 bit):
- *   sidePanel.open() must be called in response to a user gesture. When the
- *   popup forwards the click via runtime.sendMessage, Chrome treats the SW's
- *   synchronous handling of that message as still inside the gesture — provided
- *   we call open() before awaiting anything else. So we open FIRST, then do any
- *   bookkeeping.
- */
-
 import { onRuntimeMessage, sendTabMessage } from '@/messaging/bus';
 import type {
   RuntimeMessage,
@@ -21,7 +9,6 @@ import { WORKER_BASE_URL } from '@/config';
 import { stagePendingSource } from '@/core/handoff';
 import type { ReaderPendingSource } from '@/messaging/contract';
 
-/** The built content-script path, read from the manifest (CRXJS hashes it). */
 function contentScriptFiles(): string[] {
   const scripts = chrome.runtime.getManifest().content_scripts ?? [];
   return scripts.flatMap((s) => s.js ?? []);
@@ -34,8 +21,7 @@ async function extractPage(tabId: number): Promise<ExtractPageResponse> {
   try {
     return await ask();
   } catch {
-    // No receiver yet (tab predates install, or just navigated). Inject the
-    // content script on demand, then retry once.
+    // No receiver yet (tab predates install, or just navigated): inject on demand.
     try {
       const files = contentScriptFiles();
       if (files.length === 0) throw new Error('no content script registered');
@@ -56,7 +42,6 @@ const RESTRICTED_PAGE_ERROR =
   "Can't read this page. Chrome blocks extensions on some pages " +
   '(the Web Store, chrome:// pages, PDFs). Try a regular web page.';
 
-/** Tell the page's content script to show the floating reader bar. */
 async function startPageReader(tabId: number): Promise<Result> {
   const show = () => sendTabMessage<Result>(tabId, { type: 'SHOW_BAR' });
   try {
@@ -107,7 +92,6 @@ async function workerFetch(
   }
 }
 
-/** Advanced mode: open the panel (in the gesture) and stage the handoff. */
 async function openAdvanced(
   handoff: ReaderPendingSource,
   sender: chrome.runtime.MessageSender,
@@ -115,9 +99,8 @@ async function openAdvanced(
   const tabId = sender.tab?.id;
   if (tabId == null)
     return { ok: false, error: 'No tab to open the panel for.' };
-  // sidePanel.open() must be called WITHIN the forwarded user gesture, i.e.
-  // synchronously before any await. We kick it off first (consuming the
-  // gesture), then stage the handoff in parallel; the panel reads it on boot.
+  // sidePanel.open() must run WITHIN the forwarded gesture: kick it off
+  // synchronously before any await, then stage the handoff (read by the panel on boot).
   let opening: Promise<void>;
   try {
     opening = chrome.sidePanel.open({ tabId });
@@ -141,7 +124,7 @@ async function handleMessage(
     }
 
     case 'OPEN_SIDE_PANEL': {
-      // Open synchronously-first to stay within the user gesture.
+      // Open first (no prior await) to stay within the user gesture.
       await chrome.sidePanel.open({ tabId: message.tabId });
       return { ok: true };
     }
@@ -168,8 +151,7 @@ async function handleMessage(
 
 onRuntimeMessage((message, sender) => handleMessage(message, sender));
 
-// Clicking the toolbar icon shows the popup (default_popup). We keep the side
-// panel strictly opened-on-demand so it never auto-opens on unrelated tabs.
+// Keep the side panel strictly opened-on-demand so it never auto-opens on unrelated tabs.
 chrome.runtime.onInstalled.addListener(() => {
   chrome.sidePanel
     .setPanelBehavior({ openPanelOnActionClick: false })

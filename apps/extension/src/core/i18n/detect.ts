@@ -1,12 +1,9 @@
-/**
- * Content-language detection via chrome.i18n.detectLanguage (CLD, built into
- * Chrome — offline, no permission). Works uniformly for every source.
- */
+// Content-language detection via chrome.i18n.detectLanguage (CLD, built into
+// Chrome — offline, no permission).
 
 import type { RawDocument } from '@/core/document/types';
 import { primaryLang } from './lang';
 
-/** Detect the primary language of `text`, or undefined if unsure. */
 export async function detectLanguage(
   text: string,
 ): Promise<string | undefined> {
@@ -26,10 +23,7 @@ export async function detectLanguage(
   return undefined;
 }
 
-/**
- * Resolve the language for a document: trust a confident detection first, then
- * a declared tag (e.g. <html lang>), then the UI language.
- */
+// Prefer a confident detection, then a declared tag (e.g. <html lang>), then UI language.
 export async function resolveDocLanguage(raw: RawDocument): Promise<string> {
   const detected = await detectLanguage(raw.blocks.join('\n'));
   if (detected) return detected;

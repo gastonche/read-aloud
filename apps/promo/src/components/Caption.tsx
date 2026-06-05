@@ -4,13 +4,10 @@ import { COLORS, FONT } from '../theme';
 
 type Props = {
   children: React.ReactNode;
-  /** frame the caption should pop in (local) */
   appear?: number;
-  /** highlight word(s) wrapped via <b> get the indigo accent */
   size?: number;
 };
 
-// Burned-in social caption: bold, high-contrast, springy pop-in, readable muted.
 export const Caption: React.FC<Props> = ({
   children,
   appear = 0,
@@ -48,7 +45,6 @@ export const Caption: React.FC<Props> = ({
   );
 };
 
-// inline accent helper for caption emphasis
 export const Hi: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <span style={{ color: COLORS.indigo }}>{children}</span>
 );

@@ -1,9 +1,6 @@
 /**
- * Fixed-window per-IP, per-route rate limiter backed by KV.
- *
- * Deliberately simple (a KV counter with a short TTL): good enough to blunt
- * abuse of the paid upstreams (ElevenLabs / Workers AI) without standing up a
- * Durable Object. No-ops when KV is absent (local dev) or the limit is 0.
+ * Fixed-window per-IP, per-route rate limiter: a KV counter to blunt abuse of the
+ * paid upstreams without a Durable Object. No-ops when KV is absent or limit is 0.
  */
 
 import type { MiddlewareHandler } from 'hono';

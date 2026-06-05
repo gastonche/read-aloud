@@ -14,7 +14,6 @@ import { AudioRibbons } from '../components/AudioRibbons';
 
 const ease = Easing.bezier(0.22, 1, 0.36, 1);
 
-// Act IV local frames: 0..200 (6.667s).
 export const Act4Turn: React.FC = () => {
   return (
     <AbsoluteFill
@@ -26,12 +25,10 @@ export const Act4Turn: React.FC = () => {
         <AudioRibbons count={5} amplitude={38} speed={0.7} />
       </AbsoluteFill>
 
-      {/* testimonial flash */}
       <Sequence durationInFrames={58} layout="none">
         <Testimonial />
       </Sequence>
 
-      {/* logo resolve + end card */}
       <Sequence from={50} layout="none">
         <EndCard />
       </Sequence>
@@ -103,7 +100,6 @@ const EndCard: React.FC = () => {
     easing: ease,
   });
 
-  // tagline + CTA enter after the logo lands
   const taglineIn = interpolate(frame, [48, 72], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -147,7 +143,6 @@ const EndCard: React.FC = () => {
         <span style={{ color: COLORS.indigo }}>Start listening to it.</span>
       </div>
 
-      {/* CTA button */}
       <div
         style={{
           transform: `scale(${0.8 + ctaPop * 0.2})`,
@@ -169,7 +164,6 @@ const EndCard: React.FC = () => {
         Add to Chrome — it’s free
       </div>
 
-      {/* trust line */}
       <div
         style={{
           opacity: trustIn,

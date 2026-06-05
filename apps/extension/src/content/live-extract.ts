@@ -1,13 +1,7 @@
-/**
- * Live-DOM extractor — builds a NormalizedDoc from the page's REAL text nodes
- * and, crucially, a DOM Range for every sentence and word. Those Ranges let the
- * on-page highlighter (Custom Highlight API) paint highlights with zero DOM
- * mutation; a `(sentenceId, wordIndex)` event maps straight to a Range.
- *
- * It mirrors core/document/normalize (Intl.Segmenter per block), but over live
- * nodes with offset→Range capture, so the displayed doc and the painted ranges
- * stay in lockstep.
- */
+// Live-DOM extractor — builds a NormalizedDoc from the page's real text nodes
+// plus a DOM Range for every sentence and word, so the Custom Highlight API can
+// paint with zero DOM mutation. Mirrors core/document/normalize but over live
+// nodes with offset→Range capture, keeping the doc and ranges in lockstep.
 
 import type { NormalizedDoc, Sentence, WordToken } from '@/core/document/types';
 

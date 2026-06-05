@@ -1,11 +1,7 @@
 /**
- * Multi-provider text-to-speech for POST /tts + the catalog for GET /voices.
- *
- * Providers (ElevenLabs `with-timestamps`, OpenAI `audio/speech`) sit behind one
- * {@link TtsProvider} interface; their API keys are Worker secrets, never seen
- * by the client. /voices advertises only the voices whose provider key is
- * configured; /tts routes by the provider prefix on the (opaque) voice id. The
- * mock provider keeps local dev / the E2E suite working with no keys.
+ * Multi-provider TTS behind one TtsProvider interface. Provider API keys are
+ * Worker secrets, never seen by the client. The mock provider keeps local dev /
+ * the E2E suite working with no keys.
  */
 
 import type {
@@ -30,9 +26,6 @@ const EMPTY_ALIGNMENT: CharacterAlignment = {
   character_start_times_seconds: [],
   character_end_times_seconds: [],
 };
-
-// ─────────────────────────── voice catalog ───────────────────────────
-// Add voices here and they appear in the extension — no client change.
 
 const ELEVENLABS_VOICES: NeuralVoice[] = [
   {
@@ -127,7 +120,6 @@ export function availableVoices(env: Env): NeuralVoice[] {
   return out;
 }
 
-/** Split a qualified voice id ("openai:nova") into provider + bare id. */
 function parseVoiceId(id: string | undefined): {
   provider: string;
   bareId: string | undefined;
@@ -137,8 +129,6 @@ function parseVoiceId(id: string | undefined): {
   if (i < 0) return { provider: '', bareId: id };
   return { provider: id.slice(0, i), bareId: id.slice(i + 1) };
 }
-
-// ───────────────────────────── real provider ─────────────────────────────
 
 export class ElevenLabsProvider implements TtsProvider {
   constructor(
@@ -167,8 +157,7 @@ export class ElevenLabsProvider implements TtsProvider {
       throw new Error(`ElevenLabs ${res.status}: ${detail.slice(0, 200)}`);
     }
 
-    // ElevenLabs returns { audio_base64, alignment: { characters,
-    // character_start_times_seconds, character_end_times_seconds } }.
+    // ElevenLabs may return `alignment` or `normalized_alignment`; prefer the former.
     const data = (await res.json()) as {
       audio_base64?: string;
       alignment?: CharacterAlignment | null;
@@ -184,10 +173,7 @@ export class ElevenLabsProvider implements TtsProvider {
   }
 }
 
-// ─────────────────────────── OpenAI provider ───────────────────────────
-// OpenAI's speech endpoint returns audio only — NO timestamps — so we return an
-// empty alignment and the client estimates word timing from the audio duration.
-
+// OpenAI's speech endpoint returns audio only (no timestamps), so alignment is empty.
 export class OpenAiProvider implements TtsProvider {
   constructor(
     private readonly apiKey: string,
@@ -220,10 +206,7 @@ export class OpenAiProvider implements TtsProvider {
   }
 }
 
-// ───────────────────────────── mock provider ─────────────────────────────
-
 export class MockTtsProvider implements TtsProvider {
-  /** ~per-character duration for the synthetic timeline. */
   private static readonly SEC_PER_CHAR = 0.06;
 
   async synthesize({ text }: TtsInput): Promise<TtsResponse> {
@@ -250,11 +233,7 @@ export class MockTtsProvider implements TtsProvider {
   }
 }
 
-/**
- * Route to the provider for a (qualified) voice id, returning the bare id to
- * pass upstream. Falls back to the mock provider when the matching key is
- * absent (local dev) or the provider is unknown.
- */
+/** Routes a qualified voice id to its provider; falls back to mock when the key is absent or unknown. */
 export function resolveTts(
   env: Env,
   voiceId: string | undefined,
@@ -281,7 +260,6 @@ export function resolveTts(
   return { provider: new MockTtsProvider(), voiceId: bareId };
 }
 
-/** Chunked base64 of an ArrayBuffer (audio from a binary provider). */
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = '';
@@ -291,10 +269,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-// ─────────────────────── silent WAV generator (mock) ───────────────────────
-// A valid PCM WAV of `seconds` of silence, base64-encoded — enough for an
-// <audio> element to load and advance currentTime through the timeline.
-
+// Valid PCM WAV of `seconds` of silence so an <audio> element can advance currentTime.
 function silentWavBase64(seconds: number): string {
   const sampleRate = 8000;
   const samples = Math.max(1, Math.ceil(seconds * sampleRate));

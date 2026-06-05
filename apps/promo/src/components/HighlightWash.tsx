@@ -7,15 +7,11 @@ type Props = {
   /** 0..words.length — the (fractional) reading head position. */
   head: number;
   fontSize: number;
-  /** max width of the text block in px */
   maxWidth?: number;
   lineHeight?: number;
   weight?: number;
 };
 
-// The signature ReadAloud effect: each word lights up with the periwinkle wash
-// exactly as the reading head crosses it. Read words settle to ink; the active
-// word fills + gives a soft lift; unread words stay muted.
 export const HighlightWash: React.FC<Props> = ({
   words,
   head,
@@ -40,7 +36,7 @@ export const HighlightWash: React.FC<Props> = ({
       }}
     >
       {words.map((word, i) => {
-        // local progress of the head within this word: <0 unread, 0..1 active, >1 read
+        // local head position: <0 unread, 0..1 active, >1 read
         const local = head - i;
         const fill = interpolate(local, [0, 1], [0, 1], {
           extrapolateLeft: 'clamp',
@@ -49,9 +45,7 @@ export const HighlightWash: React.FC<Props> = ({
         });
         const isActive = local > 0 && local < 1.15;
 
-        // text color: muted slate -> full ink as the word is crossed
         const textColor = interpolateColor(fill, COLORS.slate, COLORS.ink);
-        // wash background sweeps in left->right across the word
         const washOpacity = interpolate(fill, [0, 0.15, 1], [0, 0.55, 1], {
           extrapolateRight: 'clamp',
         });
@@ -71,7 +65,6 @@ export const HighlightWash: React.FC<Props> = ({
               borderRadius: fontSize * 0.18,
             }}
           >
-            {/* the wash — clipped to a left->right reveal so it paints across the word */}
             <span
               style={{
                 position: 'absolute',
@@ -93,7 +86,6 @@ export const HighlightWash: React.FC<Props> = ({
   );
 };
 
-// --- tiny color helpers (no deps) ---
 function hexToRgb(hex: string) {
   const h = hex.replace('#', '');
   return {

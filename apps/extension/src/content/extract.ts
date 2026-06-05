@@ -1,17 +1,6 @@
-/**
- * Content script — readable-text extraction.
- *
- * Runs in the page, on demand: the side panel asks the service worker to
- * extract, and the SW relays READABILITY_EXTRACT here. We never mutate the page
- * DOM — Readability parses a *clone*, and we only read text out.
- *
- * Strategy:
- *   1. Run Mozilla Readability on a clone of the document.
- *   2. Sanitize the article HTML with DOMPurify, then pull text per block
- *      element so paragraph boundaries survive into the reader view.
- *   3. Fall back to document.body.innerText (split on blank lines) if
- *      Readability finds nothing usable.
- */
+// Content script — readable-text extraction. Runs Readability on a clone (never
+// mutating the page), sanitizes per-block so paragraph boundaries survive, and
+// falls back to document.body.innerText when Readability finds nothing usable.
 
 import { Readability } from '@mozilla/readability';
 import DOMPurify from 'dompurify';
@@ -38,7 +27,6 @@ function blocksFromHtml(html: string): string[] {
   const blocks = [...doc.querySelectorAll(BLOCK_SELECTOR)]
     .map((el) => (el.textContent ?? '').replace(/\s+/g, ' ').trim())
     .filter((t) => t.length > 0);
-  // If the markup had no block elements, fall back to the whole text.
   if (blocks.length === 0) {
     const all = (doc.body.textContent ?? '').trim();
     return all ? [all] : [];
@@ -46,7 +34,6 @@ function blocksFromHtml(html: string): string[] {
   return blocks;
 }
 
-/** Last-resort extraction straight from the rendered page text. */
 function fallbackBlocks(): string[] {
   const text = document.body?.innerText ?? '';
   return text

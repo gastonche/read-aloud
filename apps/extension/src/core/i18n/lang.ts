@@ -1,7 +1,3 @@
-/**
- * Pure language helpers — no chrome / DOM, so they're unit-testable in Node.
- */
-
 import type { TtsVoice } from '@/core/tts/types';
 
 /** "fr-FR" / "fr_FR" → "fr". Empty string for blank input. */
@@ -11,12 +7,10 @@ export function primaryLang(tag: string | undefined): string {
 
 const RTL = new Set(['ar', 'he', 'fa', 'ur', 'ps', 'sd', 'yi', 'dv']);
 
-/** Whether a language tag is right-to-left. */
 export function isRtl(lang: string | undefined): boolean {
   return RTL.has(primaryLang(lang));
 }
 
-/** Human language name in the UI locale (e.g. "fr" → "French"). */
 export function languageName(lang: string, uiLang = 'en'): string {
   const p = primaryLang(lang);
   if (!p) return 'Unknown';
@@ -27,11 +21,7 @@ export function languageName(lang: string, uiLang = 'en'): string {
   }
 }
 
-/**
- * Choose the best voice id for a content language:
- *   saved preference → exact tag → same language family → device default → first.
- * Returns undefined only when there are no voices.
- */
+// Preference order: saved preference → exact tag → language family → device default → first.
 export function pickVoiceForLang(
   voices: TtsVoice[],
   lang: string,
@@ -51,7 +41,6 @@ export function pickVoiceForLang(
   return (voices.find((v) => v.isDefault) ?? voices[0])!.id;
 }
 
-/** True if any voice can speak the given content language. */
 export function hasVoiceForLang(voices: TtsVoice[], lang: string): boolean {
   const target = primaryLang(lang);
   return voices.some((v) => primaryLang(v.lang) === target);
