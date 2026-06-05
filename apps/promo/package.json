@@ -1,0 +1,29 @@
+{
+  "name": "@readaloud/promo",
+  "private": true,
+  "version": "0.3.0",
+  "type": "module",
+  "description": "ReadAloud promotional motion-graphics video (Plan A — \"The Backlog Breathes\"). Built with Remotion.",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render PlanA out/plan-a.mp4",
+    "render:b": "remotion render PlanB out/plan-b.mp4",
+    "still": "remotion still PlanA out/frame.png",
+    "typecheck": "tsc --noEmit",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/google-fonts": "4.0.471",
+    "@remotion/media": "4.0.471",
+    "@remotion/media-utils": "4.0.471",
+    "@remotion/shapes": "4.0.471",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.471"
+  },
+  "devDependencies": {
+    "@remotion/cli": "4.0.471",
+    "@types/react": "^19.0.0",
+    "typescript": "^5.7.0"
+  }
+}
