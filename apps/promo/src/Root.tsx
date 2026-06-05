@@ -8,7 +8,6 @@ import { FPS } from './theme';
 export const RemotionRoot: React.FC = () => {
   return (
     <>
-      {/* Plan A — 16:9 hero, 30s, emotional/aspirational (landing, YouTube) */}
       <Composition
         id="PlanA"
         component={PlanA}
@@ -19,7 +18,6 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={{ musicSrc: 'music/inspired-kevinmacleod.mp3' }}
       />
 
-      {/* Plan B — 9:16 "Speed Read", 15s, fast feature-demo (Reels/TikTok/Shorts) */}
       <Composition
         id="PlanB"
         component={PlanB}

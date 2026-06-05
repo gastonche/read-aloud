@@ -11,7 +11,6 @@ import { COLORS, FONT } from '../theme';
 
 const ease = Easing.bezier(0.22, 1, 0.36, 1);
 
-// Cards that pile up into a leaning tower of "to read later".
 const TITLES = [
   'The case for slow productivity',
   'How memory actually works',
@@ -30,7 +29,6 @@ const TITLES = [
 export const Act1Weight: React.FC = () => {
   const frame = useCurrentFrame();
 
-  // Whole-act tip toward camera + desaturating cool vignette in the last beat.
   const tip = interpolate(frame, [150, 230], [0, 7], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -47,12 +45,10 @@ export const Act1Weight: React.FC = () => {
         background: `linear-gradient(180deg, ${COLORS.nightTop}, ${COLORS.nightBottom})`,
       }}
     >
-      {/* ACT I.a — "Later." (0–2s) */}
       <Sequence durationInFrames={70} layout="none">
         <LaterTitle />
       </Sequence>
 
-      {/* ACT I.b/c — the pile (from ~1.7s) */}
       <Sequence from={50} layout="none">
         <AbsoluteFill
           style={{
@@ -66,7 +62,6 @@ export const Act1Weight: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* eye-fatigue glare vignette */}
       <AbsoluteFill
         style={{
           background:
@@ -83,7 +78,6 @@ export const Act1Weight: React.FC = () => {
         }}
       />
 
-      {/* the emotional setup line (carries the message now that VO is gone) */}
       <WeightCaption />
     </AbsoluteFill>
   );
@@ -136,7 +130,6 @@ const LaterTitle: React.FC = () => {
   const opacity = interpolate(frame, [6, 18, 50, 66], [0, 1, 1, 0], {
     extrapolateRight: 'clamp',
   });
-  // blinking cursor
   const caret = Math.floor(frame / 16) % 2 === 0 ? 1 : 0.1;
   return (
     <AbsoluteFill
@@ -170,13 +163,12 @@ const LaterTitle: React.FC = () => {
   );
 };
 
-// A single article card flying in and stacking into the leaning pile.
 const PileCard: React.FC<{ index: number; title: string }> = ({
   index,
   title,
 }) => {
   const frame = useCurrentFrame();
-  const appear = index * 7; // staggered cascade (accelerating density)
+  const appear = index * 7;
   const p = interpolate(frame, [appear, appear + 18], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -186,7 +178,7 @@ const PileCard: React.FC<{ index: number; title: string }> = ({
   // deterministic jitter per card
   const jx = (random(`x${index}`) - 0.5) * 120;
   const jr = (random(`r${index}`) - 0.5) * 10;
-  const stackY = 540 - index * 34; // pile grows upward
+  const stackY = 540 - index * 34;
   const fromY = -260;
   const y = interpolate(p, [0, 1], [fromY, stackY]);
   const rot = interpolate(p, [0, 1], [jr * 2.4, jr]);

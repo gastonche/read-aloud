@@ -9,11 +9,9 @@ import { Act4Turn } from './acts/Act4Turn';
 import './fonts';
 
 export type PlanAProps = {
-  /** Background music in public/music. Defaults to the bundled CC-BY track. */
   musicSrc?: string;
 };
 
-// Music level + fades (frames, composition timeline).
 const MUSIC_VOL = 0.82;
 const FADE_IN = sec(1.5);
 const FADE_OUT_START = TOTAL - sec(2.5);
@@ -23,7 +21,6 @@ export const PlanA: React.FC<PlanAProps> = ({
 }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: '#0e0c1d' }}>
-      {/* ---------- VISUALS ---------- */}
       <Sequence from={ACTS.I.from} durationInFrames={ACTS.I.duration}>
         <Act1Weight />
       </Sequence>
@@ -37,7 +34,6 @@ export const PlanA: React.FC<PlanAProps> = ({
         <Act4Turn />
       </Sequence>
 
-      {/* subtle global grain/vignette for a premium finish */}
       <AbsoluteFill
         style={{
           pointerEvents: 'none',
@@ -46,10 +42,7 @@ export const PlanA: React.FC<PlanAProps> = ({
         }}
       />
 
-      {/* ---------- AUDIO ---------- */}
-      {/* Music only — no voiceover. The story is carried by motion + on-screen
-          text. Track: "Inspired" by Kevin MacLeod (incompetech.com),
-          licensed CC BY 4.0 — attribution required (see README). */}
+      {/* "Inspired" by Kevin MacLeod (incompetech.com), CC BY 4.0 — attribution required (see README). */}
       <Audio
         src={staticFile(musicSrc)}
         trimAfter={TOTAL + 2}

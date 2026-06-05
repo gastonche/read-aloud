@@ -18,8 +18,8 @@ export function Popup() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Pre-fetch the active tab on mount so the click handler has the tabId
-  // synchronously — keeping the handoff inside the user-activation window.
+  // Pre-fetch the tab so the click handler has tabId synchronously, keeping the
+  // handoff inside the user-activation window.
   useEffect(() => {
     chrome.tabs
       .query({ active: true, currentWindow: true })
@@ -29,7 +29,6 @@ export function Popup() {
       .catch(() => setTabId(null));
   }, []);
 
-  /** Stage the source, ask the SW to open the panel, then close the popup. */
   const launchPanel = useCallback(
     async (stage: () => Promise<void>) => {
       if (tabId == null) {
@@ -54,7 +53,6 @@ export function Popup() {
     [tabId],
   );
 
-  // Read this page → show the on-page floating bar (no side panel).
   const onReadPage = useCallback(() => {
     if (tabId == null) {
       setError('No active tab to read.');

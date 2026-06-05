@@ -1,8 +1,4 @@
-/**
- * The ReadAloud mark: text lines becoming sound waves ("read aloud").
- * Glyph only (no background) — render it on the brand chip; it inherits
- * `currentColor`, so set the colour on the parent (e.g. `text-paper`).
- */
+// Glyph only (no background); inherits `currentColor`, so set colour on the parent.
 export function ReadAloudMark({ className }: { className?: string }) {
   return (
     <svg

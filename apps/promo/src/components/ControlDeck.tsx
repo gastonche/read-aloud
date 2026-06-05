@@ -2,12 +2,11 @@ import React from 'react';
 import { COLORS, GRADIENT, FONT } from '../theme';
 
 type Props = {
-  speed?: string; // e.g. "1.75×"
+  speed?: string;
   playing?: boolean;
-  glow?: number; // 0..1 emphasis
+  glow?: number;
 };
 
-// The floating vertical control deck, matching the extension's on-page bar.
 export const ControlDeck: React.FC<Props> = ({
   speed = '1×',
   playing = true,
@@ -30,7 +29,6 @@ export const ControlDeck: React.FC<Props> = ({
         fontFamily: FONT.body,
       }}
     >
-      {/* voice avatar */}
       <div
         style={{
           width: 52,
@@ -49,7 +47,6 @@ export const ControlDeck: React.FC<Props> = ({
         ◐
       </div>
 
-      {/* play / pause */}
       <div
         style={{
           width: 60,
@@ -81,7 +78,6 @@ export const ControlDeck: React.FC<Props> = ({
         )}
       </div>
 
-      {/* speed pill */}
       <div
         style={{
           padding: '6px 12px',
@@ -96,7 +92,6 @@ export const ControlDeck: React.FC<Props> = ({
         {speed}
       </div>
 
-      {/* skip dots */}
       <div
         style={{
           display: 'flex',

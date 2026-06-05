@@ -1,14 +1,8 @@
-/**
- * EPUB DocumentSource. An EPUB is a ZIP of XHTML documents plus an OPF manifest
- * that defines reading order (the spine). We read it with JSZip, follow the
- * spine, and extract paragraph text from each chapter — far more reliable for
- * headless text extraction than driving epub.js's renderer.
- *
- * JSZip works in both the browser and Node; DOMParser (for the OPF/XHTML) is
- * provided by the side panel. OPF/container elements are namespaced, so we
- * resolve them with getElementsByTagNameNS('*', …) (matches local name in any
- * namespace) rather than CSS selectors, which are unreliable on namespaced XML.
- */
+// An EPUB is a ZIP of XHTML documents plus an OPF manifest defining reading
+// order (the spine). We follow the spine and extract paragraph text directly —
+// more reliable for headless extraction than driving epub.js's renderer.
+// OPF/container elements are namespaced, so we resolve them by local name in
+// any namespace rather than CSS selectors, which are unreliable on namespaced XML.
 
 import JSZip from 'jszip';
 import type { DocumentSource, RawDocument } from '@/core/document/types';
@@ -35,12 +29,10 @@ export class EpubSource implements DocumentSource {
     try {
       const zip = await JSZip.loadAsync(this.buffer);
 
-      // 1. META-INF/container.xml → the OPF path.
       const container = parseXml(await readText(zip, 'META-INF/container.xml'));
       const opfPath = els(container, 'rootfile')[0]?.getAttribute('full-path');
       if (!opfPath) throw new Error('EPUB container has no rootfile');
 
-      // 2. OPF → title + spine reading order (manifest id → href).
       const opf = parseXml(await readText(zip, opfPath));
       const baseDir = opfPath.includes('/')
         ? opfPath.slice(0, opfPath.lastIndexOf('/') + 1)
@@ -57,7 +49,6 @@ export class EpubSource implements DocumentSource {
         .map((id) => (id ? hrefById.get(id) : undefined))
         .filter((href): href is string => Boolean(href));
 
-      // 3. Each spine document → paragraph blocks, in order.
       const blocks: string[] = [];
       for (const href of spine) {
         const path = resolvePath(baseDir, href);
@@ -85,7 +76,6 @@ function parseXml(xml: string): Document {
   return new DOMParser().parseFromString(xml, 'application/xml');
 }
 
-/** Elements by local name in any namespace (robust for namespaced OPF/XML). */
 function els(doc: Document, localName: string): Element[] {
   return [...doc.getElementsByTagNameNS('*', localName)];
 }
@@ -100,7 +90,6 @@ function blocksFromXhtml(html: string): string[] {
   return all ? [all] : [];
 }
 
-/** Join an OPF-relative href onto the OPF base dir, resolving ./ and ../ */
 function resolvePath(base: string, href: string): string {
   const segments = (base + href).split('/');
   const out: string[] = [];

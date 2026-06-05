@@ -8,11 +8,6 @@ const SPEED_MIN = 0.5;
 const SPEED_MAX = 3;
 const SPEED_STEP = 0.25;
 
-/**
- * Compact player deck: voice (left) · transport (center) · speed (right).
- * The Built-in/Studio switch lives inside the voice picker; the speed control
- * is collapsed to a value and expands a vertical slider on hover.
- */
 export function PlayerDeck({
   player,
   progress,
@@ -35,8 +30,6 @@ export function PlayerDeck({
     </div>
   );
 }
-
-// ─────────────────────────────── notices ───────────────────────────────
 
 function Notices({ player }: { player: PlayerApi }) {
   if (player.error) {
@@ -68,8 +61,6 @@ function VoiceImage({ voice, size }: { voice: TtsVoice; size: number }) {
     />
   );
 }
-
-// ─────────────────────────── voice picker ───────────────────────────
 
 function VoicePicker({ player }: { player: PlayerApi }) {
   const [open, setOpen] = useState(false);
@@ -281,8 +272,6 @@ function ModeSwitch({
   );
 }
 
-// ───────────────────────────── transport ─────────────────────────────
-
 function Transport({
   player,
   progress,
@@ -399,9 +388,6 @@ function GhostButton({
   );
 }
 
-// ──────────────────────────── speed control ────────────────────────────
-// Collapsed to a value; hover (or click) grows a vertical slider in.
-
 function SpeedControl({
   rate,
   onChange,
@@ -431,7 +417,6 @@ function SpeedControl({
       {open && (
         <>
           <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          {/* Click-opened vertical slider popover above the value. */}
           <div className="absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
             <div className="flex flex-col items-center gap-2">
               <span className="text-xs font-bold tabular-nums text-accent">
@@ -499,8 +484,6 @@ function SpeedControl({
 function formatRate(rate: number): string {
   return `${rate}×`;
 }
-
-// ───────────────────────────── small icons ─────────────────────────────
 
 function Chevron() {
   return (

@@ -15,15 +15,12 @@ import { AudioRibbons } from '../components/AudioRibbons';
 
 const ease = Easing.bezier(0.22, 1, 0.36, 1);
 
-// Act III local frames: 0..200 (6.667s). Crisp, springy — "responsive".
 export const Act3Control: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // deck slides from off-left and snaps to the corner (spring = tactile)
   const snap = spring({ frame, fps, config: { damping: 14, stiffness: 120 } });
   const deckX = interpolate(snap, [0, 1], [-200, 80]);
-  // speed dial climbs 1x -> 1.75x
   const speedT = interpolate(frame, [38, 60], [1, 1.75], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -31,7 +28,6 @@ export const Act3Control: React.FC = () => {
   });
   const speedLabel = `${speedT.toFixed(2).replace(/0$/, '')}×`;
 
-  // person enters bottom-right at the end, leading into Act IV
   const personIn = spring({
     frame: frame - 140,
     fps,
@@ -48,12 +44,10 @@ export const Act3Control: React.FC = () => {
         <AudioRibbons count={5} amplitude={42} speed={0.9} />
       </AbsoluteFill>
 
-      {/* floating control deck snapping to corner */}
       <div style={{ position: 'absolute', left: deckX, top: 120 }}>
         <ControlDeck speed={speedLabel} glow={snap} />
       </div>
 
-      {/* center feature montage */}
       <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center' }}>
         <Sequence from={6} durationInFrames={60} layout="none">
           <FeatureBeat>
@@ -72,7 +66,6 @@ export const Act3Control: React.FC = () => {
         </Sequence>
       </AbsoluteFill>
 
-      {/* person leaning back, listening */}
       <div
         style={{
           position: 'absolute',
@@ -88,7 +81,6 @@ export const Act3Control: React.FC = () => {
   );
 };
 
-// fade/scale wrapper for each montage beat
 const FeatureBeat: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const frame = useCurrentFrame();
   const inP = interpolate(frame, [0, 12], [0, 1], {

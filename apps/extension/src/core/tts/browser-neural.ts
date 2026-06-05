@@ -1,8 +1,5 @@
-/**
- * Browser implementations of the ElevenLabsEngine seams: HTTP client to the
- * Worker, an <audio>-backed controller, and a requestAnimationFrame ticker.
- * Kept out of the engine so the engine stays unit-testable with fakes.
- */
+// Browser implementations of the ElevenLabsEngine seams (HTTP client, <audio>
+// controller, rAF ticker), kept out of the engine so it stays testable with fakes.
 
 import type {
   ApiError,
@@ -14,10 +11,8 @@ import { WORKER_BASE_URL } from '@/config';
 import type { AudioController, Ticker, TtsClient } from './elevenlabs';
 import type { TtsVoice } from './types';
 
-/**
- * Offline fallback if the Worker is unreachable (the real list comes from
- * GET /voices). Ids are provider-qualified, matching the Worker catalog.
- */
+// Offline fallback when the Worker is unreachable; the real list comes from
+// GET /voices. Ids are provider-qualified, matching the Worker catalog.
 export const NEURAL_VOICES: TtsVoice[] = [
   {
     id: 'elevenlabs:21m00Tcm4TlvDq8ikWAM',
@@ -42,7 +37,6 @@ export const NEURAL_VOICES: TtsVoice[] = [
   },
 ];
 
-/** Map the backend's NeuralVoice list to the engine-agnostic TtsVoice shape. */
 export function toTtsVoices(voices: NeuralVoice[]): TtsVoice[] {
   return voices.map((v, i) => ({
     id: v.id,

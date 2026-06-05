@@ -14,12 +14,8 @@ type SummaryState =
   | { status: 'error'; message: string }
   | { status: 'ready'; text: string };
 
-/**
- * The reader screen: a top bar with the TL;DR action, the reader, and the
- * player deck. The summary is normalized into a NormalizedDoc and fed through
- * the SAME player + reader, so "read summary aloud" gets word highlighting for
- * free — a direct payoff of the source-agnostic design.
- */
+// The summary is normalized into a NormalizedDoc and fed through the SAME
+// player + reader, so "read summary aloud" gets word highlighting for free.
 export function ReaderScreen({
   doc,
   onSetLanguage,
@@ -37,7 +33,7 @@ export function ReaderScreen({
       summary.status === 'ready'
         ? normalize(
             { title: `TL;DR — ${doc.title}`, blocks: [summary.text] },
-            doc.lang, // the summary shares the document's language
+            doc.lang,
           )
         : null,
     [summary, doc.title, doc.lang],
@@ -45,8 +41,7 @@ export function ReaderScreen({
   const activeDoc = view === 'summary' && summaryDoc ? summaryDoc : doc;
   const player = usePlayer(activeDoc, initial ? { initial } : undefined);
 
-  // "Read aloud" on the summary starts playback once the player has loaded the
-  // summary doc (runs after usePlayer's own load effect).
+  // Autoplay the summary only after usePlayer's load effect has run.
   const autoplayRef = useRef(false);
   useEffect(() => {
     if (view === 'summary' && autoplayRef.current) {
@@ -209,7 +204,6 @@ function LanguageChip({
   );
 }
 
-/** The summarizer CTA that lives in the top bar. */
 function TldrButton({
   status,
   onClick,

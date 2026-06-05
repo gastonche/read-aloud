@@ -1,12 +1,7 @@
-/**
- * PDF DocumentSource (pdfjs-dist) — per-page text extraction.
- *
- * MV3 worker setup: pdf.js runs its heavy parsing in a Web Worker. We point
- * GlobalWorkerOptions at the worker bundled by Vite (`?url` → an extension-origin
- * asset URL). Loading a worker from the extension's own origin satisfies the
- * side panel's `script-src 'self'` CSP, so no web_accessible_resources entry is
- * needed.
- */
+// pdf.js parses in a Web Worker; we point GlobalWorkerOptions at the worker
+// bundled by Vite (`?url` → an extension-origin asset URL). Serving it from the
+// extension's own origin satisfies the side panel's `script-src 'self'` CSP, so
+// no web_accessible_resources entry is needed.
 
 import * as pdfjs from 'pdfjs-dist';
 import type { TextItem } from 'pdfjs-dist/types/src/display/api';
@@ -61,7 +56,6 @@ export class PdfSource implements DocumentSource {
   }
 }
 
-/** Reconstruct paragraph-ish blocks from a page's text items using EOL flags. */
 function pageToBlocks(items: TextItem[]): string[] {
   let text = '';
   for (const item of items) {

@@ -1,15 +1,7 @@
-/**
- * The TTS abstraction — the centerpiece.
- *
- * The UI is engine-agnostic beyond the engine selector: it loads a document,
- * calls transport methods, and renders whatever {@link HighlightState} the
- * engine emits. Two engines fulfil the SAME highlighting contract through
- * DIFFERENT timing mechanisms:
- *   - WebSpeechEngine   → speechSynthesis `onboundary` events (event-driven)
- *   - ElevenLabsEngine  → audio currentTime vs. word alignment (timestamp-driven)
- *
- * Both reduce to a stream of (sentenceId, wordIndex) updates plus a status.
- */
+// The engine-agnostic TTS abstraction. Two engines fulfil the same highlighting
+// contract through different timing mechanisms (Web Speech `onboundary` events
+// vs. audio currentTime against word alignment), both reducing to a stream of
+// (sentenceId, wordIndex) updates plus a status.
 
 import type { NormalizedDoc } from '@/core/document/types';
 
@@ -28,7 +20,6 @@ export interface TtsVoice {
   label: string;
   lang: string;
   isDefault: boolean;
-  /** Short human descriptor shown in the voice picker (e.g. "Warm & natural"). */
   description?: string;
 }
 
@@ -39,7 +30,6 @@ export interface PlaybackOptions {
   voiceId?: string | undefined;
 }
 
-/** Events an engine emits to its single listener (a React hook, in practice). */
 export interface EngineListener {
   onStatus(status: PlaybackStatus): void;
   onHighlight(state: HighlightState): void;
@@ -48,7 +38,6 @@ export interface EngineListener {
   onError(error: Error): void;
 }
 
-/** The interface both engines implement. */
 export interface TtsEngine {
   readonly id: 'web-speech' | 'elevenlabs';
   readonly name: string;
@@ -73,18 +62,12 @@ export interface TtsEngine {
   dispose(): void;
 }
 
-// ─────────── Backend seam (lets us unit-test the engine in Node) ───────────
-
 export interface BoundaryEvent {
   name: string;
   charIndex: number;
 }
 
-/**
- * A single utterance the engine configures (text + handlers) before handing to
- * the backend's speak(). Deliberately a plain bag so a fake backend can drive
- * the handlers synthetically in tests.
- */
+// Deliberately a plain bag so a fake backend can drive the handlers in tests.
 export interface UtteranceHandle {
   text: string;
   rate: number;
@@ -95,7 +78,6 @@ export interface UtteranceHandle {
   onboundary: ((e: BoundaryEvent) => void) | null;
 }
 
-/** Minimal speech surface the engine depends on (real or fake). */
 export interface SpeechBackend {
   createUtterance(text: string): UtteranceHandle;
   speak(u: UtteranceHandle): void;

@@ -24,7 +24,7 @@ const W = 1080;
 const H = 1920;
 export const PLANB_TOTAL = 450; // 15s @ 30fps
 
-// Beat map — cuts land on a tight grid so they ride the music's pulse.
+// Cuts land on a tight grid so they ride the music's pulse.
 const B = {
   hook: { from: 0, dur: 60 },
   voices: { from: 60, dur: 60 },
@@ -48,7 +48,6 @@ export const PlanB: React.FC<PlanBProps> = ({
         background: `linear-gradient(180deg, ${COLORS.cream}, ${COLORS.paper})`,
       }}
     >
-      {/* persistent faint ribbons at the bottom */}
       <AbsoluteFill style={{ opacity: 0.3, transform: 'translateY(700px)' }}>
         <AudioRibbons
           count={5}
@@ -87,7 +86,6 @@ export const PlanB: React.FC<PlanBProps> = ({
         <Offer />
       </Sequence>
 
-      {/* progress bar — social cue that this is short + watchable */}
       <ProgressBar />
 
       <Audio
@@ -109,7 +107,6 @@ export const PlanB: React.FC<PlanBProps> = ({
   );
 };
 
-// ---------- shared scene frame ----------
 const Stage: React.FC<{
   children: React.ReactNode;
   caption: React.ReactNode;
@@ -134,7 +131,6 @@ const Stage: React.FC<{
   </AbsoluteFill>
 );
 
-// ---------- BEAT 1: HOOK ----------
 const Hook: React.FC = () => {
   const frame = useCurrentFrame();
   const head = interpolate(frame, [6, 52], [0, ARTICLE_WORDS.length], {
@@ -170,7 +166,6 @@ const Hook: React.FC = () => {
   );
 };
 
-// ---------- BEAT 2: VOICES ----------
 const Voices: React.FC = () => {
   const frame = useCurrentFrame();
   const names = ['◐', '◑', '◓'];
@@ -236,7 +231,6 @@ const Voices: React.FC = () => {
   );
 };
 
-// ---------- BEAT 3: SPEED ----------
 const Speed: React.FC = () => {
   const frame = useCurrentFrame();
   const v = interpolate(frame, [4, 36], [1, 3], {
@@ -298,7 +292,6 @@ const Speed: React.FC = () => {
   );
 };
 
-// ---------- BEAT 4: FILES ----------
 const Files: React.FC = () => {
   const frame = useCurrentFrame();
   const files = ['PDF', 'EPUB', 'DOCX', 'TXT'];
@@ -354,7 +347,6 @@ const Files: React.FC = () => {
   );
 };
 
-// ---------- BEAT 5: LANGUAGES ----------
 const Languages: React.FC = () => {
   const frame = useCurrentFrame();
   const langs = [
@@ -399,7 +391,6 @@ const Languages: React.FC = () => {
   );
 };
 
-// ---------- BEAT 6: SUMMARY ----------
 const Summary: React.FC = () => {
   const frame = useCurrentFrame();
   const widths = [92, 100, 64];
@@ -459,7 +450,6 @@ const Summary: React.FC = () => {
   );
 };
 
-// ---------- BEAT 7: CONTROL ----------
 const Control: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -480,7 +470,6 @@ const Control: React.FC = () => {
   );
 };
 
-// ---------- BEAT 8: PRIVACY ----------
 const Privacy: React.FC = () => {
   const frame = useCurrentFrame();
   const pop = spring({
@@ -533,7 +522,6 @@ const Privacy: React.FC = () => {
   );
 };
 
-// ---------- BEAT 9: OFFER ----------
 const Offer: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -626,7 +614,6 @@ const ChromeMark = () => (
   </svg>
 );
 
-// thin top progress bar across the whole 15s
 const ProgressBar: React.FC = () => {
   const frame = useCurrentFrame();
   const p = interpolate(frame, [0, PLANB_TOTAL], [0, 1]);

@@ -1,13 +1,9 @@
-/**
- * Summary client — calls the Worker's /summarize. The Worker (never the client)
- * holds any credentials and talks to Workers AI.
- */
+// Calls the Worker's /summarize; the Worker (never the client) holds credentials.
 
 import type { ApiError, SummarizeResponse } from '@readaloud/shared';
 import type { NormalizedDoc } from '@/core/document/types';
 import { WORKER_BASE_URL } from '@/config';
 
-/** Flatten a normalized doc back to plain text for summarization. */
 export function docToText(doc: NormalizedDoc): string {
   return doc.blocks.map((s) => s.text).join(' ');
 }

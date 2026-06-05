@@ -136,7 +136,6 @@ describe('POST /tts (mock provider)', () => {
     expect(a.characters.length).toBe('Hi there.'.length);
     expect(a.character_start_times_seconds.length).toBe(a.characters.length);
     expect(a.character_end_times_seconds.length).toBe(a.characters.length);
-    // times are monotonic
     expect(a.character_start_times_seconds[1]!).toBeGreaterThan(
       a.character_start_times_seconds[0]!,
     );

@@ -1,11 +1,6 @@
-/**
- * On-page highlighter using the CSS Custom Highlight API.
- *
- * Registers two highlights (sentence + word) and styles them via an *adopted*
- * stylesheet — so it paints over the page's existing text with ZERO DOM
- * mutation (no wrapping spans, no injected nodes, no layout shift). Driven by
- * the same `(sentenceId, wordIndex)` contract the engines emit.
- */
+// On-page highlighter (CSS Custom Highlight API). Registers sentence + word
+// highlights styled via an adopted stylesheet, so it paints over the page's
+// text with zero DOM mutation (no wrapping spans, no injected nodes).
 
 import type { LiveDocument } from './live-extract';
 
@@ -21,7 +16,6 @@ const STYLE = `
 }
 `;
 
-/** True when the browser supports the Custom Highlight API. */
 export function highlightApiSupported(): boolean {
   return (
     typeof CSS !== 'undefined' &&

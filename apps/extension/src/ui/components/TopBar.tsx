@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { ReadAloudMark } from './ReadAloudMark';
 
-/** The app top bar: brand on the left, optional subtitle, optional action slot. */
 export function TopBar({
   subtitle,
   right,

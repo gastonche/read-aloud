@@ -19,7 +19,7 @@ export const Wordmark: React.FC<Props> = ({ reveal, sweep, fontSize = 96 }) => {
   const dotScale = interpolate(reveal, [0.5, 1], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
-    easing: Easing.bezier(0.34, 1.56, 0.64, 1), // little overshoot
+    easing: Easing.bezier(0.34, 1.56, 0.64, 1),
   });
 
   return (
@@ -32,7 +32,6 @@ export const Wordmark: React.FC<Props> = ({ reveal, sweep, fontSize = 96 }) => {
         transform: `translateY(${(1 - r) * 18}px)`,
       }}
     >
-      {/* mark: the highlight "dot" */}
       <div
         style={{
           width: fontSize * 0.92,
@@ -56,7 +55,6 @@ export const Wordmark: React.FC<Props> = ({ reveal, sweep, fontSize = 96 }) => {
         />
       </div>
 
-      {/* wordmark with a wash sweeping through */}
       <div style={{ position: 'relative' }}>
         <span
           style={{
@@ -69,7 +67,6 @@ export const Wordmark: React.FC<Props> = ({ reveal, sweep, fontSize = 96 }) => {
         >
           ReadAloud
         </span>
-        {/* sweeping wash glint */}
         <span
           style={{
             position: 'absolute',

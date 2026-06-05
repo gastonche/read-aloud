@@ -1,14 +1,3 @@
-/**
- * ReadAloud Worker (Hono).
- *
- *   GET  /health     liveness + which environment/backend is live
- *   POST /summarize  Workers AI TL;DR (mock backend in local dev)
- *   POST /tts        ElevenLabs proxy — implemented in milestone 6
- *
- * CORS is restricted to chrome-extension://* (the extension) plus any
- * ALLOWED_ORIGINS, and localhost in development.
- */
-
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import type {
@@ -27,11 +16,11 @@ const MAX_SUMMARY_CHARS = 12_000;
 
 const app = new Hono<{ Bindings: Env }>();
 
-// ── CORS ─────────────────────────────────────────────────────────────
+// CORS: chrome-extension://* (the extension), ALLOWED_ORIGINS, and localhost in dev.
 app.use('*', (c, next) =>
   cors({
     origin: (origin) => {
-      if (!origin) return origin; // same-origin / non-CORS
+      if (!origin) return origin;
       if (origin.startsWith('chrome-extension://')) return origin;
       if (
         c.env.ENVIRONMENT === 'development' &&
@@ -59,7 +48,6 @@ app.get('/health', (c) =>
   }),
 );
 
-// ── POST /summarize ──────────────────────────────────────────────────
 app.post('/summarize', rateLimit, async (c) => {
   let body: SummarizeRequest;
   try {
@@ -87,7 +75,6 @@ app.post('/summarize', rateLimit, async (c) => {
       text: input,
       title: body.title,
     });
-    // Cost/usage signal for the writeup.
     console.log(
       JSON.stringify({
         route: '/summarize',
@@ -110,13 +97,10 @@ app.post('/summarize', rateLimit, async (c) => {
   }
 });
 
-// ── GET /voices ──────────────────────────────────────────────────────
-// Advertise the neural voices available given the configured provider keys.
 app.get('/voices', (c) =>
   c.json<VoicesResponse>({ voices: availableVoices(c.env) }),
 );
 
-// ── POST /tts ────────────────────────────────────────────────────────
 app.post('/tts', rateLimit, async (c) => {
   let body: TtsRequest;
   try {

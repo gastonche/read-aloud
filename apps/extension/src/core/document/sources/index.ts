@@ -1,9 +1,3 @@
-/**
- * File-source factory. Routes an uploaded file's bytes to the right
- * DocumentSource using the pure {@link classifyFile} decision. Unknown types
- * raise a clear, user-facing error.
- */
-
 import type { DocumentSource } from '@/core/document/types';
 import { classifyFile, type SupportedKind } from './classify';
 import { PdfSource } from './pdf';
@@ -35,7 +29,6 @@ const factories: Record<
   docx: (b, n) => new DocxSource(b, n),
 };
 
-/** Build the DocumentSource for an uploaded file, or throw for unsupported types. */
 export function createFileSource(
   name: string,
   mime: string,

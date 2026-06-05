@@ -1,8 +1,5 @@
-/**
- * Page-reader singleton (content script). Owns the live document + the on-page
- * highlighter for the current page, shared by the floating bar and the
- * BUILD_LIVE_DOC/HIGHLIGHT message handlers so there's exactly one highlighter.
- */
+// Page-reader singleton (content script): owns the one live document + on-page
+// highlighter, shared by the floating bar and the message handlers.
 
 import { detectLanguage } from '@/core/i18n/detect';
 import { primaryLang } from '@/core/i18n/lang';
@@ -16,7 +13,6 @@ import { highlightApiSupported, LiveHighlighter } from './highlighter';
 let live: LiveDocument | null = null;
 let highlighter: LiveHighlighter | null = null;
 
-/** Detect language, extract the live doc, and (re)bind the highlighter. */
 export async function buildPageDoc(
   langOverride?: string,
 ): Promise<LiveDocument> {

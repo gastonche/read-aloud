@@ -1,20 +1,11 @@
-/**
- * The shared normalization stage: RawDocument → NormalizedDoc.
- *
- * Splits each text block into sentences, and each sentence into word tokens
- * carrying char offsets within the sentence. Uses Intl.Segmenter (locale-aware,
- * and crucially handles space-less scripts like CJK that a \b regex can't) with
- * a regex fallback for environments where it's unavailable.
- *
- * Known limitation: ICU's sentence breaker has no abbreviation dictionary, so
- * "Dr. Smith" splits after "Dr." (documented in the README).
- */
+// Intl.Segmenter handles space-less scripts (CJK, Thai) that a \b regex can't.
+// ICU's sentence breaker has no abbreviation dictionary, so "Dr. Smith" splits
+// after "Dr." (documented in the README).
 
 import type { NormalizedDoc, RawDocument, Sentence, WordToken } from './types';
 
 const hasSegmenter = typeof Intl !== 'undefined' && 'Segmenter' in Intl;
 
-/** Tokenize a sentence into word tokens with offsets into `text`. */
 function tokenizeWords(text: string, lang?: string): WordToken[] {
   if (hasSegmenter) {
     const seg = new Intl.Segmenter(lang || undefined, { granularity: 'word' });
@@ -29,7 +20,6 @@ function tokenizeWords(text: string, lang?: string): WordToken[] {
     }
     return tokens;
   }
-  // Fallback: match runs of letters/numbers/marks, record their offsets.
   const tokens: WordToken[] = [];
   const re = /[\p{L}\p{N}\p{M}]+(?:['’-][\p{L}\p{N}\p{M}]+)*/gu;
   for (let m = re.exec(text); m; m = re.exec(text)) {
@@ -42,7 +32,6 @@ function tokenizeWords(text: string, lang?: string): WordToken[] {
   return tokens;
 }
 
-/** Split a block of prose into trimmed sentence strings. */
 function splitSentences(block: string, lang?: string): string[] {
   if (hasSegmenter) {
     const seg = new Intl.Segmenter(lang || undefined, {
@@ -56,15 +45,8 @@ function splitSentences(block: string, lang?: string): string[] {
     .filter(Boolean);
 }
 
-/**
- * Normalize raw text into the shared sentence/word document shape. Sentences
- * with no word-like tokens (pure punctuation/whitespace) are dropped so the
- * reader and TTS never get empty units.
- *
- * `lang` (a BCP-47 tag) drives locale-aware sentence/word segmentation — it
- * matters for space-less scripts (CJK, Thai) and is stored on the result to
- * drive voice selection and text direction.
- */
+// Drops sentences with no word-like tokens so the reader and TTS never get
+// empty units. `lang` (BCP-47) drives locale-aware segmentation.
 export function normalize(raw: RawDocument, lang?: string): NormalizedDoc {
   const resolved = lang || raw.lang || '';
   const blocks: Sentence[] = [];
@@ -78,7 +60,6 @@ export function normalize(raw: RawDocument, lang?: string): NormalizedDoc {
   return { title: raw.title.trim() || 'Untitled', blocks, lang: resolved };
 }
 
-/** Total word count — handy for time estimates and the reader header. */
 export function wordCount(doc: NormalizedDoc): number {
   return doc.blocks.reduce((n, s) => n + s.words.length, 0);
 }

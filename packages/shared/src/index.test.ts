@@ -6,10 +6,7 @@ import {
   type CharacterAlignment,
 } from './index';
 
-/**
- * Build a CharacterAlignment from a string where each character lasts 0.1s.
- * Lets us write readable expectations against real timing arrays.
- */
+/** Build a CharacterAlignment where each character lasts `step` seconds. */
 function alignmentOf(text: string, step = 0.1): CharacterAlignment {
   const characters = [...text];
   const character_start_times_seconds = characters.map(
@@ -33,10 +30,8 @@ describe('collapseAlignmentToWords', () => {
 
   it("uses the first char's start and the last char's end for each word", () => {
     const words = collapseAlignmentToWords(alignmentOf('hi bye'));
-    // "hi" = chars 0,1 → start 0.0, end 0.2
     expect(words[0]).toMatchObject({ word: 'hi', startSec: 0, index: 0 });
     expect(words[0]!.endSec).toBeCloseTo(0.2, 5);
-    // "bye" = chars 3,4,5 → start 0.3, end 0.6
     expect(words[1]!.startSec).toBeCloseTo(0.3, 5);
     expect(words[1]!.endSec).toBeCloseTo(0.6, 5);
     expect(words[1]!.index).toBe(1);
@@ -64,7 +59,6 @@ describe('collapseAlignmentToWords', () => {
 });
 
 describe('wordIndexAtTime', () => {
-  // "hi bye": hi[0.0,0.2) bye[0.3,0.6)
   const spans = collapseAlignmentToWords(alignmentOf('hi bye'));
 
   it('returns -1 before the first word starts', () => {

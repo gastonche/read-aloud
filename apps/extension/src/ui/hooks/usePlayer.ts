@@ -68,12 +68,9 @@ function createEngine(id: EngineId, ttsClient?: TtsClient): TtsEngine {
     : new WebSpeechEngine(new BrowserSpeechBackend());
 }
 
-/**
- * Owns the active engine and bridges its event stream to React state. Switching
- * engines disposes the old one, creates the new one, and reloads the current
- * document. A neural-engine error auto-falls-back to Web Speech so playback
- * keeps working even if the Worker/ElevenLabs is down.
- */
+// Owns the active engine and bridges its event stream to React state. A
+// neural-engine error auto-falls-back to Web Speech so playback keeps working
+// even if the Worker/ElevenLabs is down.
 export function usePlayer(
   doc: NormalizedDoc | null,
   options?: PlayerOptions,
@@ -81,7 +78,7 @@ export function usePlayer(
   const engineRef = useRef<TtsEngine | null>(null);
   const ttsClientRef = useRef(options?.ttsClient);
   ttsClientRef.current = options?.ttsClient;
-  // Initial handoff state is read once (captured on first render).
+  // Handoff state is read once (captured on first render).
   const initialRef = useRef(options?.initial);
   const appliedInitial = useRef(false);
   const [engineId, setEngineId] = useState<EngineId>(
@@ -95,8 +92,7 @@ export function usePlayer(
   const [sentenceLevelOnly, setSentenceLevelOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Refs so the engine effect can read current rate/voice/doc without
-  // re-running on every change of them.
+  // Refs let the engine effect read current rate/voice/doc without re-running.
   const rateRef = useRef(rate);
   rateRef.current = rate;
   const docRef = useRef(doc);
@@ -123,10 +119,8 @@ export function usePlayer(
     return pickVoiceForLang(vs, lang, voicePrefs.current[lang]);
   };
 
-  // (Re)create the engine when the selected engine changes. NOTE: we do NOT
-  // clear `error` here — an auto-fallback switches the engine and must keep its
-  // message visible. Errors are cleared on a new doc, a manual engine switch,
-  // or a successful play.
+  // (Re)create the engine on engine change. We do NOT clear `error` here — an
+  // auto-fallback switches the engine and must keep its message visible.
   useEffect(() => {
     const engine = createEngine(engineId, ttsClientRef.current);
     engineRef.current = engine;
@@ -138,8 +132,7 @@ export function usePlayer(
       onHighlight: setHighlight,
       onWordTimingUnavailable: () => setSentenceLevelOnly(true),
       onError: (e) => {
-        // Automatic fallback: if Studio fails, drop to Built-in so the user can
-        // still listen — and tell them why (this message survives the switch).
+        // If Studio fails, fall back to Built-in and tell the user why.
         if (engineIdRef.current === 'elevenlabs') {
           setError(
             'Studio voices need the ReadAloud server running. Switched to Built-in.',
@@ -166,7 +159,6 @@ export function usePlayer(
       if (docRef.current) {
         engine.load(docRef.current, { rate: rateRef.current, voiceId: id });
       }
-      // Continue a handed-off session, once.
       if (!appliedInitial.current) {
         appliedInitial.current = true;
         if (init?.sentenceId != null && init.sentenceId >= 0) {
@@ -182,8 +174,7 @@ export function usePlayer(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engineId]);
 
-  // Load the document whenever it changes — and re-pick the voice for its
-  // language (so a French doc switches to a French voice automatically).
+  // On doc change, re-pick the voice for its language (a French doc → French voice).
   useEffect(() => {
     const engine = engineRef.current;
     if (!engine || !doc) return;

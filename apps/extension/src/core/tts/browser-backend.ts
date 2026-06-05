@@ -1,10 +1,7 @@
-/**
- * The real {@link SpeechBackend} over window.speechSynthesis.
- *
- * Kept separate from the engine so the engine can be unit-tested with a fake
- * backend (headless Chromium has no voices and won't fire boundary events).
- * Only touches window inside methods, so importing this module is safe anywhere.
- */
+// The real SpeechBackend over window.speechSynthesis. Kept separate from the
+// engine so it can be unit-tested with a fake backend (headless Chromium has no
+// voices and won't fire boundary events). Only touches window inside methods,
+// so importing this module is safe anywhere.
 
 import type { SpeechBackend, TtsVoice, UtteranceHandle } from './types';
 import { primaryLang } from '@/core/i18n/lang';
@@ -55,12 +52,8 @@ export class BrowserSpeechBackend implements SpeechBackend {
     this.synth.resume();
   }
 
-  /**
-   * The raw system voice list is huge and noisy. Curate it to a clean,
-   * MULTILINGUAL shortlist (the UI groups it by language): prefer on-device
-   * voices, dedupe by name, and cap each language to a handful. We deliberately
-   * keep ALL languages so non-English content has a matching voice.
-   */
+  // Curate the noisy system list: prefer on-device voices, dedupe by name, cap
+  // each language to a handful. Keep ALL languages so non-English content has a match.
   getVoices(): TtsVoice[] {
     const raw = this.synth.getVoices();
     const mapped = raw.map((v) => ({
@@ -111,7 +104,7 @@ export class BrowserSpeechBackend implements SpeechBackend {
   }
 }
 
-/** Strip vendor noise like "Microsoft David - English (United States)". */
+// Strip vendor noise like "Microsoft David - English (United States)".
 function cleanName(name: string): string {
   return (
     name
@@ -121,7 +114,6 @@ function cleanName(name: string): string {
   );
 }
 
-/** "en-US" → "American English" (best-effort via Intl.DisplayNames). */
 function friendlyLang(lang: string): string {
   try {
     const dn = new Intl.DisplayNames([lang || 'en'], { type: 'language' });

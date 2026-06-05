@@ -1,8 +1,5 @@
-/**
- * Deterministic, offline illustration avatars for voices (DiceBear "personas").
- * Generated locally as SVG data URIs — no network, no bundled photos. Shared by
- * the side-panel deck and the on-page bar.
- */
+// Deterministic, offline illustration avatars for voices (DiceBear "personas"),
+// generated locally as SVG data URIs — no network, no bundled photos.
 
 import { createAvatar } from '@dicebear/core';
 import { personas } from '@dicebear/collection';

@@ -38,8 +38,7 @@ export function SidePanel() {
   // The pending source is read-and-cleared once; keep it for retry.
   const sourceRef = useRef<PendingSource | null>(null);
 
-  // Re-segment + re-render the current document in a different language (the
-  // top-bar language chip). Re-normalizes from the kept raw text — no re-fetch.
+  // Re-normalize from the kept raw text in a different language — no re-fetch.
   const setLanguage = useCallback((lang: string) => {
     setState((s) =>
       s.phase === 'reader' ? { ...s, doc: normalize(s.raw, lang) } : s,
@@ -47,7 +46,7 @@ export function SidePanel() {
   }, []);
 
   // Run any DocumentSource through the shared pipeline: load → detect language →
-  // normalize → render, with a labelled spinner, empty-result guard, and retry.
+  // normalize → render, with a labelled spinner, empty guard, and retry.
   const runSource = useCallback(
     async (
       source: DocumentSource,
@@ -100,7 +99,6 @@ export function SidePanel() {
             start,
           );
         } catch (e) {
-          // Synchronous failures (unsupported type, bad base64) land here.
           setState({
             phase: 'error',
             message: e instanceof Error ? e.message : 'Could not open file.',
@@ -149,8 +147,7 @@ export function SidePanel() {
     };
   }, [loadPage, loadFile]);
 
-  // Reader phase owns its own top bar (with the TL;DR action); other phases
-  // get the plain app top bar.
+  // Reader phase owns its own top bar (with the TL;DR action).
   if (state.phase === 'reader') {
     return (
       <div className="flex h-full flex-col bg-paper text-ink">
